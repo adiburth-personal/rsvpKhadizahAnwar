@@ -32,18 +32,52 @@
         <circle cx="53" cy="13" r="1.3" fill="currentColor"/>
       </svg>
 
-      <p class="jemputan-teks">Sepatah kata, sejuta doa daripada para tetamu buat pengantin.</p>
+      <h2 class="seksyen-tajuk">Sepatah Kata, Sejuta Doa</h2>
+      <p class="dinding-kaunter" id="dindingKaunter" hidden></p>
     </header>
 
-    <!-- Dinding ucapan -->
-    <section class="dinding" aria-labelledby="tajukDinding">
-      <h2 class="seksyen-tajuk" id="tajukDinding">Sepatah Kata, Sejuta Doa</h2>
-      <p class="seksyen-sari">Ucapan dan doa daripada para tetamu</p>
-      <p class="dinding-kaunter" id="dindingKaunter" hidden></p>
-      <p class="dinding-nota" id="dindingNota" hidden>Sentuh mana mana kad untuk baca penuh dan hantar sayang.</p>
+    <!-- Timbunan swipe: kad depan besar = fokus baca, swipe/anak panah untuk tukar -->
+    <section class="dinding" aria-label="Timbunan ucapan tetamu">
 
-      <div class="ucapan-senarai" id="ucapanSenarai" aria-live="polite"></div>
-      <div class="kosong" id="ucapanKosong">Belum ada ucapan lagi. Jadilah yang pertama menitipkan doa.</div>
+      <!-- Pil doa baru (jujur, boleh tekan untuk lompat ke kad baharu) -->
+      <div class="doa-baru-baris">
+        <button class="doa-baru-pil" id="doaBaruPil" type="button" hidden>
+          <span class="titik" aria-hidden="true"></span>
+          <span id="doaBaruTeks">1 doa baru masuk</span>
+        </button>
+      </div>
+
+      <div class="arena">
+        <div class="timbunan" id="timbunan" aria-live="polite"></div>
+        <p class="timbunan-kosong" id="timbunanKosong" hidden>Belum ada ucapan lagi. Jadilah yang pertama menitipkan doa.</p>
+      </div>
+
+      <div class="kawalan" id="kawalan" hidden>
+        <button class="nav-btn" id="btnSebelum" type="button" aria-label="Ucapan sebelum">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div class="kemajuan">
+          <div class="kemajuan-teks"><span><b id="kemajuanKini">1</b></span><span id="kemajuanJumlah">/ 1</span></div>
+          <div class="kemajuan-bar"><div class="kemajuan-isi" id="kemajuanIsi"></div></div>
+        </div>
+
+        <button class="nav-btn" id="btnSeterus" type="button" aria-label="Ucapan seterusnya">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="lihat-semua-baris" id="lihatSemuaBaris" hidden>
+        <button class="pautan-halus" id="btnLihatSemua" type="button">Lihat semua ucapan</button>
+      </div>
+
+      <section class="grid-seksyen" id="gridSeksyen" aria-label="Semua ucapan">
+        <div class="grid-tajuk-baris">
+          <h3 class="grid-tajuk">Semua ucapan</h3>
+          <button class="pautan-halus" id="btnTutupGrid" type="button">Tutup, kembali ke timbunan</button>
+        </div>
+        <div class="grid-senarai" id="gridSenarai"></div>
+      </section>
     </section>
 
     <p class="nav-halaman">
@@ -53,22 +87,6 @@
 
     <footer class="footer">Khadizah &amp; Anwar &middot; 30 Ogos 2026</footer>
   </main>
-
-  <!-- Overlay fokus baca: tap kad membuka satu kad besar PEGUN (mudah dibaca
-       orang tua) dengan butang sayang besar. Di LUAR #ucapanSenarai supaya
-       diff-engine marquee tidak menyentuhnya. -->
-  <div class="fokus-overlay" id="fokusOverlay" role="dialog" aria-modal="true" aria-labelledby="fokusNama" hidden>
-    <div class="fokus-kad" id="fokusKad" tabindex="-1">
-      <button class="fokus-tutup" id="fokusTutup" type="button" aria-label="Tutup ucapan">&times;</button>
-      <span class="fokus-inisial" id="fokusInisial" aria-hidden="true"></span>
-      <p class="fokus-teks" id="fokusTeks"></p>
-      <p class="fokus-nama" id="fokusNama"></p>
-      <button class="sayang-btn sayang-btn--besar" id="fokusSayang" type="button">
-        <span class="sayang-hati" aria-hidden="true">&#9829;</span>
-        <span class="sayang-kira"></span>
-      </button>
-    </div>
-  </div>
 
   <script type="module" src="./ucapan.js"></script>
 </body>
