@@ -11,6 +11,24 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+
+  <!-- Lapisan ambient: zarah bokeh emas terapung perlahan di latar (CSS sahaja,
+       z-index bawah kandungan, pointer-events none, dimatikan oleh reduced-motion).
+       Dijana sekali dalam markup, tiada JS, tiada loop runtime. Aksesibiliti: aria-hidden. -->
+  <div class="ambient" aria-hidden="true">
+    <i class="zarah zarah--emas" style="--x:10%;  --size:9px;  --dur:28s; --delay:-3s;  --drift:16px; --op:0.30; --blur:2px"></i>
+    <i class="zarah zarah--rose" style="--x:22%;  --size:5px;  --dur:34s; --delay:-14s; --drift:-12px;--op:0.22; --blur:1.5px"></i>
+    <i class="zarah zarah--emas" style="--x:34%;  --size:13px; --dur:40s; --delay:-9s;  --drift:22px; --op:0.18; --blur:3px"></i>
+    <i class="zarah zarah--emas" style="--x:47%;  --size:6px;  --dur:26s; --delay:-20s; --drift:-14px;--op:0.34; --blur:1.5px"></i>
+    <i class="zarah zarah--rose" style="--x:58%;  --size:11px; --dur:37s; --delay:-6s;  --drift:18px; --op:0.20; --blur:2.5px"></i>
+    <i class="zarah zarah--emas" style="--x:68%;  --size:4px;  --dur:24s; --delay:-16s; --drift:10px; --op:0.38; --blur:1px"></i>
+    <i class="zarah zarah--emas" style="--x:78%;  --size:8px;  --dur:31s; --delay:-11s; --drift:-18px;--op:0.26; --blur:2px"></i>
+    <i class="zarah zarah--rose" style="--x:88%;  --size:12px; --dur:39s; --delay:-24s; --drift:-10px;--op:0.16; --blur:3px"></i>
+    <i class="zarah zarah--emas" style="--x:16%;  --size:7px;  --dur:33s; --delay:-27s; --drift:12px; --op:0.24; --blur:2px"></i>
+    <i class="zarah zarah--emas" style="--x:64%;  --size:5px;  --dur:29s; --delay:-2s;  --drift:-16px;--op:0.30; --blur:1.5px"></i>
+    <i class="zarah zarah--rose" style="--x:40%;  --size:10px; --dur:36s; --delay:-19s; --drift:20px; --op:0.19; --blur:2.5px"></i>
+  </div>
+
   <main class="wrap">
 
     <!-- Notis kalau tetapan Firebase belum diisi -->

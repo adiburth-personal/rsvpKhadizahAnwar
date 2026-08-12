@@ -845,7 +845,89 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
+/* ============================== AMBIENT (LATAR HIDUP) ==============================
+   Tiga lapisan halus supaya halaman terasa bernafas semasa dibaca: cahaya pelita
+   majlis, bukan confetti pesta. SEMUA gerak = transform/opacity sahaja (compositor,
+   tiada paint/layout, tiada JS loop). Semua lapisan duduk di z-index -1 (BAWAH semua
+   kandungan + kad), jadi tidak pernah lalu atas teks; kad berlatar legap menutupnya.
+   Dimatikan sepenuhnya oleh prefers-reduced-motion di hujung fail. */
+
+/* Warna rose-gold: jambatan antara emas pudar dan maroon, untuk sebahagian zarah. */
+:root { --color-rosegold: oklch(70% 0.075 45); }
+
+/* --- Lapisan 1: zarah bokeh emas terapung naik perlahan --- */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;                 /* asingkan paint zarah dari halaman */
+}
+.zarah {
+  position: absolute;
+  left: var(--x);
+  bottom: -8vh;                    /* mula bawah skrin, hanyut ke atas */
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(var(--blur, 2px));
+  will-change: transform, opacity;
+  animation: zarahApung var(--dur) linear var(--delay, 0s) infinite;
+}
+.zarah--emas { background: radial-gradient(circle at 50% 50%, var(--color-gold) 0%, transparent 68%); }
+.zarah--rose { background: radial-gradient(circle at 50% 50%, var(--color-rosegold) 0%, transparent 68%); }
+@keyframes zarahApung {
+  0%   { transform: translate3d(0, 0, 0) scale(0.9); opacity: 0; }
+  12%  { opacity: var(--op, 0.28); }
+  50%  { transform: translate3d(var(--drift, 12px), -55vh, 0) scale(1); }
+  88%  { opacity: var(--op, 0.28); }
+  100% { transform: translate3d(0, -112vh, 0) scale(0.92); opacity: 0; }
+}
+
+/* --- Lapisan 2: latar bernafas (alunan cahaya hangat, hampir subliminal) ---
+   Hanya MENERANGKAN latar kraft (gold/cream) jadi kontras teks header kekal atau
+   naik, tidak pernah gelap. Kitaran 26s, ayunan opacity kecil. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(58% 48% at 28% 22%, color-mix(in oklch, var(--color-gold) 22%, transparent) 0%, transparent 62%),
+    radial-gradient(52% 44% at 76% 82%, color-mix(in oklch, var(--color-cream) 34%, transparent) 0%, transparent 60%);
+  will-change: transform, opacity;
+  animation: latarBernafas 26s var(--ease-in-out) infinite;
+}
+@keyframes latarBernafas {
+  0%, 100% { opacity: 0.34; transform: translate3d(0, 0, 0) scale(1); }
+  50%      { opacity: 0.58; transform: translate3d(0, -1.4%, 0) scale(1.05); }
+}
+
+/* --- Lapisan 3: kad belakang timbunan bergoyang halus (idle sway) ---
+   Guna sifat 'rotate'/'translate' berasingan supaya BERGABUNG dengan transform
+   depth yang diset JS (translateY+scale+rotate), bukan menimpanya. Hanya kad
+   belakang (depth 1 & 2); kad depan (depth 0, yang dibaca DAN diheret) tidak
+   pernah bergoyang, jadi gesture swipe tak terganggu. */
+.swipe-kad[data-depth="1"] { animation: kadBuai1 8s var(--ease-in-out) infinite; }
+.swipe-kad[data-depth="2"] { animation: kadBuai2 9.5s var(--ease-in-out) infinite; }
+.swipe-kad--drag { animation: none; }   /* semasa jari heret: pegun mutlak */
+@keyframes kadBuai1 {
+  0%, 100% { rotate: -0.4deg; translate: -1px 0; }
+  50%      { rotate: 0.4deg;  translate: 1px -1px; }
+}
+@keyframes kadBuai2 {
+  0%, 100% { rotate: 0.5deg;  translate: 1px 0; }
+  50%      { rotate: -0.4deg; translate: -1px 1px; }
+}
+
 /* ============================== KURANGKAN GERAK ============================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  /* Ambient mati bersih: halaman jadi tenang statik, bukan berkelip laju. */
+  .ambient { display: none; }
+  body::before { animation: none; opacity: 0.34; }
+  .swipe-kad[data-depth="1"], .swipe-kad[data-depth="2"] { animation: none; rotate: 0deg; translate: 0 0; }
 }
