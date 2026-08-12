@@ -1,6 +1,6 @@
 # RSVP Khadizah & Anwar
 
-Mini website jemputan kahwin untuk majlis Khadizah & Anwar, Ahad 30 Ogos 2026 (17 Rabiulawal 1448H), 12:00 tengah hari hingga 6:00 petang. Ada dua bahagian: borang pengesahan kehadiran (RSVP) dan dinding ucapan langsung. Dilink dari kad jemputan rasmi di Canva lewat butang "RSVP" dan "Lihat ucapan".
+Mini website jemputan kahwin untuk majlis Khadizah & Anwar, Ahad 30 Ogos 2026 (17 Rabiulawal 1448H), 12:00 tengah hari hingga 6:00 petang. Tiga halaman berasingan: borang pengesahan kehadiran (`index.html`), dinding ucapan langsung (`ucapan.html`), dan papan ringkasan rahsia pengantin (`pengantin.html`). Dilink dari kad jemputan rasmi di Canva lewat butang "RSVP" dan "Lihat ucapan". Kedua dua halaman tetamu berpaut halus antara satu sama lain (dari borang ke ucapan selepas hantar, dari ucapan balik ke borang).
 
 Stack: static HTML + CSS + JS tulen (tiada build step, tiada npm), Firebase Firestore lewat CDN modular SDK v10. Direka mobile first sebab 90% tetamu buka dari WhatsApp guna telefon. Dihost di GitHub Pages path bukan root, jadi semua asset guna path relatif.
 
@@ -8,11 +8,13 @@ Stack: static HTML + CSS + JS tulen (tiada build step, tiada npm), Firebase Fire
 
 | Fail | Fungsi |
 |------|--------|
-| `index.html` | Halaman tetamu: header pengantin, borang RSVP, dinding ucapan |
-| `app.js` | Otak halaman tetamu (hantar RSVP, papar ucapan langsung) |
+| `index.html` | Halaman borang RSVP: header pengantin + borang kehadiran sahaja |
+| `app.js` | Otak halaman borang (hantar RSVP) |
+| `ucapan.html` | Halaman dinding ucapan langsung sahaja |
+| `ucapan.js` | Otak halaman ucapan (papar ucapan langsung, baca sahaja) |
 | `pengantin.html` | Halaman rahsia pengantin: ringkasan + senarai penuh |
 | `pengantin.js` | Otak halaman pengantin |
-| `styles.css` | Stail kongsi kedua dua halaman (tema kraft + maroon) |
+| `styles.css` | Stail kongsi semua halaman (tema kraft + maroon) |
 | `firebaseConfig.js` | Tetapan sambungan Firebase (isi nilai sebenar di sini) |
 | `firestore.rules` | Peraturan keselamatan pangkalan data |
 
@@ -51,7 +53,8 @@ Rules ni benarkan sesiapa create + read RSVP, tolak update + delete, dan tolak s
 
 Push repo ke GitHub, aktifkan Pages (Settings, Pages, sumber branch `main`). Laman akan hidup di path bukan root, contoh:
 
-- Halaman tetamu: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/`
+- Halaman borang RSVP: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/` (atau `.../index.html`)
+- Halaman dinding ucapan: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/ucapan.html`
 - Halaman pengantin: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/pengantin.html?kunci=khadizahAnwar3008x7qz`
 
 ## Kunci pengantin

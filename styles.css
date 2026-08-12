@@ -382,6 +382,41 @@ body {
 .tiada-akses .seksyen-tajuk { margin-bottom: var(--space-5); }
 .tiada-akses p { color: var(--color-ink-soft); max-width: 34ch; margin: 0 auto; }
 
+/* ============================== NAV ANTARA HALAMAN ============================== */
+/* Pautan halus antara borang RSVP dan dinding ucapan, sengaja kecil dan
+   sopan, bukan navbar besar. */
+.nav-halaman {
+  margin: var(--space-8) auto 0;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
+.pautan-halus {
+  color: var(--color-maroon-soft);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklch, var(--color-maroon-soft) 40%, transparent);
+  padding-bottom: 1px;
+  transition: color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.pautan-halus:hover {
+  color: var(--color-maroon);
+  border-bottom-color: var(--color-maroon);
+}
+.pautan-halus:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-focus) 34%, transparent);
+}
+/* Varian dalam keadaan terima kasih: berdiri sendiri, berjarak dari teks. */
+.pautan-halus--tengah {
+  display: inline-block;
+  margin-top: var(--space-6);
+  font-size: var(--text-base);
+}
+
 .footer {
   text-align: center;
   margin-top: var(--space-9);

@@ -1,9 +1,10 @@
-// Logik halaman tetamu: borang RSVP + dinding ucapan langsung.
+// Logik halaman tetamu: borang RSVP sahaja.
 //
 // APA MAKSUDNYA (bahasa biasa):
-// Fail ni "otak" halaman tetamu. Ia dengar bila tetamu tekan Hantar,
-// simpan jawapan ke pangkalan data (Firestore), dan tunjuk semua ucapan
-// secara langsung (auto muncul tanpa refresh).
+// Fail ni "otak" halaman borang. Ia dengar bila tetamu tekan Hantar dan
+// simpan jawapan ke pangkalan data (Firestore). Dinding ucapan dah pindah
+// ke halaman berasingan (ucapan.html + ucapan.js), jadi fail ni tak lagi
+// urus paparan ucapan.
 
 import { firebaseConfig, konfigurasiBelumSiap } from "./firebaseConfig.js";
 
@@ -19,17 +20,7 @@ const ralatNama = document.getElementById("ralatNama");
 const ralatStatus = document.getElementById("ralatStatus");
 const terimaKasih = document.getElementById("terimaKasih");
 const terimaKasihTeks = document.getElementById("terimaKasihTeks");
-const ucapanSenarai = document.getElementById("ucapanSenarai");
-const ucapanKosong = document.getElementById("ucapanKosong");
 const radiosStatus = document.querySelectorAll('input[name="status"]');
-
-// Selamatkan input tetamu supaya tag HTML tak boleh disuntik (elak XSS).
-// Kita tukar aksara berbahaya jadi versi teks biasa.
-function selamatkanTeks(teks) {
-  const div = document.createElement("div");
-  div.textContent = teks == null ? "" : String(teks);
-  return div.innerHTML;
-}
 
 // Tunjuk/sorok dropdown bilangan ikut pilihan hadir.
 function kemasPaparanPax() {
@@ -58,7 +49,6 @@ if (konfigurasiBelumSiap(firebaseConfig)) {
   notisSetup.classList.add("tunjuk");
   butangHantar.disabled = true;
   butangHantar.textContent = "Borang belum aktif";
-  ucapanKosong.textContent = "Dinding ucapan akan aktif sebaik sahaja tetapan Firebase diisi.";
 } else {
   mulakanFirebase();
 }
@@ -67,7 +57,7 @@ async function mulakanFirebase() {
   // Import SDK Firebase modular v10 terus dari CDN (tiada build step).
   const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
   const {
-    getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp,
+    getFirestore, collection, addDoc, serverTimestamp,
   } = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
 
   const app = initializeApp(firebaseConfig);
@@ -118,7 +108,8 @@ async function mulakanFirebase() {
         : "Terima kasih atas ucapan dan doa. Kehadiran awak dalam doa amat bermakna buat kami.";
       terimaKasih.classList.add("tunjuk");
       terimaKasih.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Ucapan sendiri akan muncul di dinding secara automatik lewat onSnapshot.
+      // Ucapan yang dihantar akan muncul di dinding ucapan (ucapan.html),
+      // yang tetamu boleh buka lewat pautan dalam keadaan terima kasih ini.
     } catch (ralat) {
       // Gagal: hidupkan semula butang supaya boleh cuba lagi.
       console.error("Gagal hantar RSVP:", ralat);
@@ -127,36 +118,5 @@ async function mulakanFirebase() {
       ralatStatus.textContent = "Maaf, ada masalah menghantar. Sila cuba sekali lagi.";
       ralatStatus.classList.add("tunjuk");
     }
-  });
-
-  // ====== Dinding ucapan langsung ======
-  // onSnapshot: setiap kali data berubah, papar semula. orderBy masa desc =
-  // ucapan terbaru di atas. Kita papar HANYA entri yang ada ucapan.
-  const soalan = query(rujukanRsvp, orderBy("masa", "desc"));
-  onSnapshot(soalan, function (petikan) {
-    const kad = [];
-    petikan.forEach(function (dok) {
-      const data = dok.data();
-      const ucapan = (data.ucapan || "").trim();
-      if (!ucapan) return; // langkau entri tanpa ucapan
-      kad.push(
-        '<article class="ucapan-kad">' +
-          '<p class="ucapan-teks">' + selamatkanTeks(ucapan) + "</p>" +
-          '<p class="ucapan-nama">' + selamatkanTeks(data.nama || "Tetamu") + "</p>" +
-        "</article>"
-      );
-    });
-
-    if (kad.length === 0) {
-      ucapanSenarai.innerHTML = "";
-      ucapanKosong.style.display = "block";
-    } else {
-      ucapanKosong.style.display = "none";
-      ucapanSenarai.innerHTML = kad.join("");
-    }
-  }, function (ralat) {
-    console.error("Gagal baca ucapan:", ralat);
-    ucapanKosong.textContent = "Maaf, ucapan tidak dapat dimuatkan buat masa ini.";
-    ucapanKosong.style.display = "block";
   });
 }
