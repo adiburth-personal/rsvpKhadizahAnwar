@@ -856,8 +856,14 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
    kandungan + kad), jadi tidak pernah lalu atas teks; kad berlatar legap menutupnya.
    Dimatikan sepenuhnya oleh prefers-reduced-motion di hujung fail. */
 
-/* Warna rose-gold: jambatan antara emas pudar dan maroon, untuk sebahagian zarah. */
-:root { --color-rosegold: oklch(70% 0.075 45); }
+/* Warna rose-gold: jambatan antara emas pudar dan maroon, untuk sebahagian zarah.
+   --color-glow-* = versi LEBIH TERANG (L~78-90) khas untuk bokeh + latar bernafas,
+   supaya zarah benar benar menonjol atas kraft (L80) yang hampir sewarna emas pudar. */
+:root {
+  --color-rosegold: oklch(70% 0.075 45);
+  --color-glow-gold: oklch(90% 0.09 88);      /* emas bercahaya, jelas lebih cerah dari kraft */
+  --color-glow-rose: oklch(78% 0.095 42);     /* rose-gold bercahaya */
+}
 
 /* --- Lapisan 1: zarah bokeh emas terapung naik perlahan --- */
 .ambient {
@@ -880,14 +886,16 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
   will-change: transform, opacity;
   animation: zarahApung var(--dur) linear var(--delay, 0s) infinite;
 }
-.zarah--emas { background: radial-gradient(circle at 50% 50%, var(--color-gold) 0%, transparent 68%); }
-.zarah--rose { background: radial-gradient(circle at 50% 50%, var(--color-rosegold) 0%, transparent 68%); }
+/* Teras terang + halo lembut: stop teras pekat sampai 24% baru pudar, jadi bokeh
+   ada isi (bukan kabus rata) tapi tepi tetap lembut. */
+.zarah--emas { background: radial-gradient(circle at 50% 50%, var(--color-glow-gold) 0%, var(--color-glow-gold) 24%, transparent 70%); }
+.zarah--rose { background: radial-gradient(circle at 50% 50%, var(--color-glow-rose) 0%, var(--color-glow-rose) 22%, transparent 70%); }
 @keyframes zarahApung {
-  0%   { transform: translate3d(0, 0, 0) scale(0.9); opacity: 0; }
-  12%  { opacity: var(--op, 0.28); }
-  50%  { transform: translate3d(var(--drift, 12px), -55vh, 0) scale(1); }
-  88%  { opacity: var(--op, 0.28); }
-  100% { transform: translate3d(0, -112vh, 0) scale(0.92); opacity: 0; }
+  0%   { transform: translate3d(0, 0, 0) scale(0.85); opacity: 0; }
+  12%  { opacity: var(--op, 0.5); }
+  50%  { transform: translate3d(var(--drift, 12px), -55vh, 0) scale(1.05); }
+  88%  { opacity: var(--op, 0.5); }
+  100% { transform: translate3d(0, -112vh, 0) scale(0.9); opacity: 0; }
 }
 
 /* --- Lapisan 2: latar bernafas (alunan cahaya hangat, hampir subliminal) ---
@@ -900,14 +908,15 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(58% 48% at 28% 22%, color-mix(in oklch, var(--color-gold) 22%, transparent) 0%, transparent 62%),
-    radial-gradient(52% 44% at 76% 82%, color-mix(in oklch, var(--color-cream) 34%, transparent) 0%, transparent 60%);
+    radial-gradient(60% 50% at 26% 20%, color-mix(in oklch, var(--color-glow-gold) 55%, transparent) 0%, transparent 62%),
+    radial-gradient(55% 46% at 78% 84%, color-mix(in oklch, var(--color-cream) 62%, transparent) 0%, transparent 60%),
+    radial-gradient(46% 40% at 60% 54%, color-mix(in oklch, var(--color-rosegold) 30%, transparent) 0%, transparent 64%);
   will-change: transform, opacity;
-  animation: latarBernafas 26s var(--ease-in-out) infinite;
+  animation: latarBernafas 24s var(--ease-in-out) infinite;
 }
 @keyframes latarBernafas {
-  0%, 100% { opacity: 0.34; transform: translate3d(0, 0, 0) scale(1); }
-  50%      { opacity: 0.58; transform: translate3d(0, -1.4%, 0) scale(1.05); }
+  0%, 100% { opacity: 0.5;  transform: translate3d(0, 0, 0) scale(1); }
+  50%      { opacity: 0.88; transform: translate3d(0, -1.8%, 0) scale(1.07); }
 }
 
 /* --- Lapisan 3: kad belakang timbunan bergoyang halus (idle sway) ---
@@ -919,12 +928,12 @@ body::before {
 .swipe-kad[data-depth="2"] { animation: kadBuai2 9.5s var(--ease-in-out) infinite; }
 .swipe-kad--drag { animation: none; }   /* semasa jari heret: pegun mutlak */
 @keyframes kadBuai1 {
-  0%, 100% { rotate: -0.4deg; translate: -1px 0; }
-  50%      { rotate: 0.4deg;  translate: 1px -1px; }
+  0%, 100% { rotate: -1.5deg; translate: -4px 0; }
+  50%      { rotate: 1.4deg;  translate: 4px -3px; }
 }
 @keyframes kadBuai2 {
-  0%, 100% { rotate: 0.5deg;  translate: 1px 0; }
-  50%      { rotate: -0.4deg; translate: -1px 1px; }
+  0%, 100% { rotate: 1.7deg;  translate: 4px 0; }
+  50%      { rotate: -1.4deg; translate: -4px 3px; }
 }
 
 /* ============================== KURANGKAN GERAK ============================== */
@@ -932,6 +941,6 @@ body::before {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   /* Ambient mati bersih: halaman jadi tenang statik, bukan berkelip laju. */
   .ambient { display: none; }
-  body::before { animation: none; opacity: 0.34; }
+  body::before { animation: none; opacity: 0.5; }
   .swipe-kad[data-depth="1"], .swipe-kad[data-depth="2"] { animation: none; rotate: 0deg; translate: 0 0; }
 }
