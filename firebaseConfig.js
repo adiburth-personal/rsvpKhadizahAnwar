@@ -12,12 +12,12 @@
 // 3. Simpan fail ni, muat semula laman.
 
 export const firebaseConfig = {
-  apiKey: "GANTI_NANTI",
-  authDomain: "GANTI_NANTI",
-  projectId: "GANTI_NANTI",
-  storageBucket: "GANTI_NANTI",
-  messagingSenderId: "GANTI_NANTI",
-  appId: "GANTI_NANTI",
+  apiKey: "AIzaSyA7xkQp-0s-aZbeJ6kDhokzNRZvLTEP6rI",
+  authDomain: "rsvpkhadizahanwar.firebaseapp.com",
+  projectId: "rsvpkhadizahanwar",
+  storageBucket: "rsvpkhadizahanwar.firebasestorage.app",
+  messagingSenderId: "456831883514",
+  appId: "1:456831883514:web:d5035e90d5e70e95aed143",
 };
 
 // Pengesan placeholder: kalau mana mana nilai penting masih "GANTI_NANTI",
