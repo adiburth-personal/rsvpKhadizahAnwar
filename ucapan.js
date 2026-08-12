@@ -37,7 +37,10 @@ const doaBaruTeks = document.getElementById("doaBaruTeks");
 
 // ====== Tetapan ======
 const BILANGAN_VARIASI = 5;   // v0 krim, v1 blush, v2 plum, v3 emas, v4 aubergine
-const HAD_SWIPE = 90;         // jarak (px) untuk cetus tukar kad
+const HAD_SWIPE = 48;         // jarak santai (px) untuk cetus tukar kad (dulu 90, terlalu jauh)
+const FLICK_JARAK = 22;       // flick pantas: jarak mendatar minimum untuk diterima
+const FLICK_MASA = 260;       // flick pantas: mesti berlaku dalam tempoh ini (ms)
+const HAD_ARAH = 10;          // gerak minimum sebelum kunci arah (elak sentak)
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 // KESELAMATAN XSS (WAJIB): semua teks tetamu dimasukkan lewat `.textContent`,
@@ -52,6 +55,7 @@ let index = 0;                // penunjuk kad depan dalam deckIds
 let frontId = null;           // id kad depan (dikekalkan supaya tak sentak bila data masuk)
 let sudahMula = false;        // sudah terima snapshot pertama?
 let isAnimating = false;
+let abaikanKlikSayang = false; // true sebentar selepas swipe: elak "klik" hantu cetus like
 let pendingBaru = null;       // { count, targetId } untuk pil "doa baru masuk"
 
 // ====== Keadaan "sayang" ======
@@ -134,7 +138,7 @@ function hiasSayangBtn(btn, id) {
   btn.classList.toggle("is-sayang", ditekan);
   btn.setAttribute("aria-pressed", ditekan ? "true" : "false");
   btn.setAttribute("aria-label",
-    "Sayang ucapan ini" + (n > 0 ? ", " + n + " orang sudah sayang" : ""));
+    "Like ucapan ini" + (n > 0 ? ", " + n + " orang sudah like" : ""));
 }
 
 // Lukis count ke SEMUA butang sayang yang ada di skrin (kad depan + grid).
@@ -145,14 +149,14 @@ function lukisSayang() {
   });
 }
 
-// Kaunter jujur: "X ucapan · Y sayang" (100% data sebenar).
+// Kaunter jujur: "X ucapan · Y like" (100% data sebenar).
 function lukisKaunter() {
   if (!dindingKaunter) return;
   const nUcap = dataTerkini.length;
   if (nUcap === 0) { dindingKaunter.hidden = true; return; }
   let nSayang = 0; sayangKira.forEach(function (v) { nSayang += v; });
   dindingKaunter.hidden = false;
-  dindingKaunter.textContent = nUcap + " ucapan" + (nSayang > 0 ? " · " + nSayang + " sayang" : "");
+  dindingKaunter.textContent = nUcap + " ucapan" + (nSayang > 0 ? " · " + nSayang + " like" : "");
 }
 
 // Heart-burst: 4-6 hati kecil naik + pudar. CSS transform, node auto-buang,
@@ -339,6 +343,13 @@ function naikkanBawah() {
 }
 
 // ====== Drag / swipe (Pointer Events, kunci arah supaya tak langgar scroll) ======
+// Swipe berjaya dengan DUA cara (mana mana cukup):
+//   1) tarik santai melepasi HAD_SWIPE (~48px), atau
+//   2) flick pantas pendek (>= FLICK_JARAK dalam <= FLICK_MASA).
+// Kunci arah longgar: hanya "menegak" (lepaskan untuk scroll) bila jari JELAS
+// menegak; wobble menegak kecil di mula gerakan tidak lagi membunuh swipe.
+// Drag boleh bermula DI MANA MANA kad, termasuk atas butang like: kalau ia jadi
+// swipe, "like" ditahan (abaikanKlikSayang), kalau ia cuma ketik, like jalan.
 function pasangDrag(kad) {
   let mula = null;
   let dragging = false;
@@ -349,9 +360,8 @@ function pasangDrag(kad) {
 
   function turun(e) {
     if (isAnimating) return;
-    if (e.target.closest(".sayang-btn")) return;   // tekan sayang, bukan drag
     pointerId = e.pointerId;
-    mula = { x: e.clientX, y: e.clientY };
+    mula = { x: e.clientX, y: e.clientY, t: e.timeStamp || Date.now() };
     dragging = true;
     arah = null;
   }
@@ -361,11 +371,12 @@ function pasangDrag(kad) {
     const dx = e.clientX - mula.x;
     const dy = e.clientY - mula.y;
 
-    // Kunci arah pada gerakan bermakna pertama: kalau menegak menang, lepaskan
-    // (biar scruk phone / scroll teks berlaku), jangan anggap swipe.
+    // Kunci arah hanya lepas gerak bermakna. Menegak menang HANYA bila jelas
+    // menegak (dy > dx * 1.3); selain itu anggap swipe mendatar. Ini biar jari
+    // yang mula dengan sedikit gerak menegak tetap boleh swipe.
     if (arah === null) {
-      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-      if (Math.abs(dy) > Math.abs(dx)) { arah = "menegak"; dragging = false; return; }
+      if (Math.abs(dx) < HAD_ARAH && Math.abs(dy) < HAD_ARAH) return;
+      if (Math.abs(dy) > Math.abs(dx) * 1.3) { arah = "menegak"; dragging = false; return; }
       arah = "mendatar";
       kad.classList.add("swipe-kad--drag");
       try { kad.setPointerCapture(pointerId); } catch (err) {}
@@ -384,6 +395,7 @@ function pasangDrag(kad) {
     if (mula === null) return;
     const jadiDrag = dragging && arah === "mendatar";
     const dx = e.clientX - mula.x;
+    const dt = (e.timeStamp || Date.now()) - mula.t;
     dragging = false;
     mula = null;
     try { kad.releasePointerCapture(pointerId); } catch (err) {}
@@ -392,16 +404,25 @@ function pasangDrag(kad) {
     tSeb.style.opacity = "0";
     if (!jadiDrag) return;
 
-    if (dx <= -HAD_SWIPE && index < deckIds.length - 1) {
+    // Swipe jadi drag: tahan "klik" hantu supaya tidak tersilap cetus like,
+    // walaupun jari lepas tepat atas butang like (kes spring-balik).
+    abaikanKlikSayang = true;
+    window.setTimeout(function () { abaikanKlikSayang = false; }, 0);
+
+    const flickPantas = dt <= FLICK_MASA && Math.abs(dx) >= FLICK_JARAK;
+    const cukupJauh = Math.abs(dx) >= HAD_SWIPE;
+    const cetus = cukupJauh || flickPantas;
+
+    if (cetus && dx < 0 && index < deckIds.length - 1) {
       flingDepan();
-    } else if (dx >= HAD_SWIPE && index > 0) {
+    } else if (cetus && dx > 0 && index > 0) {
       if (REDUCED.matches) { keSebelum(); return; }
       isAnimating = true;
       kad.style.transform = "translateX(135%) translateY(20px) rotate(18deg)";
       kad.style.opacity = "0";
       window.setTimeout(function () { setIndex(index - 1); render(true); isAnimating = false; }, 240);
     } else {
-      terapkanDepth(kad, 0);                  // tak cukup jarak: spring balik
+      terapkanDepth(kad, 0);                  // tak cukup jarak/laju: spring balik
     }
   }
 
@@ -501,6 +522,7 @@ if (timbunan) {
     const btn = e.target.closest(".sayang-btn");
     if (!btn) return;
     e.stopPropagation();
+    if (abaikanKlikSayang) { abaikanKlikSayang = false; return; }  // ini ekor swipe, bukan ketik
     const kad = btn.closest(".swipe-kad");
     if (kad) tekanSayang(kad.dataset.id, btn);
   });

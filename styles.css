@@ -15,7 +15,7 @@
   --color-cream: oklch(97% 0.014 88);         /* panel kad putih krim */
   --color-cream-2: oklch(94% 0.018 86);       /* kad dalam kad, input */
   --color-maroon: oklch(37% 0.11 18);         /* maroon gelap, tajuk script */
-  --color-maroon-soft: oklch(46% 0.10 20);    /* maroon lembut untuk aksen */
+  --color-maroon-soft: oklch(40% 0.10 20);    /* maroon lembut untuk aksen (digelapkan dari 46% supaya pautan atas kraft naik ke ~5.2:1) */
 
   /* Keluarga ungu botani (disahkan sampel pixel kad sebenar, research pass).
      Ungu = AKSEN bertumpu sahaja; base kraft/krim/maroon/emas kekal dominan.
@@ -30,7 +30,7 @@
 
   --color-gold: oklch(72% 0.085 82);          /* emas pudar */
   --color-ink: oklch(31% 0.02 55);            /* teks utama, coklat gelap hangat */
-  --color-ink-soft: oklch(46% 0.02 55);       /* teks kedua */
+  --color-ink-soft: oklch(35% 0.02 55);       /* teks kedua, digelapkan dari 46% supaya lulus 4.5:1 atas titik paling gelap kraft (4.56:1); masih lebih cerah dari ink jadi hierarki kekal */
   --color-line: oklch(60% 0.03 60);           /* garis halus */
   --color-danger: oklch(48% 0.13 25);         /* ralat lembut */
   --color-focus: oklch(46% 0.10 20);          /* cincin fokus */
@@ -252,7 +252,7 @@ body {
               box-shadow var(--dur-fast) var(--ease-out);
 }
 .textarea { min-height: 6.5rem; resize: vertical; line-height: 1.6; }
-.input::placeholder, .textarea::placeholder { color: color-mix(in oklch, var(--color-ink-soft) 70%, transparent); }
+.input::placeholder, .textarea::placeholder { color: color-mix(in oklch, var(--color-ink-soft) 88%, transparent); }
 
 .input:hover, .textarea:hover, .select:hover {
   border-color: color-mix(in oklch, var(--color-maroon) 40%, var(--color-line));
@@ -399,7 +399,7 @@ body {
    Card class (.swipe-kad, .grid-kad, .kad-*) unik untuk halaman ini; Papan
    Pengantin guna .ucapan-kad asas di atas, jadi TIDAK terkesan. */
 
-/* --- Kaunter jujur di kepala: "X ucapan · Y sayang" (data sebenar, live) --- */
+/* --- Kaunter jujur di kepala: "X ucapan · Y like" (data sebenar, live) --- */
 .dinding-kaunter {
   display: inline-block;
   font-size: var(--text-xs);
@@ -497,7 +497,7 @@ body {
   font-size: var(--text-xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in oklch, var(--color-ink-soft) 82%, transparent);
+  color: var(--color-ink-soft);        /* dulu dicairkan 82% transparent (3.28:1), kini penuh supaya jelas */
   font-variant-numeric: tabular-nums;
 }
 
@@ -835,7 +835,7 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
 .footer {
   text-align: center;
   margin-top: var(--space-9);
-  color: color-mix(in oklch, var(--color-ink-soft) 80%, transparent);
+  color: var(--color-ink-soft);        /* dulu dicairkan 80% transparent (2.09:1 atas kraft gelap), kini penuh (4.56:1) */
   font-size: var(--text-sm);
 }
 
