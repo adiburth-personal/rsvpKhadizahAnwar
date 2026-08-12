@@ -41,7 +41,47 @@ const HAD_SWIPE = 48;         // jarak santai (px) untuk cetus tukar kad (dulu 9
 const FLICK_JARAK = 22;       // flick pantas: jarak mendatar minimum untuk diterima
 const FLICK_MASA = 260;       // flick pantas: mesti berlaku dalam tempoh ini (ms)
 const HAD_ARAH = 10;          // gerak minimum sebelum kunci arah (elak sentak)
+const NISBAH_MENEGAK = 1.3;   // dy > dx*nisbah = menegak; <= = mendatar (serong 30-45deg kekal mendatar)
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+// ====== Mod debug (?debug=1): panel terapung log event swipe untuk phone sebenar ======
+// Tujuan: kalau bug swipe muncul lagi di phone, buka ucapan.html?debug=1, ulang
+// gesture, screenshot panel. Tanpa ?debug=1, sifar kesan pada halaman biasa.
+const DEBUG = (function () {
+  try { return new URLSearchParams(location.search).has("debug"); } catch (e) { return false; }
+})();
+let dbgBody = null;
+function binaDbgPanel() {
+  const panel = document.createElement("div");
+  panel.setAttribute("style", [
+    "position:fixed", "left:6px", "right:6px", "bottom:6px", "max-height:30vh", "z-index:99999",
+    "background:rgba(24,12,28,0.93)", "color:#ecdcf4", "font:11px/1.35 ui-monospace,Menlo,monospace",
+    "border:1px solid #7a4a8c", "border-radius:8px", "padding:4px 6px", "pointer-events:none",
+    "display:flex", "flex-direction:column", "box-shadow:0 6px 24px rgba(0,0,0,0.4)"
+  ].join(";"));
+  const bar = document.createElement("div");
+  bar.setAttribute("style", "display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #7a4a8c;margin-bottom:3px;padding-bottom:2px;pointer-events:none");
+  const tajuk = document.createElement("strong"); tajuk.textContent = "swipe debug";
+  const clr = document.createElement("button");
+  clr.type = "button"; clr.textContent = "clear";
+  clr.setAttribute("style", "pointer-events:auto;background:#7a4a8c;color:#fff;border:0;border-radius:4px;font:11px ui-monospace,monospace;padding:1px 10px");
+  clr.addEventListener("click", function () { if (dbgBody) dbgBody.textContent = ""; });
+  bar.append(tajuk, clr);
+  dbgBody = document.createElement("div");
+  dbgBody.setAttribute("style", "overflow-y:auto;flex:1;pointer-events:none;white-space:pre-wrap;word-break:break-word");
+  panel.append(bar, dbgBody);
+  (document.body || document.documentElement).appendChild(panel);
+}
+function dbg(msg) {
+  if (!DEBUG) return;
+  if (!dbgBody) binaDbgPanel();
+  const line = document.createElement("div");
+  line.textContent = "[" + Math.round(performance.now()) + "] " + msg;
+  dbgBody.appendChild(line);
+  while (dbgBody.childElementCount > 80) dbgBody.removeChild(dbgBody.firstChild);
+  dbgBody.scrollTop = dbgBody.scrollHeight;
+}
+if (DEBUG && document.body) binaDbgPanel();
 
 // KESELAMATAN XSS (WAJIB): semua teks tetamu dimasukkan lewat `.textContent`,
 // BUKAN `.innerHTML`. Dengan textContent, sebarang tag HTML dalam input tetamu
@@ -359,18 +399,26 @@ function pasangDrag(kad) {
   let dragging = false;
   let arah = null;            // null | "mendatar" | "menegak"
   let pointerId = null;
-  let lastY = 0;              // clientY gerakan terakhir (untuk scroll menegak manual)
   const tSet = kad.querySelector(".arah-tanda--seterus");
   const tSeb = kad.querySelector(".arah-tanda--sebelum");
+
+  // Adakah (dx,dy) ini mendatar? Serong sehingga ~52deg dikira mendatar supaya
+  // jari sebenar (yang jarang lurus) tetap swipe. Hanya jelas menegak = menegak.
+  function ufukKah(dx, dy) { return Math.abs(dy) <= Math.abs(dx) * NISBAH_MENEGAK; }
 
   function turun(e) {
     if (isAnimating) return;
     pointerId = e.pointerId;
     mula = { x: e.clientX, y: e.clientY, t: e.timeStamp || Date.now() };
-    lastY = e.clientY;
     dragging = true;
     arah = null;
     dragAktif = true;                        // jari mula pegang kad: kunci rebuild
+    // NOTA: tangkapan pointer TIDAK dibuat di sini. Kalau ditangkap seawal
+    // pointerdown, browser henti mengecam scroll native untuk SELURUH gesture,
+    // jadi scroll menegak pan-y mati (disahkan oleh harness). Kita tangkap HANYA
+    // selepas arah dikunci mendatar (jari masih atas kad dalam ~10px pertama).
+    dbg("pointerdown x=" + Math.round(e.clientX) + " y=" + Math.round(e.clientY) +
+        " ta=" + getComputedStyle(kad).touchAction + " type=" + e.pointerType);
   }
 
   function gerak(e) {
@@ -379,30 +427,28 @@ function pasangDrag(kad) {
     const dy = e.clientY - mula.y;
 
     // Kunci arah hanya lepas gerak bermakna. Menegak menang HANYA bila jelas
-    // menegak (dy > dx * 1.3); selain itu anggap swipe mendatar. Ini biar jari
-    // yang mula dengan sedikit gerak menegak tetap boleh swipe.
+    // menegak; selain itu anggap swipe mendatar. Ini biar jari yang mula dengan
+    // sedikit gerak menegak (serong) tetap boleh swipe.
     if (arah === null) {
       if (Math.abs(dx) < HAD_ARAH && Math.abs(dy) < HAD_ARAH) return;
-      if (Math.abs(dy) > Math.abs(dx) * 1.3) {
-        // Gesture MENEGAK atas kad depan.
+      if (!ufukKah(dx, dy)) {
+        // Gesture MENEGAK atas kad depan: serah kepada scroll NATIVE (kad
+        // touch-action: pan-y). Lepaskan tangkapan pointer supaya browser bebas
+        // scroll (tangkapan boleh menghalang pan native), dan kita berhenti heret.
         arah = "menegak";
-        // Desktop (mouse): kekal macam dulu, lepas gesture, roda tetikus urus
-        // scroll. Cuma sentuhan/pen yang perlu scroll manual sebab kad depan
-        // `touch-action: none` (browser tak scroll sendiri di situ).
-        if (e.pointerType === "mouse") { dragging = false; return; }
-        lastY = e.clientY;
+        dbg("kunci MENEGAK dx=" + Math.round(dx) + " dy=" + Math.round(dy) + " -> scroll native");
+        dragging = false;
+        dragAktif = false;
+        try { kad.releasePointerCapture(pointerId); } catch (err) {}
         return;
       }
       arah = "mendatar";
       kad.classList.add("swipe-kad--drag");
+      // PERTAHANAN (pointer hilang): tangkap pointer sekarang, supaya pointermove
+      // terus sampai walau jari keluar sempadan kad (elak kad ikut jari separuh
+      // jalan pastu berhenti = rasa "lantun"). Fallback senyap kalau tak disokong.
       try { kad.setPointerCapture(pointerId); } catch (err) {}
-    }
-
-    if (arah === "menegak") {
-      const langkah = e.clientY - lastY;       // + = jari turun, - = jari naik
-      lastY = e.clientY;
-      window.scrollBy(0, -langkah);            // ikut jari macam scroll biasa
-      return;
+      dbg("kunci MENDATAR dx=" + Math.round(dx) + " dy=" + Math.round(dy));
     }
 
     if (arah !== "mendatar") return;
@@ -413,6 +459,29 @@ function pasangDrag(kad) {
     if (dx < 0) { tSet.style.opacity = kuat.toFixed(2); tSeb.style.opacity = "0"; }
     else if (dx > 0) { tSeb.style.opacity = kuat.toFixed(2); tSet.style.opacity = "0"; }
     else { tSet.style.opacity = "0"; tSeb.style.opacity = "0"; }
+  }
+
+  // PERTAHANAN UTAMA (Safari iOS + Chromium): `touch-action: none` SAHAJA TIDAK
+  // cukup, browser masih hantar `pointercancel` seawal heret mendatar (dibuktikan
+  // oleh harness touch sebenar: kad gerak ~23px pastu di-reset = "melantun balik").
+  // Sekali gesture ini mendatar, HALANG native pada `touchmove` non-passive; ini
+  // yang benar benar hentikan pointercancel + lantunan. Fungsi ini kira arah
+  // SENDIRI (tak bergantung pada `arah` yang mungkin belum diset oleh pointermove
+  // dalam susunan event Safari), jadi ia selamat merentas pelayar. Menegak dibiar
+  // (tiada preventDefault) supaya scroll native pan-y jalan lancar.
+  function seedMula(e) {
+    if (mula === null && e.touches && e.touches[0]) {
+      mula = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp || Date.now() };
+    }
+  }
+  function touchGerak(e) {
+    if (mula === null || arah === "menegak") return;   // menegak: biar scroll
+    if (arah === "mendatar") { if (e.cancelable) e.preventDefault(); return; }
+    const tt = e.touches && e.touches[0];
+    if (!tt) return;
+    const dx = tt.clientX - mula.x, dy = tt.clientY - mula.y;
+    if (Math.abs(dx) < HAD_ARAH && Math.abs(dy) < HAD_ARAH) return;
+    if (ufukKah(dx, dy) && e.cancelable) e.preventDefault();   // mendatar: rampas dari native
   }
 
   function naik(e) {
@@ -427,7 +496,7 @@ function pasangDrag(kad) {
     kad.classList.remove("swipe-kad--drag");
     tSet.style.opacity = "0";
     tSeb.style.opacity = "0";
-    if (!jadiDrag) { cubaTerapTertunggu(); return; }
+    if (!jadiDrag) { dbg("pointerup TAP/menegak (bukan swipe)"); cubaTerapTertunggu(); return; }
 
     // Swipe jadi drag: tahan "klik" hantu supaya tidak tersilap cetus like,
     // walaupun jari lepas tepat atas butang like (kes spring-balik).
@@ -437,6 +506,8 @@ function pasangDrag(kad) {
     const flickPantas = dt <= FLICK_MASA && Math.abs(dx) >= FLICK_JARAK;
     const cukupJauh = Math.abs(dx) >= HAD_SWIPE;
     const cetus = cukupJauh || flickPantas;
+    dbg("pointerup dx=" + Math.round(dx) + " dt=" + Math.round(dt) +
+        " -> " + (cetus ? (dx < 0 ? "SETERUS" : "SEBELUM") : "SPRING"));
 
     if (cetus && dx < 0 && index < deckIds.length - 1) {
       flingDepan();
@@ -454,8 +525,13 @@ function pasangDrag(kad) {
 
   kad.addEventListener("pointerdown", turun);
   kad.addEventListener("pointermove", gerak);
+  kad.addEventListener("touchstart", seedMula, { passive: true });
+  kad.addEventListener("touchmove", touchGerak, { passive: false });
   kad.addEventListener("pointerup", naik);
   kad.addEventListener("pointercancel", function () {
+    // Matlamat: ini TAK sepatutnya berlaku untuk swipe mendatar (touchGerak dah
+    // preventDefault). Kalau ia tetap datang (mis. gesture sistem), pulih anggun.
+    dbg("POINTERCANCEL arah=" + arah + " (sepatutnya tak jadi utk swipe mendatar)");
     if (dragging) { dragging = false; mula = null; kad.classList.remove("swipe-kad--drag"); terapkanDepth(kad, 0); tSet.style.opacity = "0"; tSeb.style.opacity = "0"; }
     dragAktif = false;                         // gesture dibatalkan: buka kunci rebuild
     cubaTerapTertunggu();
