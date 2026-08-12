@@ -359,6 +359,7 @@ function pasangDrag(kad) {
   let dragging = false;
   let arah = null;            // null | "mendatar" | "menegak"
   let pointerId = null;
+  let lastY = 0;              // clientY gerakan terakhir (untuk scroll menegak manual)
   const tSet = kad.querySelector(".arah-tanda--seterus");
   const tSeb = kad.querySelector(".arah-tanda--sebelum");
 
@@ -366,6 +367,7 @@ function pasangDrag(kad) {
     if (isAnimating) return;
     pointerId = e.pointerId;
     mula = { x: e.clientX, y: e.clientY, t: e.timeStamp || Date.now() };
+    lastY = e.clientY;
     dragging = true;
     arah = null;
     dragAktif = true;                        // jari mula pegang kad: kunci rebuild
@@ -381,11 +383,28 @@ function pasangDrag(kad) {
     // yang mula dengan sedikit gerak menegak tetap boleh swipe.
     if (arah === null) {
       if (Math.abs(dx) < HAD_ARAH && Math.abs(dy) < HAD_ARAH) return;
-      if (Math.abs(dy) > Math.abs(dx) * 1.3) { arah = "menegak"; dragging = false; return; }
+      if (Math.abs(dy) > Math.abs(dx) * 1.3) {
+        // Gesture MENEGAK atas kad depan.
+        arah = "menegak";
+        // Desktop (mouse): kekal macam dulu, lepas gesture, roda tetikus urus
+        // scroll. Cuma sentuhan/pen yang perlu scroll manual sebab kad depan
+        // `touch-action: none` (browser tak scroll sendiri di situ).
+        if (e.pointerType === "mouse") { dragging = false; return; }
+        lastY = e.clientY;
+        return;
+      }
       arah = "mendatar";
       kad.classList.add("swipe-kad--drag");
       try { kad.setPointerCapture(pointerId); } catch (err) {}
     }
+
+    if (arah === "menegak") {
+      const langkah = e.clientY - lastY;       // + = jari turun, - = jari naik
+      lastY = e.clientY;
+      window.scrollBy(0, -langkah);            // ikut jari macam scroll biasa
+      return;
+    }
+
     if (arah !== "mendatar") return;
 
     const rot = dx / 22;

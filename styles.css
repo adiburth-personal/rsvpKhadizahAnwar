@@ -442,7 +442,7 @@ body {
 .dinding .timbunan {
   position: relative;
   height: min(66vh, 440px);
-  touch-action: pan-y;              /* biar scroll menegak phone; swipe mendatar dikunci JS */
+  touch-action: pan-y;              /* kawasan luar kad: scroll menegak biasa */
   user-select: none;
 }
 .timbunan-kosong {
@@ -470,7 +470,11 @@ body {
   will-change: transform;
 }
 .swipe-kad--drag { transition: none; }               /* semasa jari tekan: ikut terus, tiada lag */
-.swipe-kad[data-depth="0"] { cursor: grab; z-index: 3; }
+/* Kad DEPAN: touch-action none supaya browser TAK sekali kali rampas gesture
+   untuk scroll menegak semasa jari heret kad (punca "melantun balik" +
+   halaman scroll serentak di telefon). JS milik penuh gesture ini; scroll
+   menegak atas kad depan diurus manual dalam ucapan.js (window.scrollBy). */
+.swipe-kad[data-depth="0"] { cursor: grab; z-index: 3; touch-action: none; }
 .swipe-kad[data-depth="0"]:active { cursor: grabbing; }
 .swipe-kad[data-depth="1"] { z-index: 2; pointer-events: none; }
 .swipe-kad[data-depth="2"] { z-index: 1; pointer-events: none; }
