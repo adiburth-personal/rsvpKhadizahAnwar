@@ -9,31 +9,33 @@
 
 /* ============================== TOKEN ============================== */
 :root {
-  /* Warna (OKLCH) */
-  --color-kraft: oklch(80% 0.035 78);        /* latar kertas kraft/tan */
-  --color-kraft-deep: oklch(72% 0.045 72);   /* bayang tepi kraft */
-  --color-cream: oklch(97% 0.014 88);         /* panel kad putih krim */
-  --color-cream-2: oklch(94% 0.018 86);       /* kad dalam kad, input */
-  --color-maroon: oklch(37% 0.11 18);         /* maroon gelap, tajuk script */
-  --color-maroon-soft: oklch(40% 0.10 20);    /* maroon lembut untuk aksen (digelapkan dari 46% supaya pautan atas kraft naik ke ~5.2:1) */
+  /* Warna , nilai FALLBACK hex sRGB. Dipakai oleh pelayar TANPA sokongan oklch
+     (cth Safari iOS < 15.4). Pelayar moden guna versi oklch dalam blok @supports
+     tepat selepas :root ini (lebih tepat + gamut luas). Hex ini dikira terus dari
+     nilai oklch di bawah (Ottosson OKLCH->sRGB), jadi rupa hampir seiras.
+     KENAPA WAJIB: custom property TERIMA apa apa token termasuk oklch walau pelayar
+     tak faham; jadi kalau oklch diletak terus di sini, pelayar lama tetap simpan
+     token oklch dan var() jadi tak sah = warna hilang = halaman "kosong". @supports
+     halang pelayar lama nampak baris oklch langsung. */
+  --color-kraft: #cabba5;        /* latar kertas kraft/tan */
+  --color-kraft-deep: #b7a186;   /* bayang tepi kraft */
+  --color-cream: #f9f5eb;         /* panel kad putih krim */
+  --color-cream-2: #f0ebde;       /* kad dalam kad, input */
+  --color-maroon: #6e2029;        /* maroon gelap, tajuk script */
+  --color-maroon-soft: #742d31;   /* maroon lembut untuk aksen */
 
-  /* Keluarga ungu botani (disahkan sampel pixel kad sebenar, research pass).
-     Ungu = AKSEN bertumpu sahaja; base kraft/krim/maroon/emas kekal dominan.
-     NOTA KONTRAS: --color-plum atas kraft = 3.95:1, HANYA lulus untuk border/
-     ornamen/aksen UI (>=3.0), BUKAN untuk teks biasa (perlu >=4.5). Jangan
-     guna --color-plum sebagai warna teks atas latar kraft. */
-  --color-plum: oklch(46% 0.078 313);         /* aksen mid: border kad, ornamen */
-  --color-purple-deep: oklch(30% 0.06 312);   /* ungu gelap: teks/aksen atas latar cerah (12.8:1 atas krim) */
-  --color-lilac: oklch(72% 0.055 335);        /* hiasan cerah: teks/border atas kad gelap (4.90:1 atas aubergine) */
-  --color-lilac-wash: oklch(90% 0.03 335);    /* wash sangat cerah: teks utama atas kad gelap (9.9:1 atas aubergine) */
-  --color-aubergine: oklch(33% 0.05 314);     /* latar varian kad gelap v4 (padan latar kad rasmi) */
+  --color-plum: #674b77;          /* aksen mid: border kad, ornamen */
+  --color-purple-deep: #382443;   /* ungu gelap: teks/aksen atas latar cerah */
+  --color-lilac: #bb98b2;         /* hiasan cerah: teks/border atas kad gelap */
+  --color-lilac-wash: #ebd7e6;    /* wash sangat cerah: teks utama atas kad gelap */
+  --color-aubergine: #3f2d47;     /* latar varian kad gelap v4 */
 
-  --color-gold: oklch(72% 0.085 82);          /* emas pudar */
-  --color-ink: oklch(31% 0.02 55);            /* teks utama, coklat gelap hangat */
-  --color-ink-soft: oklch(35% 0.02 55);       /* teks kedua, digelapkan dari 46% supaya lulus 4.5:1 atas titik paling gelap kraft (4.56:1); masih lebih cerah dari ink jadi hierarki kekal */
-  --color-line: oklch(60% 0.03 60);           /* garis halus */
-  --color-danger: oklch(48% 0.13 25);         /* ralat lembut */
-  --color-focus: oklch(46% 0.10 20);          /* cincin fokus */
+  --color-gold: #bfa065;          /* emas pudar */
+  --color-ink: #392e27;           /* teks utama, coklat gelap hangat */
+  --color-ink-soft: #433831;      /* teks kedua */
+  --color-line: #8e7c6f;          /* garis halus */
+  --color-danger: #9a3936;        /* ralat lembut */
+  --color-focus: #873e40;         /* cincin fokus */
 
   /* Tipografi */
   --font-script: "Great Vibes", "Snell Roundhand", cursive;
@@ -69,7 +71,36 @@
   --radius-sm: 4px;
   --radius-md: 10px;
   --radius-lg: 16px;
-  --rule: 1px solid color-mix(in oklch, var(--color-line) 45%, transparent);
+  --rule: 1px solid rgba(142, 124, 111, 0.45);   /* fallback: --color-line @ 45% */
+}
+
+/* Peningkatan warna oklch: pelayar yang menyokong oklch guna semula palet dalam
+   ruang warna oklch (lebih tepat, gamut luas, seiras nota kontras research).
+   Yang TIDAK menyokong kekal dengan fallback hex di :root atas, jadi warna tak
+   pernah hilang. Blok ini WAJIB dibungkus @supports: tanpanya pelayar lama akan
+   menerima token oklch ke custom property dan menimpa fallback hex (custom property
+   terima sebarang token), lalu var() jadi tak sah = teks/latar hilang = "kosong". */
+@supports (color: oklch(0% 0 0)) {
+  :root {
+    --color-kraft: oklch(80% 0.035 78);
+    --color-kraft-deep: oklch(72% 0.045 72);
+    --color-cream: oklch(97% 0.014 88);
+    --color-cream-2: oklch(94% 0.018 86);
+    --color-maroon: oklch(37% 0.11 18);
+    --color-maroon-soft: oklch(40% 0.10 20);   /* dinaik dari 46% supaya pautan atas kraft ~5.2:1 */
+    --color-plum: oklch(46% 0.078 313);        /* atas kraft 3.95:1: border/ornamen sahaja, bukan teks */
+    --color-purple-deep: oklch(30% 0.06 312);  /* 12.8:1 atas krim */
+    --color-lilac: oklch(72% 0.055 335);       /* 4.90:1 atas aubergine */
+    --color-lilac-wash: oklch(90% 0.03 335);   /* 9.9:1 atas aubergine */
+    --color-aubergine: oklch(33% 0.05 314);
+    --color-gold: oklch(72% 0.085 82);
+    --color-ink: oklch(31% 0.02 55);
+    --color-ink-soft: oklch(35% 0.02 55);      /* 4.56:1 atas titik paling gelap kraft */
+    --color-line: oklch(60% 0.03 60);
+    --color-danger: oklch(48% 0.13 25);
+    --color-focus: oklch(46% 0.10 20);
+    --rule: 1px solid color-mix(in oklch, var(--color-line) 45%, transparent);
+  }
 }
 
 /* ============================== ASAS ============================== */
@@ -543,11 +574,20 @@ body {
 /* --- Variasi warna deterministik (ikut hash id, bukan urutan) --- */
 .swipe-kad--v0 { background: var(--color-cream); border-left-color: var(--color-plum); }
 .swipe-kad--v0 .kad-inisial { border-color: var(--color-plum); }
-.swipe-kad--v1 { background: color-mix(in oklch, var(--color-cream) 89%, var(--color-maroon)); border-left-color: var(--color-maroon-soft); }
+/* Latar kad bertona: HEX legap sebagai ASAS (bukan color-mix) supaya kad TAK
+   PERNAH jadi lut sinar. Kalau lut sinar, 3 kad timbunan bertindih dan teksnya
+   berlonggok jadi tak terbaca (punca sebenar "tak keluar apa apa" di Safari lama
+   tanpa color-mix). Versi color-mix yang lebih tepat dipakai semula HANYA dalam
+   blok @supports di bawah untuk pelayar moden.
+   NOTA PENTING: fallback "background:#hex; background:color-mix(...)" dalam SATU
+   peraturan TIDAK selamat di sini kerana ungkapan color-mix mengandungi var();
+   var() menangguh pengesahan melepasi masa parse, jadi baris color-mix yang tak
+   sah tetap menimpa hex (disahkan harness). @supports satu satunya cara betul. */
+.swipe-kad--v1 { background: #e8dece; border-left-color: var(--color-maroon-soft); }
 .swipe-kad--v1 .kad-inisial { border-color: var(--color-maroon-soft); }
-.swipe-kad--v2 { background: color-mix(in oklch, var(--color-cream) 87%, var(--color-plum)); border-left-color: var(--color-plum); }
+.swipe-kad--v2 { background: #e9ddd0; border-left-color: var(--color-plum); }
 .swipe-kad--v2 .kad-inisial { border-color: var(--color-plum); }
-.swipe-kad--v3 { background: color-mix(in oklch, var(--color-cream) 85%, var(--color-gold)); border-left-color: var(--color-gold); }
+.swipe-kad--v3 { background: #f0e8d7; border-left-color: var(--color-gold); }
 .swipe-kad--v3 .kad-inisial { border-color: color-mix(in oklch, var(--color-gold) 78%, var(--color-maroon)); }
 .swipe-kad--v4 {
   background: var(--color-aubergine);
@@ -687,16 +727,27 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
 
 .grid-kad--v0 { background: var(--color-cream); border-left-color: var(--color-plum); }
 .grid-kad--v0 .kad-inisial { border-color: var(--color-plum); }
-.grid-kad--v1 { background: color-mix(in oklch, var(--color-cream) 89%, var(--color-maroon)); border-left-color: var(--color-maroon-soft); }
+/* Latar hex legap sebagai asas (lihat nota kad swipe); color-mix di @supports. */
+.grid-kad--v1 { background: #e8dece; border-left-color: var(--color-maroon-soft); }
 .grid-kad--v1 .kad-inisial { border-color: var(--color-maroon-soft); }
-.grid-kad--v2 { background: color-mix(in oklch, var(--color-cream) 87%, var(--color-plum)); border-left-color: var(--color-plum); }
+.grid-kad--v2 { background: #e9ddd0; border-left-color: var(--color-plum); }
 .grid-kad--v2 .kad-inisial { border-color: var(--color-plum); }
-.grid-kad--v3 { background: color-mix(in oklch, var(--color-cream) 85%, var(--color-gold)); border-left-color: var(--color-gold); }
+.grid-kad--v3 { background: #f0e8d7; border-left-color: var(--color-gold); }
 .grid-kad--v3 .kad-inisial { border-color: color-mix(in oklch, var(--color-gold) 78%, var(--color-maroon)); }
 .grid-kad--v4 { background: var(--color-aubergine); border-color: color-mix(in oklch, var(--color-lilac) 22%, transparent); border-left-color: var(--color-gold); }
 .grid-kad--v4 .grid-teks { color: var(--color-lilac-wash); }
 .grid-kad--v4 .grid-nama { color: var(--color-lilac); }
 .grid-kad--v4 .kad-inisial { border-color: color-mix(in oklch, var(--color-gold) 70%, transparent); background: color-mix(in oklch, var(--color-aubergine) 60%, black); color: var(--color-lilac-wash); }
+
+/* Peningkatan tona kad (swipe + grid): pelayar yang menyokong color-mix guna
+   semula campuran oklch yang lebih tepat (padan warna kad rasmi). Yang tidak
+   menyokong (cth Safari iOS < 16.2) kekal dengan hex legap di atas , kad tetap
+   solid dan boleh dibaca, tiada timbunan lut sinar bertindih. */
+@supports (color: color-mix(in oklch, red, blue)) {
+  .swipe-kad--v1, .grid-kad--v1 { background: color-mix(in oklch, var(--color-cream) 89%, var(--color-maroon)); }
+  .swipe-kad--v2, .grid-kad--v2 { background: color-mix(in oklch, var(--color-cream) 87%, var(--color-plum)); }
+  .swipe-kad--v3, .grid-kad--v3 { background: color-mix(in oklch, var(--color-cream) 85%, var(--color-gold)); }
+}
 
 /* ============================== BUTANG SAYANG + HEART-BURST ==============================
    Dipakai pada kad depan timbunan DAN kad dalam grid. Semua gerak terikat pada

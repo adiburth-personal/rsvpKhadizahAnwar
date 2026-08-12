@@ -74,14 +74,19 @@ function binaDbgPanel() {
 }
 function dbg(msg) {
   if (!DEBUG) return;
-  if (!dbgBody) binaDbgPanel();
-  const line = document.createElement("div");
-  line.textContent = "[" + Math.round(performance.now()) + "] " + msg;
-  dbgBody.appendChild(line);
-  while (dbgBody.childElementCount > 80) dbgBody.removeChild(dbgBody.firstChild);
-  dbgBody.scrollTop = dbgBody.scrollHeight;
+  // GUARD: panel debug ini SEMATA mata alat diagnosis (?debug=1). Ia tak boleh
+  // sekali kali membunuh gesture swipe atau render kad kalau tersilap. Bungkus
+  // dalam try/catch supaya sebarang ralat DOM di sini gagal senyap, bukan merebak.
+  try {
+    if (!dbgBody) binaDbgPanel();
+    const line = document.createElement("div");
+    line.textContent = "[" + Math.round(performance.now()) + "] " + msg;
+    dbgBody.appendChild(line);
+    while (dbgBody.childElementCount > 80) dbgBody.removeChild(dbgBody.firstChild);
+    dbgBody.scrollTop = dbgBody.scrollHeight;
+  } catch (e) { /* abai: hiasan debug tak boleh ganggu fungsi teras */ }
 }
-if (DEBUG && document.body) binaDbgPanel();
+if (DEBUG && document.body) { try { binaDbgPanel(); } catch (e) {} }
 
 // KESELAMATAN XSS (WAJIB): semua teks tetamu dimasukkan lewat `.textContent`,
 // BUKAN `.innerHTML`. Dengan textContent, sebarang tag HTML dalam input tetamu
@@ -115,7 +120,21 @@ if (konfigurasiBelumSiap(firebaseConfig)) {
   kawalan.hidden = true;
   lihatSemuaBaris.hidden = true;
 } else {
-  mulakanDinding();
+  // GUARD: mulakanDinding() muat SDK Firebase dari CDN gstatic secara dinamik.
+  // Kalau muatan itu GAGAL (rangkaian telefon perlahan/sekat, pelayar lama tak
+  // sokong module import), tanpa .catch halaman tinggal header + arena KOSONG
+  // tanpa sebarang penjelasan = "tak keluar apa apa". Tangkap dan papar mesej
+  // jujur supaya kandungan tak pernah senyap gagal.
+  mulakanDinding().catch(function (err) {
+    console.error("Gagal memulakan dinding ucapan:", err);
+    if (timbunan) timbunan.innerHTML = "";
+    if (timbunanKosong) {
+      timbunanKosong.textContent = "Maaf, dinding ucapan tidak dapat dimuatkan buat masa ini. Sila semak sambungan internet dan muat semula halaman.";
+      timbunanKosong.hidden = false;
+    }
+    if (kawalan) kawalan.hidden = true;
+    if (lihatSemuaBaris) lihatSemuaBaris.hidden = true;
+  });
 }
 
 // ====== Anti-spam ringan (localStorage) ======
