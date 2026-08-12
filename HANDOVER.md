@@ -5,7 +5,7 @@ Kemaskini terakhir: 2026-08-13 (sesi Jarvis di agenticOs, kerja sebenar dibuat s
 ## Apa projek ni
 Website RSVP + dinding ucapan untuk majlis kahwin **Khadizah Binti Razali & Muhammad Anwar Bin Sawal**, Ahad **30 Ogos 2026**, 12pm hingga 6pm, ADH Hall KM. Kad jemputan rasmi ada 2: kad Canva kraft (khadizah-anwar-invittation.my.canva.site/ka) dan kad WhatsApp purple gelap. Butang dalam kad Canva DAH ditukar user ke halaman kita (disahkan live 12 Ogos malam).
 
-## Status: SIAP dan LIVE, tapi ada 2 bug terbuka + 1 permintaan design (lihat bawah)
+## Status: SIAP dan LIVE. 2 bug lama DAH DIFIX (13 Ogos), tunggu pengesahan user di phone sebenar, lepas tu padam data ujian dan sebar
 
 ## Seni bina
 - **Hosting**: GitHub Pages, repo public `adiburth-personal/rsvpKhadizahAnwar`. Push guna credential helper: repo local config ada 2 entri `credential.https://github.com.helper` (kosong dulu, kemudian `!/Users/adizaini/.local/bin/ghCredentialPersonal`). gh CLI aktif biasanya akaun Dicci, JANGAN switch tanpa pulangkan balik.
@@ -22,19 +22,20 @@ Website RSVP + dinding ucapan untuk majlis kahwin **Khadizah Binti Razali & Muha
 - Dinding ucapan: https://adiburth-personal.github.io/rsvpKhadizahAnwar/ucapan.html
 - Pengantin (RAHSIA): https://adiburth-personal.github.io/rsvpKhadizahAnwar/pengantin.html?kunci=khadizahAnwar3008x7qz
 
-## BUG TERBUKA (keutamaan sesi seterusnya)
+## BUG LAMA, DAH DIFIX 13 Ogos (tunggu pengesahan user di phone)
 
-### 1. Swipe reset + skrin scroll ikut (phone sebenar)
-User lapor (13 Ogos malam): masa swipe kad di phone, kad bergerak sikit lepas tu MELANTUN BALIK, dan skrin turut scroll atas/bawah masa swipe. NOTA: ini BUKAN bug snapshot-rebuild yang lama (itu dah difix dalam commit `6caaa4e`, teruji, punca: onSnapshot rebuild DOM masa drag). Ini mekanisme LAIN.
-**Hipotesis utama belum disahkan**: di sentuhan sebenar (bukan mouse), browser rampas gesture untuk scroll menegak (`touch-action: pan-y` pada timbunan membenarkan scroll), bila browser mula scroll dia hantar `pointercancel`, drag mati separuh jalan = kad lantun balik + page scroll serentak. Arah siasatan: kunci arah awal lebih tegas pada sentuhan, `touch-action: none` pada kad + urus scroll sendiri, atau preventDefault touchmove SELEPAS arah mendatar dikesan. WAJIB uji di alat sentuh sebenar / DevTools touch emulation, bukan mouse (mouse tak hasilkan pointercancel scroll).
-Sejarah threshold: HAD_SWIPE 90px→48px + flick >=22px dalam <=260ms + kunci arah dilonggarkan (dy > dx*1.3, gate 10px) dalam commit `f09f1e6`.
+### 1. Swipe reset + skrin scroll ikut (phone sebenar), FIX commit `799673c`
+Punca disahkan (replikasi harness Node dengan urutan pointer event sebenar): kad depan guna `touch-action: pan-y`, jadi bila swipe ada hanyutan menegak sedikit (biasa di phone), browser rampas gesture untuk scroll dan hantar `pointercancel`, drag mati separuh jalan = kad lantun balik + page scroll serentak. Ini mekanisme LAIN dari bug snapshot-rebuild `6caaa4e` (fix itu kekal).
+Fix: kad depan `.swipe-kad[data-depth="0"]` diberi `touch-action: none`; dalam `pasangDrag`, bila kunci arah jadi "menegak" pada sentuhan/pen, scroll diurus manual `window.scrollBy` ikut jari. Mouse desktop kekal tingkah laku lama (gated `pointerType === "mouse"`). Threshold kekal (HAD_SWIPE 48px, flick >=22px/<=260ms, gate arah 10px).
+Yang user perlu uji di phone: swipe kiri/kanan termasuk serong (tiada lantun, page tak scroll), scroll menegak mula atas kad (page scroll biasa), like tap masih jalan, desktop tiada regresi.
 
-### 2. Ambient motion tak nampak (kecuali sway)
-User: zarah emas TAK NAMPAK LANGSUNG, latar bernafas TAK NAMPAK, sway kad belakang nampak tapi TERLALU NIPIS. User nak LEBIH OBVIOUS semua.
-**Hipotesis**: `.ambient` dan `body::before` berada `z-index: -1`, kemungkinan tersorok DI BELAKANG latar body yang legap. Semak susunan lapisan dulu. Lepas tu naikkan kekuatan: zarah lebih besar/terang/banyak sikit, latar bernafas lebih ketara, sway lebih jelas. Kekangan kekal: compositor-only, prefers-reduced-motion, jangan lalu atas teks, kontras teks kekal >= 4.5:1. Commit ambient: `30a777a`.
+### 2. Ambient motion tak nampak, FIX commit `9030d96`
+Punca disahkan (render sebenar Chrome + kiraan kontras): BUKAN tersorok z-index (hipotesis lama salah, background kraft body dipropagate ke kanvas html telus, lapisan memang dicat atas kanvas). Punca sebenar = kontras + kekuatan terlalu rendah: emas token vs kraft cuma beza terang 8%, opacity 0.16-0.38, saiz 4-13px = hampir tak perceptible.
+Fix: token glow baru (`--color-glow-gold` oklch 90%, `--color-glow-rose` oklch 78%), zarah 11→15 biji saiz 7-20px opacity 0.32-0.68 dengan teras pekat, latar bernafas opacity 0.5-0.88 + lapisan rose ketiga (kitaran 24s), sway kad belakang ±0.4deg→±1.5deg geser 1px→4px. Kekangan dipatuhi: compositor-only, prefers-reduced-motion kekal, kontras teks terburuk 5.34:1 (>= 4.5:1), pointer-events none.
+Kalau user rasa terlalu kuat/lemah: laras `--op` zarah dalam ucapan.html, opacity `latarBernafas`, atau darjah `kadBuai1/2` dalam styles.css.
 
 ## Kerja tertunda lain
-- **PADAM DATA UJIAN sebelum sebar**: collection `/rsvp` dan `/sayang` penuh entri ujian user (11 ucapan, belasan like). Bila user kata "padam semua": buka console Firebase (akaun adiburth@gmail.com), Firestore > Data, padam semua doc dalam `/rsvp` dan `/sayang`. Padam lewat console sebab rules tolak delete dari luar. (Cara UI: pilih doc, menu tiga titik, Delete document.)
+- **PADAM DATA UJIAN sebelum sebar** (SENGAJA ditahan 13 Ogos: data ujian diperlukan untuk user sahkan fix swipe di phone dulu): collection `/rsvp` dan `/sayang` penuh entri ujian user (11 ucapan, belasan like). Bila user dah sahkan fix / kata "padam semua": buka console Firebase (akaun adiburth@gmail.com, profil Chrome "zafri"), Firestore > Data, padam semua doc dalam `/rsvp` dan `/sayang`. Padam lewat console sebab rules tolak delete dari luar. (Cara UI: pilih doc, menu tiga titik, Delete document.)
 - GitHub Pages cache ~10 minit; selepas push, uji dengan hard reload / incognito.
 - Firebase console tips: rules editor guna CodeMirror, boleh set lewat JS `document.querySelector('.CodeMirror').CodeMirror.setValue(...)`; layout sempit sorok butang Publish, klik baris "unpublished changes" dulu.
 
@@ -42,7 +43,7 @@ User: zarah emas TAK NAMPAK LANGSUNG, latar bernafas TAK NAMPAK, sway kad belaka
 Folder `notaTimbang/` dalam repo: verdict.md (pakej design muktamad + senarai STOP), research.md (token warna disahkan sampel pixel kad rasmi + kiraan kontras WCAG), P2.md (spec penuh ciri interaktif), faktaPack.md (fakta sistem masa run). Ini artifak run /timbang 13 Ogos, rujuk sebelum ubah design besar.
 
 ## Sejarah commit penting
-- `6f78374` bina asal (borang + dinding + rules), `90be819` pecah 3 halaman, `917181a` marquee animasi (DIGANTI), `8ce1fd9` pakej purple + 4 ciri interaktif (run timbang), `36b2835` timbunan swipe ganti marquee, `f09f1e6` like label + kontras teks + swipe thresholds, `6caaa4e` fix spring-back snapshot rebuild, `30a777a` ambient motion (terlalu subtle, bug #2)
+- `6f78374` bina asal (borang + dinding + rules), `90be819` pecah 3 halaman, `917181a` marquee animasi (DIGANTI), `8ce1fd9` pakej purple + 4 ciri interaktif (run timbang), `36b2835` timbunan swipe ganti marquee, `f09f1e6` like label + kontras teks + swipe thresholds, `6caaa4e` fix spring-back snapshot rebuild, `30a777a` ambient motion versi subtle, `799673c` fix swipe touch-action + scroll manual, `9030d96` ambient dinaikkan supaya obvious
 
 ## Corak kerja yang terbukti sesi ini (untuk sesi baru)
 - Semua kerja tangan → subagent Opus 4.8; browsing/console Firebase → sesi utama guna Chrome tools
@@ -51,4 +52,4 @@ Folder `notaTimbang/` dalam repo: verdict.md (pakej design muktamad + senarai ST
 - Ujian keselamatan rules: curl REST PATCH/DELETE/POST tak sah, jangka 403
 
 ## Status
-Sistem berfungsi hujung ke hujung dan link Canva dah betul. TUNGGU: fix 2 bug atas, lepas tu padam data ujian, baru sebar. Majlis 30 Ogos, baki ~17 hari.
+Sistem berfungsi hujung ke hujung, link Canva betul, 2 bug lama dah difix dan dipush 13 Ogos. TUNGGU: (1) user sahkan fix swipe + ambient di phone sebenar, (2) padam data ujian, (3) sebar. Majlis 30 Ogos, baki ~17 hari.
