@@ -37,6 +37,24 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Collection SAYANG: reaksi "sayang" pada ucapan. Create + read sahaja,
+    // ikut corak /rsvp , tiada update/delete, tiada auth, tiada usik /rsvp.
+    match /sayang/{doc} {
+      allow read: if true;
+
+      allow create: if
+        // Dua medan sahaja, tiada medan asing.
+        request.resource.data.keys().hasOnly(['ucapanId', 'masa'])
+        // ucapanId = id dokumen rsvp yang disayang (string pendek).
+        && request.resource.data.ucapanId is string
+        && request.resource.data.ucapanId.size() >= 1
+        && request.resource.data.ucapanId.size() <= 80
+        // Masa: mesti cap masa pelayan sebenar (elak nilai palsu).
+        && request.resource.data.masa == request.time;
+
+      allow update, delete: if false;
+    }
+
     // Semua collection lain: tolak sepenuhnya.
     match /{document=**} {
       allow read, write: if false;

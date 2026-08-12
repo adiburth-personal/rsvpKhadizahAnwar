@@ -39,7 +39,8 @@
     <section class="dinding" aria-labelledby="tajukDinding">
       <h2 class="seksyen-tajuk" id="tajukDinding">Sepatah Kata, Sejuta Doa</h2>
       <p class="seksyen-sari">Ucapan dan doa daripada para tetamu</p>
-      <p class="dinding-nota" id="dindingNota" hidden>Sentuh mana mana kad untuk berhenti sekejap dan baca.</p>
+      <p class="dinding-kaunter" id="dindingKaunter" hidden></p>
+      <p class="dinding-nota" id="dindingNota" hidden>Sentuh mana mana kad untuk baca penuh dan hantar sayang.</p>
 
       <div class="ucapan-senarai" id="ucapanSenarai" aria-live="polite"></div>
       <div class="kosong" id="ucapanKosong">Belum ada ucapan lagi. Jadilah yang pertama menitipkan doa.</div>
@@ -52,6 +53,22 @@
 
     <footer class="footer">Khadizah &amp; Anwar &middot; 30 Ogos 2026</footer>
   </main>
+
+  <!-- Overlay fokus baca: tap kad membuka satu kad besar PEGUN (mudah dibaca
+       orang tua) dengan butang sayang besar. Di LUAR #ucapanSenarai supaya
+       diff-engine marquee tidak menyentuhnya. -->
+  <div class="fokus-overlay" id="fokusOverlay" role="dialog" aria-modal="true" aria-labelledby="fokusNama" hidden>
+    <div class="fokus-kad" id="fokusKad" tabindex="-1">
+      <button class="fokus-tutup" id="fokusTutup" type="button" aria-label="Tutup ucapan">&times;</button>
+      <span class="fokus-inisial" id="fokusInisial" aria-hidden="true"></span>
+      <p class="fokus-teks" id="fokusTeks"></p>
+      <p class="fokus-nama" id="fokusNama"></p>
+      <button class="sayang-btn sayang-btn--besar" id="fokusSayang" type="button">
+        <span class="sayang-hati" aria-hidden="true">&#9829;</span>
+        <span class="sayang-kira"></span>
+      </button>
+    </div>
+  </div>
 
   <script type="module" src="./ucapan.js"></script>
 </body>

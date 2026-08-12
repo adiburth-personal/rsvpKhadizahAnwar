@@ -18,11 +18,21 @@ const notisSetup = document.getElementById("notisSetup");
 const ucapanSenarai = document.getElementById("ucapanSenarai");
 const ucapanKosong = document.getElementById("ucapanKosong");
 const dindingNota = document.getElementById("dindingNota");
+const dindingKaunter = document.getElementById("dindingKaunter");
+
+// Overlay fokus baca (tap kad -> kad besar pegun)
+const fokusOverlay = document.getElementById("fokusOverlay");
+const fokusKad = document.getElementById("fokusKad");
+const fokusTutup = document.getElementById("fokusTutup");
+const fokusInisial = document.getElementById("fokusInisial");
+const fokusTeks = document.getElementById("fokusTeks");
+const fokusNama = document.getElementById("fokusNama");
+const fokusSayang = document.getElementById("fokusSayang");
 
 // ====== Tetapan papan ======
 const AMBANG_MARQUEE = 5;      // < ni: susun statik (elak nampak pelik bila ucapan sikit)
 const MAKS_KAD = 40;           // had kad dianimasi (prestasi phone); baki lama disembunyikan
-const BILANGAN_VARIASI = 4;    // v0 krim, v1 blush, v2 plum pudar, v3 emas antik
+const BILANGAN_VARIASI = 5;    // v0 krim, v1 blush, v2 plum pudar, v3 emas antik, v4 aubergine gelap (1 dalam 5)
 const BP_DUA_LAJUR = "(min-width: 560px)"; // WAJIB selari dengan breakpoint CSS
 const SESAAT_LAJUR_A = 7.2;    // saat per kad, lajur A
 const SESAAT_LAJUR_B = 8.4;    // lajur B sikit lebih perlahan = rasa organik
@@ -49,6 +59,179 @@ let mode = "kosong";           // "kosong" | "statik" | "marquee"
 let idDipapar = [];            // urutan id kad semasa (terkini dulu)
 let lajurEls = [];             // [{ copies: [copy1, copy2] }, ...] rujukan salinan tiap lajur
 let dataTerkini = [];          // simpanan senarai penuh terakhir (utk bina semula bila layout tukar)
+
+// ====== Keadaan "sayang" (butang kasih pada setiap kad) ======
+// Count disimpan di Map PUSAT (bukan pada node DOM) sebab tiap kad wujud 2 salinan
+// dalam marquee (copy1 + copy2); dua duanya dilukis dari Map yang sama supaya
+// count sentiasa selari. Ditulis semula setiap render + setiap snapshot /sayang.
+const KUNCI_SAYANG = "sayangDitekan.v1";   // camelCase, tiada dash
+const sayangKira = new Map();               // ucapanId -> jumlah sayang (nombor sebenar)
+let dbRujuk = null;                         // rujukan Firestore, diisi dalam mulakanDinding
+let sayangApi = null;                       // { collection, addDoc, serverTimestamp }
+let fokusId = null;                         // id kad yang sedang dibuka dalam overlay
+let fokusPemulang = null;                   // elemen untuk pulang fokus bila overlay tutup
+
+// Anti-spam ringan (localStorage). NOTA JUJUR: ini cuma halang tekan berganda
+// pada peranti + browser yang SAMA. Ia BOLEH dipintas (clear storage, phone lain,
+// mod incognito). Tanpa auth, mustahil kunci "satu orang satu sayang" betul betul.
+// Untuk majlis kahwin ini OK , butang = luahan kasih, bukan undian rasmi.
+function bacaSayang() {
+  try { return new Set(JSON.parse(localStorage.getItem(KUNCI_SAYANG) || "[]")); }
+  catch (e) { return new Set(); }
+}
+function sudahSayang(id) { return bacaSayang().has(id); }
+function tandaSayang(id) {
+  const s = bacaSayang(); s.add(id);
+  try { localStorage.setItem(KUNCI_SAYANG, JSON.stringify([...s])); } catch (e) { /* penuh/disekat: abai */ }
+}
+function buangTandaSayang(id) {
+  const s = bacaSayang(); s.delete(id);
+  try { localStorage.setItem(KUNCI_SAYANG, JSON.stringify([...s])); } catch (e) { /* abai */ }
+}
+
+// Lukis satu butang sayang (count + keadaan + aria) daripada Map pusat.
+function hiasSayangBtn(btn, id) {
+  if (!btn || !id) return;
+  const n = sayangKira.get(id) || 0;
+  const span = btn.querySelector(".sayang-kira");
+  if (span) span.textContent = n > 0 ? String(n) : "";   // 0 = kosong, degrade elok
+  const ditekan = sudahSayang(id);
+  btn.classList.toggle("is-sayang", ditekan);
+  btn.setAttribute("aria-pressed", ditekan ? "true" : "false");
+  btn.setAttribute("aria-label",
+    "Sayang ucapan ini" + (n > 0 ? ", " + n + " orang sudah sayang" : ""));
+}
+
+// Lukis count ke SEMUA kad (kedua dua salinan marquee) + overlay bila terbuka.
+function lukisSayang() {
+  document.querySelectorAll(".ucapan-kad").forEach(function (kad) {
+    hiasSayangBtn(kad.querySelector(".sayang-btn"), kad.dataset.id);
+  });
+  if (fokusId) hiasSayangBtn(fokusSayang, fokusId);
+}
+
+// Kaunter jujur di kepala dinding: "X ucapan · Y sayang" , 100% data sebenar.
+function lukisKaunter() {
+  if (!dindingKaunter) return;
+  const nUcap = dataTerkini.length;
+  if (nUcap === 0) { dindingKaunter.hidden = true; return; }
+  let nSayang = 0; sayangKira.forEach(function (v) { nSayang += v; });
+  dindingKaunter.hidden = false;
+  dindingKaunter.textContent = nUcap + " ucapan" + (nSayang > 0 ? " · " + nSayang + " sayang" : "");
+}
+
+// Heart-burst: 4-6 hati kecil naik + pudar dari butang. CSS transform sahaja,
+// node auto-buang. Gated pada reduced-motion (terus di-skip bila diminta).
+function hatiBurst(btn) {
+  if (REDUCED.matches || !btn) return;
+  for (let i = 0; i < 5; i++) {
+    const h = document.createElement("span");
+    h.className = "hati-timbul";
+    h.textContent = "♥";                 // hati (textContent, bukan innerHTML)
+    h.setAttribute("aria-hidden", "true");
+    h.style.setProperty("--dx", (Math.random() * 40 - 20) + "px");
+    btn.appendChild(h);
+    window.setTimeout(function () { h.remove(); }, 850);
+  }
+}
+
+// Tekan sayang: optimistik (terus nampak) + rollback jujur bila addDoc gagal.
+async function tekanSayang(id, sumberBtn) {
+  if (!id || sudahSayang(id)) return;
+  if (!dbRujuk || !sayangApi) return;         // config belum siap: abai senyap
+  tandaSayang(id);                            // simpan localStorage dulu
+  sayangKira.set(id, (sayangKira.get(id) || 0) + 1);
+  lukisSayang();                              // optimistik
+  lukisKaunter();
+  hatiBurst(sumberBtn);
+  try {
+    await sayangApi.addDoc(
+      sayangApi.collection(dbRujuk, "sayang"),
+      { ucapanId: id, masa: sayangApi.serverTimestamp() }
+    );
+  } catch (err) {
+    console.error("Gagal hantar sayang:", err);
+    buangTandaSayang(id);                      // undur bila gagal (jujur)
+    sayangKira.set(id, Math.max(0, (sayangKira.get(id) || 1) - 1));
+    lukisSayang();
+    lukisKaunter();
+  }
+}
+
+// ====== Overlay fokus baca ======
+function bukaFokus(id) {
+  if (!fokusOverlay) return;
+  const entri = dataTerkini.find(function (e) { return e.id === id; });
+  if (!entri) return;
+  fokusId = id;
+  const huruf = (entri.nama || "T").trim().charAt(0).toUpperCase();
+  fokusInisial.textContent = huruf || "T";
+  fokusTeks.textContent = entri.ucapan;       // escape XSS
+  fokusNama.textContent = entri.nama || "Tetamu";
+  hiasSayangBtn(fokusSayang, id);
+  fokusPemulang = document.activeElement;
+  fokusOverlay.hidden = false;
+  // paksa reflow supaya transisi opacity berjalan
+  void fokusOverlay.offsetWidth;
+  fokusOverlay.classList.add("buka");
+  document.body.style.overflow = "hidden";    // kunci scroll belakang
+  document.querySelectorAll(".marquee-tingkap").forEach(function (t) { t.classList.add("is-pause"); });
+  // Pindah fokus ke butang tutup SELEPAS kitaran klik selesai (setTimeout 0):
+  // gaya .buka (visibility:visible) sudah diterap dan tiada "focus fixup" klik
+  // yang menarik balik fokus ke body. Butang tutup = sasaran fokus jelas untuk
+  // pembaca skrin + navigasi papan kekunci (Escape/Tab).
+  if (fokusTutup && typeof fokusTutup.focus === "function") {
+    window.setTimeout(function () { fokusTutup.focus(); }, 0);
+  }
+}
+function tutupFokus() {
+  if (!fokusOverlay || fokusOverlay.hidden) return;
+  fokusOverlay.classList.remove("buka");
+  document.body.style.overflow = "";
+  document.querySelectorAll(".marquee-tingkap").forEach(function (t) { t.classList.remove("is-pause"); });
+  fokusId = null;
+  const selesai = function () {
+    fokusOverlay.hidden = true;
+    fokusOverlay.removeEventListener("transitionend", selesai);
+  };
+  fokusOverlay.addEventListener("transitionend", selesai);
+  // Sandaran bila transisi dimatikan (reduced-motion): sembunyi terus.
+  window.setTimeout(function () { if (!fokusOverlay.classList.contains("buka")) fokusOverlay.hidden = true; }, 400);
+  if (fokusPemulang && typeof fokusPemulang.focus === "function") fokusPemulang.focus();
+  fokusPemulang = null;
+}
+
+// Pasang interaksi kad (delegasi klik) + kawalan overlay. Dipanggil sekali.
+function pasangInteraksi() {
+  if (ucapanSenarai) {
+    ucapanSenarai.addEventListener("click", function (e) {
+      const btn = e.target.closest(".sayang-btn");
+      if (btn) {
+        e.stopPropagation();
+        const kad = btn.closest(".ucapan-kad");
+        if (kad) tekanSayang(kad.dataset.id, btn);
+        return;
+      }
+      const kad = e.target.closest(".ucapan-kad");
+      if (kad) bukaFokus(kad.dataset.id);
+    });
+  }
+  if (fokusSayang) {
+    fokusSayang.addEventListener("click", function () {
+      if (fokusId) tekanSayang(fokusId, fokusSayang);
+    });
+  }
+  if (fokusTutup) fokusTutup.addEventListener("click", tutupFokus);
+  if (fokusOverlay) {
+    fokusOverlay.addEventListener("click", function (e) {
+      if (e.target === fokusOverlay) tutupFokus();   // tap latar = tutup
+    });
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") tutupFokus();
+  });
+}
+pasangInteraksi();
 
 // Hash kecil (djb2) untuk keputusan deterministik (warna + agihan lajur).
 function hash(teks) {
@@ -78,7 +261,20 @@ function binaKad(entri, baru) {
   nama.className = "ucapan-nama";
   nama.textContent = entri.nama || "Tetamu";  // escape XSS
 
-  el.append(inisial, teks, nama);
+  // Butang sayang (menumpang kad supaya ikut diff-engine). Count diisi kemudian
+  // oleh lukisSayang() daripada Map pusat, bukan sekali masa bina.
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "sayang-btn";
+  const hati = document.createElement("span");
+  hati.className = "sayang-hati";
+  hati.setAttribute("aria-hidden", "true");
+  hati.textContent = "♥";                      // hati, bukan innerHTML
+  const kira = document.createElement("span");
+  kira.className = "sayang-kira";              // diisi oleh lukisSayang (textContent)
+  btn.append(hati, kira);
+
+  el.append(inisial, teks, nama, btn);
 
   // Buang kelas kilauan lepas ia habis supaya tak main semula bila reflow.
   if (baru) window.setTimeout(function () { el.classList.remove("ucapan-kad--baru"); }, 2000);
@@ -217,6 +413,7 @@ function render(senarai) {
     if (dindingNota) dindingNota.hidden = true;
     mode = "kosong";
     idDipapar = [];
+    lukisKaunter();
     return;
   }
   ucapanKosong.style.display = "none";
@@ -242,6 +439,11 @@ function render(senarai) {
   }
 
   if (dindingNota) dindingNota.hidden = mode !== "marquee";
+
+  // WAJIB di HUJUNG render: lukis count ke node yang baru di-prepend/bina supaya
+  // kad baharu terus dapat count betul (bukan tunggu snapshot /sayang seterusnya).
+  lukisSayang();
+  lukisKaunter();
 }
 
 // Bila layout berubah (putar phone lebar<->sempit, atau tukar tetapan gerak),
@@ -258,12 +460,32 @@ async function mulakanDinding() {
   // Import SDK Firebase modular v10 terus dari CDN (tiada build step).
   const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
   const {
-    getFirestore, collection, onSnapshot, query, orderBy,
+    getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp,
   } = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const rujukanRsvp = collection(db, "rsvp");
+
+  // Sediakan rujukan Firestore untuk butang sayang (create-only /sayang).
+  dbRujuk = db;
+  sayangApi = { collection: collection, addDoc: addDoc, serverTimestamp: serverTimestamp };
+
+  // Listener kedua: baca SELURUH /sayang (tanpa where -> tiada composite index),
+  // tally ke Map ikut ucapanId, lukis ke semua kad + kaunter. Saiz terhad utk
+  // satu majlis (ratusan hati) jadi memadai.
+  onSnapshot(collection(db, "sayang"), function (petikan) {
+    sayangKira.clear();
+    petikan.forEach(function (d) {
+      const id = d.data().ucapanId;
+      if (!id) return;
+      sayangKira.set(id, (sayangKira.get(id) || 0) + 1);
+    });
+    lukisSayang();
+    lukisKaunter();
+  }, function (ralat) {
+    console.error("Gagal baca sayang:", ralat);
+  });
 
   // onSnapshot: setiap kali data berubah, papar semula. orderBy masa desc =
   // ucapan terbaru di atas. Kita papar HANYA entri yang ada ucapan.

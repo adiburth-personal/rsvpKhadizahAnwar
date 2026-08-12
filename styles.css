@@ -16,7 +16,18 @@
   --color-cream-2: oklch(94% 0.018 86);       /* kad dalam kad, input */
   --color-maroon: oklch(37% 0.11 18);         /* maroon gelap, tajuk script */
   --color-maroon-soft: oklch(46% 0.10 20);    /* maroon lembut untuk aksen */
-  --color-plum: oklch(46% 0.075 320);         /* ungu botani */
+
+  /* Keluarga ungu botani (disahkan sampel pixel kad sebenar, research pass).
+     Ungu = AKSEN bertumpu sahaja; base kraft/krim/maroon/emas kekal dominan.
+     NOTA KONTRAS: --color-plum atas kraft = 3.95:1, HANYA lulus untuk border/
+     ornamen/aksen UI (>=3.0), BUKAN untuk teks biasa (perlu >=4.5). Jangan
+     guna --color-plum sebagai warna teks atas latar kraft. */
+  --color-plum: oklch(46% 0.078 313);         /* aksen mid: border kad, ornamen */
+  --color-purple-deep: oklch(30% 0.06 312);   /* ungu gelap: teks/aksen atas latar cerah (12.8:1 atas krim) */
+  --color-lilac: oklch(72% 0.055 335);        /* hiasan cerah: teks/border atas kad gelap (4.90:1 atas aubergine) */
+  --color-lilac-wash: oklch(90% 0.03 335);    /* wash sangat cerah: teks utama atas kad gelap (9.9:1 atas aubergine) */
+  --color-aubergine: oklch(33% 0.05 314);     /* latar varian kad gelap v4 (padan latar kad rasmi) */
+
   --color-gold: oklch(72% 0.085 82);          /* emas pudar */
   --color-ink: oklch(31% 0.02 55);            /* teks utama, coklat gelap hangat */
   --color-ink-soft: oklch(46% 0.02 55);       /* teks kedua */
@@ -146,6 +157,13 @@ body {
   margin: var(--space-6) 0 var(--space-2);
 }
 .masa { font-size: var(--text-base); color: var(--color-ink-soft); margin: 0; }
+.tempat {
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-maroon);
+  margin: var(--space-4) 0 0;
+}
 .jemputan-teks {
   max-width: 34ch;
   margin: var(--space-6) auto 0;
@@ -157,6 +175,29 @@ body {
 /* ============================== ORNAMEN ============================== */
 .ornamen { display: block; margin: var(--space-6) auto; color: var(--color-maroon); }
 .ornamen--plum { color: var(--color-plum); }
+
+/* Krest hero (index.html): satu gubahan ungu TUMPU sebagai isyarat "majlis sama"
+   dengan kad jemputan. Ungu keluarga terkumpul (plum + purple-deep) + satu titik
+   emas sebagai jambatan rose-gold. Bukan latar penuh, bukan CTA. Warna dipacu
+   token (locked), bukan hex mentah. */
+.krest-rule { stroke: var(--color-plum); }        /* garis sisi: aksen plum (3.95:1 kraft, ok hiasan) */
+.krest-daun { stroke: var(--color-plum); }        /* daun botani: keluarga ungu sama */
+.krest-nadi { fill: var(--color-purple-deep); }   /* titik tengah: ungu gelap tumpu (7.45:1 kraft) */
+.krest-emas { fill: var(--color-gold); }          /* titik emas kecil: jambatan rose-gold */
+
+/* Micro-motion hero: gubahan lembut SEKALI masa load (opacity + translate sahaja).
+   Reduced-motion: media global tumpaskan ke 0.01ms -> muncul statik. */
+.header { animation: heroMuncul 720ms var(--ease-out) both; }
+.header .ornamen,
+.header .krest { animation: heroKrest 900ms var(--ease-out) 160ms both; }
+@keyframes heroMuncul {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes heroKrest {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: none; }
+}
 
 /* ============================== KAD / PANEL ============================== */
 .kad {
@@ -424,6 +465,31 @@ body {
   border-color: color-mix(in oklch, var(--color-gold) 78%, var(--color-maroon));
 }
 
+.dinding .ucapan-kad--v4 { /* aubergine gelap: satu momen "rasa kad rasmi", 1 dalam 5.
+     Teks cerah (lilac-wash 9.9:1, lilac 4.90:1) + aksen emas. Kontras lulus. */
+  background: var(--color-aubergine);
+  border-color: color-mix(in oklch, var(--color-lilac) 22%, transparent);
+  border-left-color: var(--color-gold);
+}
+.dinding .ucapan-kad--v4 .ucapan-teks { color: var(--color-lilac-wash); }
+.dinding .ucapan-kad--v4 .ucapan-nama { color: var(--color-lilac); }
+.dinding .ucapan-kad--v4 .ucapan-inisial {
+  border-color: color-mix(in oklch, var(--color-gold) 70%, transparent);
+  background: color-mix(in oklch, var(--color-aubergine) 60%, black);
+  color: var(--color-lilac-wash);
+}
+/* Butang sayang atas kad gelap: pakai lilac supaya kontras kekal lulus. */
+.dinding .ucapan-kad--v4 .sayang-btn {
+  color: var(--color-lilac);
+  border-color: color-mix(in oklch, var(--color-lilac) 45%, transparent);
+}
+.dinding .ucapan-kad--v4 .sayang-btn.is-sayang {
+  background: color-mix(in oklch, var(--color-lilac) 16%, var(--color-aubergine));
+  border-color: var(--color-lilac);
+  color: var(--color-lilac-wash);
+}
+.dinding .ucapan-kad--v4 .hati-timbul { color: var(--color-lilac); }
+
 /* --- Susun statik: ucapan sikit atau prefers-reduced-motion --- */
 .dinding .ucapan-senarai--statik {
   display: grid;
@@ -498,6 +564,185 @@ body {
   from { background-position: 150% 0; opacity: 0; }
   18%  { opacity: 0.85; }
   to   { background-position: -60% 0; opacity: 0; }
+}
+
+/* ============================== BUTANG SAYANG + KAUNTER ==============================
+   Sentuhan interaktif dinding ucapan (halaman ucapan.html sahaja). Semua terikat
+   pada peristiwa sebenar (earned motion), transform/opacity, hormat reduced-motion.
+   pengantin.html tiada elemen .sayang-btn / .fokus-* jadi tak terkesan. */
+
+/* --- Kaunter jujur di kepala dinding: "X ucapan · Y sayang" dari data sebenar --- */
+.dinding-kaunter {
+  text-align: center;
+  color: var(--color-maroon-soft);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin: 0 0 var(--space-6);
+}
+.dinding-kaunter[hidden] { display: none; }
+
+/* --- Butang sayang: baris sendiri bawah nama, sasaran besar (orang tua) --- */
+.dinding .ucapan-kad { position: relative; }
+.sayang-btn {
+  justify-self: end;
+  grid-column: 1 / -1;
+  position: relative;                          /* labuh heart-burst */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid color-mix(in oklch, var(--color-plum) 45%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-maroon-soft);
+  font-family: var(--font-serif);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+.sayang-btn:hover { border-color: var(--color-plum); }
+.sayang-btn:active { transform: scale(0.94); }
+.sayang-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-focus) 34%, transparent);
+}
+.sayang-btn.is-sayang {
+  background: color-mix(in oklch, var(--color-plum) 16%, var(--color-cream));
+  border-color: var(--color-plum);
+  color: var(--color-maroon);
+}
+.sayang-hati { font-size: 1.05em; line-height: 1; }
+.sayang-btn.is-sayang .sayang-hati { animation: hatiPop 420ms var(--ease-out); }
+@keyframes hatiPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+.sayang-kira:empty { display: none; }
+/* Count per-kad "bisik": kecil, tunduk pada kaunter agregat (elak rasa scoreboard). */
+.sayang-kira {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
+/* --- Heart-burst: 4-6 hati naik + pudar, CSS transform, auto-buang, gated JS --- */
+.hati-timbul {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  font-size: 0.8rem;
+  color: var(--color-plum);
+  pointer-events: none;
+  animation: hatiNaik 800ms var(--ease-out) forwards;
+}
+@keyframes hatiNaik {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
+  25%  { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), -46px) scale(1); }
+}
+
+/* --- Overlay fokus baca: tap kad -> satu kad besar PEGUN (ok untuk orang tua) --- */
+.fokus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: color-mix(in oklch, var(--color-ink) 70%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--dur-mid) var(--ease-out),
+              visibility var(--dur-mid) var(--ease-out);
+}
+.fokus-overlay.buka { opacity: 1; visibility: visible; }
+.fokus-overlay[hidden] { display: none; }
+.fokus-kad {
+  position: relative;
+  background: var(--color-cream);
+  border: 1px solid color-mix(in oklch, var(--color-line) 30%, transparent);
+  border-left: 3px solid var(--color-plum);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-7) var(--space-7);
+  max-width: 34rem;
+  width: 100%;
+  max-height: 80vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  text-align: center;
+  transform: translateY(8px);
+  transition: transform var(--dur-mid) var(--ease-out);
+  box-shadow: 0 24px 60px -30px oklch(30% 0.03 40 / 0.7);
+}
+.fokus-overlay.buka .fokus-kad { transform: none; }
+.fokus-tutup {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in oklch, var(--color-line) 40%, transparent);
+  border-radius: 50%;
+  background: var(--color-cream-2);
+  color: var(--color-maroon);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.fokus-tutup:hover { border-color: var(--color-maroon); background: var(--color-cream); }
+.fokus-tutup:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-focus) 34%, transparent);
+}
+.fokus-inisial {
+  display: inline-grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.2rem;
+  margin: 0 auto var(--space-5);
+  border-radius: 50%;
+  border: 1.5px solid var(--color-plum);
+  background: color-mix(in oklch, var(--color-cream) 68%, transparent);
+  color: var(--color-maroon);
+  font-family: var(--font-script);
+  font-size: 2rem;
+  line-height: 1;
+  user-select: none;
+}
+.fokus-teks {
+  margin: 0 0 var(--space-6);
+  font-size: var(--text-md);
+  line-height: 1.7;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+.fokus-nama {
+  margin: 0 0 var(--space-7);
+  font-size: var(--text-base);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-maroon-soft);
+}
+.fokus-nama::before { content: "— "; }
+/* Butang sayang besar dalam overlay: laluan utama orang tua (pegun, mudah tekan) */
+.sayang-btn--besar {
+  justify-self: center;
+  grid-column: auto;
+  margin: 0 auto;
+  min-height: 52px;
+  padding: var(--space-4) var(--space-7);
+  font-size: var(--text-base);
 }
 
 /* ============================== HALAMAN PENGANTIN ============================== */
