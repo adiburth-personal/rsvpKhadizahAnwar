@@ -12,25 +12,27 @@
 </head>
 <body>
 
-  <!-- Lapisan ambient: zarah bokeh emas terapung perlahan di latar (CSS sahaja,
-       z-index bawah kandungan, pointer-events none, dimatikan oleh reduced-motion).
-       Dijana sekali dalam markup, tiada JS, tiada loop runtime. Aksesibiliti: aria-hidden. -->
+  <!-- Lapisan ambient: bunga kecil ungu hanyut perlahan + berputar halus di latar
+       (CSS sahaja, mask bunga 5 kelopak, z-index bawah kandungan, pointer-events none,
+       dimatikan oleh reduced-motion). Dijana sekali dalam markup, tiada JS, tiada loop
+       runtime. Aksesibiliti: aria-hidden. 4 ton ungu dari kad rasmi (research pass);
+       had opacity tiap ton dikira supaya teks header atas kraft kekal >=4.5:1. -->
   <div class="ambient" aria-hidden="true">
-    <i class="zarah zarah--emas" style="--x:8%;   --size:14px; --dur:30s; --delay:-3s;  --drift:20px; --op:0.55; --blur:2.5px"></i>
-    <i class="zarah zarah--rose" style="--x:20%;  --size:8px;  --dur:34s; --delay:-14s; --drift:-16px;--op:0.42; --blur:1.5px"></i>
-    <i class="zarah zarah--emas" style="--x:33%;  --size:20px; --dur:42s; --delay:-9s;  --drift:28px; --op:0.34; --blur:4px"></i>
-    <i class="zarah zarah--emas" style="--x:46%;  --size:10px; --dur:26s; --delay:-20s; --drift:-18px;--op:0.60; --blur:2px"></i>
-    <i class="zarah zarah--rose" style="--x:58%;  --size:17px; --dur:38s; --delay:-6s;  --drift:22px; --op:0.38; --blur:3px"></i>
-    <i class="zarah zarah--emas" style="--x:69%;  --size:7px;  --dur:24s; --delay:-16s; --drift:14px; --op:0.68; --blur:1.5px"></i>
-    <i class="zarah zarah--emas" style="--x:79%;  --size:13px; --dur:32s; --delay:-11s; --drift:-22px;--op:0.48; --blur:2.5px"></i>
-    <i class="zarah zarah--rose" style="--x:90%;  --size:19px; --dur:40s; --delay:-24s; --drift:-14px;--op:0.32; --blur:3.5px"></i>
-    <i class="zarah zarah--emas" style="--x:15%;  --size:11px; --dur:33s; --delay:-27s; --drift:16px; --op:0.46; --blur:2px"></i>
-    <i class="zarah zarah--emas" style="--x:63%;  --size:8px;  --dur:29s; --delay:-2s;  --drift:-20px;--op:0.58; --blur:1.5px"></i>
-    <i class="zarah zarah--rose" style="--x:40%;  --size:16px; --dur:36s; --delay:-19s; --drift:26px; --op:0.36; --blur:3px"></i>
-    <i class="zarah zarah--emas" style="--x:52%;  --size:9px;  --dur:31s; --delay:-13s; --drift:-12px;--op:0.52; --blur:2px"></i>
-    <i class="zarah zarah--emas" style="--x:27%;  --size:12px; --dur:35s; --delay:-7s;  --drift:18px; --op:0.44; --blur:2.5px"></i>
-    <i class="zarah zarah--rose" style="--x:73%;  --size:15px; --dur:28s; --delay:-22s; --drift:-24px;--op:0.40; --blur:3px"></i>
-    <i class="zarah zarah--emas" style="--x:84%;  --size:9px;  --dur:37s; --delay:-5s;  --drift:12px; --op:0.56; --blur:1.5px"></i>
+    <i class="bunga bunga--deep"   style="--x:8%;   --size:18px; --dur:30s; --delay:-3s;  --drift:20px; --op:0.17; --spin:18deg;  --blur:0.6px"></i>
+    <i class="bunga bunga--rose"   style="--x:20%;  --size:9px;  --dur:34s; --delay:-14s; --drift:-16px;--op:0.50; --spin:-14deg; --blur:0"></i>
+    <i class="bunga bunga--mid"    style="--x:33%;  --size:20px; --dur:42s; --delay:-9s;  --drift:28px; --op:0.24; --spin:22deg;  --blur:0.8px"></i>
+    <i class="bunga bunga--bright" style="--x:46%;  --size:11px; --dur:26s; --delay:-20s; --drift:-18px;--op:0.38; --spin:-20deg; --blur:0"></i>
+    <i class="bunga bunga--rose"   style="--x:58%;  --size:16px; --dur:38s; --delay:-6s;  --drift:22px; --op:0.48; --spin:16deg;  --blur:0.4px"></i>
+    <i class="bunga bunga--bright" style="--x:69%;  --size:8px;  --dur:24s; --delay:-16s; --drift:14px; --op:0.37; --spin:24deg;  --blur:0"></i>
+    <i class="bunga bunga--mid"    style="--x:79%;  --size:13px; --dur:32s; --delay:-11s; --drift:-22px;--op:0.23; --spin:-16deg; --blur:0.4px"></i>
+    <i class="bunga bunga--deep"   style="--x:90%;  --size:19px; --dur:40s; --delay:-24s; --drift:-14px;--op:0.16; --spin:12deg;  --blur:0.8px"></i>
+    <i class="bunga bunga--bright" style="--x:15%;  --size:12px; --dur:33s; --delay:-27s; --drift:16px; --op:0.36; --spin:-22deg; --blur:0"></i>
+    <i class="bunga bunga--rose"   style="--x:63%;  --size:9px;  --dur:29s; --delay:-2s;  --drift:-20px;--op:0.50; --spin:20deg;  --blur:0"></i>
+    <i class="bunga bunga--mid"    style="--x:40%;  --size:16px; --dur:36s; --delay:-19s; --drift:26px; --op:0.24; --spin:-18deg; --blur:0.4px"></i>
+    <i class="bunga bunga--deep"   style="--x:52%;  --size:10px; --dur:31s; --delay:-13s; --drift:-12px;--op:0.18; --spin:14deg;  --blur:0"></i>
+    <i class="bunga bunga--bright" style="--x:27%;  --size:12px; --dur:35s; --delay:-7s;  --drift:18px; --op:0.38; --spin:-24deg; --blur:0.4px"></i>
+    <i class="bunga bunga--rose"   style="--x:73%;  --size:15px; --dur:28s; --delay:-22s; --drift:-24px;--op:0.47; --spin:16deg;  --blur:0.3px"></i>
+    <i class="bunga bunga--mid"    style="--x:84%;  --size:9px;  --dur:37s; --delay:-5s;  --drift:12px; --op:0.25; --spin:-12deg; --blur:0"></i>
   </div>
 
   <main class="wrap">

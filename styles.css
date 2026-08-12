@@ -856,51 +856,62 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
    kandungan + kad), jadi tidak pernah lalu atas teks; kad berlatar legap menutupnya.
    Dimatikan sepenuhnya oleh prefers-reduced-motion di hujung fail. */
 
-/* Warna rose-gold: jambatan antara emas pudar dan maroon, untuk sebahagian zarah.
-   --color-glow-* = versi LEBIH TERANG (L~78-90) khas untuk bokeh + latar bernafas,
-   supaya zarah benar benar menonjol atas kraft (L80) yang hampir sewarna emas pudar. */
+/* Warna bunga ungu: 4 ton dari keluarga ungu botani kad rasmi (research pass,
+   sampel pixel). Chroma dinaik sikit untuk ambient supaya "pop" ungu jelas atas
+   kraft (L80) yang neutral-hangat , beza HUE (ungu lwn tan) yang buat ia menonjol,
+   bukan beza terang. HAD opacity tiap ton (deep<=0.18, mid<=0.25, bright<=0.39,
+   rose<=0.51) dikira supaya teks header atas kraft kekal >=4.5:1 walau bunga lalu
+   di belakangnya (nilai --op dalam HTML sengaja di bawah had ini). */
 :root {
-  --color-rosegold: oklch(70% 0.075 45);
-  --color-glow-gold: oklch(90% 0.09 88);      /* emas bercahaya, jelas lebih cerah dari kraft */
-  --color-glow-rose: oklch(78% 0.095 42);     /* rose-gold bercahaya */
+  --bunga-deep:   oklch(40% 0.12 315);   /* ungu gelap */
+  --bunga-mid:    oklch(52% 0.13 322);   /* ungu sederhana */
+  --bunga-bright: oklch(63% 0.13 330);   /* ungu-orchid cerah */
+  --bunga-rose:   oklch(67% 0.11 344);   /* lavender-rose (padan petal lilac kad #C296B2) */
+  /* Mask bunga 5 kelopak (SVG inline, putih legap = kawasan tampak); warna datang
+     dari background-color tiap ton, jadi satu bentuk dipakai semula untuk 4 ton. */
+  --flowerMask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Cg%20fill='%23fff'%3E%3Cellipse%20cx='50'%20cy='26'%20rx='13'%20ry='19'%20transform='rotate(0%2050%2050)'/%3E%3Cellipse%20cx='50'%20cy='26'%20rx='13'%20ry='19'%20transform='rotate(72%2050%2050)'/%3E%3Cellipse%20cx='50'%20cy='26'%20rx='13'%20ry='19'%20transform='rotate(144%2050%2050)'/%3E%3Cellipse%20cx='50'%20cy='26'%20rx='13'%20ry='19'%20transform='rotate(216%2050%2050)'/%3E%3Cellipse%20cx='50'%20cy='26'%20rx='13'%20ry='19'%20transform='rotate(288%2050%2050)'/%3E%3Ccircle%20cx='50'%20cy='50'%20r='9'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-/* --- Lapisan 1: zarah bokeh emas terapung naik perlahan --- */
+/* --- Lapisan 1: bunga kecil ungu hanyut naik + berputar halus --- */
 .ambient {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
-  contain: strict;                 /* asingkan paint zarah dari halaman */
+  contain: strict;                 /* asingkan paint bunga dari halaman */
 }
-.zarah {
+.bunga {
   position: absolute;
   left: var(--x);
   bottom: -8vh;                    /* mula bawah skrin, hanyut ke atas */
   width: var(--size);
   height: var(--size);
-  border-radius: 50%;
   opacity: 0;
-  filter: blur(var(--blur, 2px));
+  filter: blur(var(--blur, 0));
+  -webkit-mask: var(--flowerMask) center / contain no-repeat;
+  mask: var(--flowerMask) center / contain no-repeat;
   will-change: transform, opacity;
-  animation: zarahApung var(--dur) linear var(--delay, 0s) infinite;
+  animation: bungaHanyut var(--dur) linear var(--delay, 0s) infinite;
 }
-/* Teras terang + halo lembut: stop teras pekat sampai 24% baru pudar, jadi bokeh
-   ada isi (bukan kabus rata) tapi tepi tetap lembut. */
-.zarah--emas { background: radial-gradient(circle at 50% 50%, var(--color-glow-gold) 0%, var(--color-glow-gold) 24%, transparent 70%); }
-.zarah--rose { background: radial-gradient(circle at 50% 50%, var(--color-glow-rose) 0%, var(--color-glow-rose) 22%, transparent 70%); }
-@keyframes zarahApung {
-  0%   { transform: translate3d(0, 0, 0) scale(0.85); opacity: 0; }
-  12%  { opacity: var(--op, 0.5); }
-  50%  { transform: translate3d(var(--drift, 12px), -55vh, 0) scale(1.05); }
-  88%  { opacity: var(--op, 0.5); }
-  100% { transform: translate3d(0, -112vh, 0) scale(0.9); opacity: 0; }
+.bunga--deep   { background-color: var(--bunga-deep); }
+.bunga--mid    { background-color: var(--bunga-mid); }
+.bunga--bright { background-color: var(--bunga-bright); }
+.bunga--rose   { background-color: var(--bunga-rose); }
+/* Putaran monotonik perlahan (0 -> spin -> 2*spin sepanjang kitaran) supaya bunga
+   nampak hidup; reset waktu opacity 0 jadi tiada lompatan. Compositor sahaja. */
+@keyframes bungaHanyut {
+  0%   { transform: translate3d(0, 0, 0) scale(0.82) rotate(0deg); opacity: 0; }
+  12%  { opacity: var(--op, 0.4); }
+  50%  { transform: translate3d(var(--drift, 12px), -55vh, 0) scale(1.04) rotate(var(--spin, 16deg)); }
+  88%  { opacity: var(--op, 0.4); }
+  100% { transform: translate3d(0, -112vh, 0) scale(0.9) rotate(calc(var(--spin, 16deg) * 2)); opacity: 0; }
 }
 
-/* --- Lapisan 2: latar bernafas (alunan cahaya hangat, hampir subliminal) ---
-   Hanya MENERANGKAN latar kraft (gold/cream) jadi kontras teks header kekal atau
-   naik, tidak pernah gelap. Kitaran 26s, ayunan opacity kecil. */
+/* --- Lapisan 2: tint ungu sangat lembut (bukan lagi bloom cerah) ---
+   Premis "glow cerah" ditolak user (cerah atas cerah tak nampak). Diganti dengan
+   veil ungu SANGAT halus di 2 sudut, opacity rendah, ayunan kecil , cuma bagi latar
+   sedikit kedalaman ungu, tiada bloom terang yang ketara. Guna ton lilac/plum kad. */
 body::before {
   content: "";
   position: fixed;
@@ -908,15 +919,14 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60% 50% at 26% 20%, color-mix(in oklch, var(--color-glow-gold) 55%, transparent) 0%, transparent 62%),
-    radial-gradient(55% 46% at 78% 84%, color-mix(in oklch, var(--color-cream) 62%, transparent) 0%, transparent 60%),
-    radial-gradient(46% 40% at 60% 54%, color-mix(in oklch, var(--color-rosegold) 30%, transparent) 0%, transparent 64%);
+    radial-gradient(62% 52% at 22% 16%, color-mix(in oklch, var(--color-lilac) 20%, transparent) 0%, transparent 60%),
+    radial-gradient(56% 48% at 82% 86%, color-mix(in oklch, var(--color-plum) 14%, transparent) 0%, transparent 62%);
   will-change: transform, opacity;
-  animation: latarBernafas 24s var(--ease-in-out) infinite;
+  animation: latarBernafas 26s var(--ease-in-out) infinite;
 }
 @keyframes latarBernafas {
-  0%, 100% { opacity: 0.5;  transform: translate3d(0, 0, 0) scale(1); }
-  50%      { opacity: 0.88; transform: translate3d(0, -1.8%, 0) scale(1.07); }
+  0%, 100% { opacity: 0.28; transform: translate3d(0, 0, 0) scale(1); }
+  50%      { opacity: 0.42; transform: translate3d(0, -1.2%, 0) scale(1.04); }
 }
 
 /* --- Lapisan 3: kad belakang timbunan bergoyang halus (idle sway) ---
