@@ -12,27 +12,32 @@
 </head>
 <body>
 
-  <!-- Lapisan ambient: bunga kecil ungu hanyut perlahan + berputar halus di latar
-       (CSS sahaja, mask bunga 5 kelopak, z-index bawah kandungan, pointer-events none,
-       dimatikan oleh reduced-motion). Dijana sekali dalam markup, tiada JS, tiada loop
-       runtime. Aksesibiliti: aria-hidden. 4 ton ungu dari kad rasmi (research pass);
-       had opacity tiap ton dikira supaya teks header atas kraft kekal >=4.5:1. -->
+  <!-- Lapisan ambient: bunga kecil ungu REALISTIK (rombak 3D) hanyut perlahan +
+       berputar halus di latar (CSS sahaja, tiada JS, tiada loop runtime). Tiap bunga
+       = SVG penuh sbg background-image (gradient kelopak + kilau + pusat emas + drop
+       shadow lembut baked, lihat styles.css), bukan lagi siluet leper satu warna.
+       2 bentuk (a=wildflower, b=bloom penuh) x 4 ton (deep/mid/bright/rose band hue
+       kad rasmi) = variasi semula jadi + saiz + tilt beza + blur "jauh" (depth of
+       field). z-index bawah kandungan, pointer-events none, aria-hidden, dimatikan
+       oleh reduced-motion. HAD opacity ton dikira SEMULA untuk gradient ini
+       (deep<=0.15, mid<=0.20, bright<=0.26, rose<=0.31, gate piksel paling gelap)
+       supaya teks header atas kraft kekal >=4.55:1; --op di bawah diset bawah had. -->
   <div class="ambient" aria-hidden="true">
-    <i class="bunga bunga--deep"   style="--x:8%;   --size:18px; --dur:30s; --delay:-3s;  --drift:20px; --op:0.17; --spin:18deg;  --blur:0.6px"></i>
-    <i class="bunga bunga--rose"   style="--x:20%;  --size:9px;  --dur:34s; --delay:-14s; --drift:-16px;--op:0.50; --spin:-14deg; --blur:0"></i>
-    <i class="bunga bunga--mid"    style="--x:33%;  --size:20px; --dur:42s; --delay:-9s;  --drift:28px; --op:0.24; --spin:22deg;  --blur:0.8px"></i>
-    <i class="bunga bunga--bright" style="--x:46%;  --size:11px; --dur:26s; --delay:-20s; --drift:-18px;--op:0.38; --spin:-20deg; --blur:0"></i>
-    <i class="bunga bunga--rose"   style="--x:58%;  --size:16px; --dur:38s; --delay:-6s;  --drift:22px; --op:0.48; --spin:16deg;  --blur:0.4px"></i>
-    <i class="bunga bunga--bright" style="--x:69%;  --size:8px;  --dur:24s; --delay:-16s; --drift:14px; --op:0.37; --spin:24deg;  --blur:0"></i>
-    <i class="bunga bunga--mid"    style="--x:79%;  --size:13px; --dur:32s; --delay:-11s; --drift:-22px;--op:0.23; --spin:-16deg; --blur:0.4px"></i>
-    <i class="bunga bunga--deep"   style="--x:90%;  --size:19px; --dur:40s; --delay:-24s; --drift:-14px;--op:0.16; --spin:12deg;  --blur:0.8px"></i>
-    <i class="bunga bunga--bright" style="--x:15%;  --size:12px; --dur:33s; --delay:-27s; --drift:16px; --op:0.36; --spin:-22deg; --blur:0"></i>
-    <i class="bunga bunga--rose"   style="--x:63%;  --size:9px;  --dur:29s; --delay:-2s;  --drift:-20px;--op:0.50; --spin:20deg;  --blur:0"></i>
-    <i class="bunga bunga--mid"    style="--x:40%;  --size:16px; --dur:36s; --delay:-19s; --drift:26px; --op:0.24; --spin:-18deg; --blur:0.4px"></i>
-    <i class="bunga bunga--deep"   style="--x:52%;  --size:10px; --dur:31s; --delay:-13s; --drift:-12px;--op:0.18; --spin:14deg;  --blur:0"></i>
-    <i class="bunga bunga--bright" style="--x:27%;  --size:12px; --dur:35s; --delay:-7s;  --drift:18px; --op:0.38; --spin:-24deg; --blur:0.4px"></i>
-    <i class="bunga bunga--rose"   style="--x:73%;  --size:15px; --dur:28s; --delay:-22s; --drift:-24px;--op:0.47; --spin:16deg;  --blur:0.3px"></i>
-    <i class="bunga bunga--mid"    style="--x:84%;  --size:9px;  --dur:37s; --delay:-5s;  --drift:12px; --op:0.25; --spin:-12deg; --blur:0"></i>
+    <i class="bunga bunga--aDeep"   style="--x:8%;   --size:20px; --dur:30s; --delay:-3s;  --drift:20px; --op:0.15; --spin:18deg;  --blur:0.6px"></i>
+    <i class="bunga bunga--bRose"   style="--x:20%;  --size:12px; --dur:34s; --delay:-14s; --drift:-16px;--op:0.30; --spin:-14deg; --blur:0"></i>
+    <i class="bunga bunga--bMid"    style="--x:33%;  --size:22px; --dur:42s; --delay:-9s;  --drift:28px; --op:0.19; --spin:22deg;  --blur:0.8px"></i>
+    <i class="bunga bunga--aBright" style="--x:46%;  --size:13px; --dur:26s; --delay:-20s; --drift:-18px;--op:0.25; --spin:-20deg; --blur:0"></i>
+    <i class="bunga bunga--aRose"   style="--x:58%;  --size:18px; --dur:38s; --delay:-6s;  --drift:22px; --op:0.30; --spin:16deg;  --blur:0.4px"></i>
+    <i class="bunga bunga--bBright" style="--x:69%;  --size:10px; --dur:24s; --delay:-16s; --drift:14px; --op:0.24; --spin:24deg;  --blur:0"></i>
+    <i class="bunga bunga--bMid"    style="--x:79%;  --size:15px; --dur:32s; --delay:-11s; --drift:-22px;--op:0.18; --spin:-16deg; --blur:0.4px"></i>
+    <i class="bunga bunga--aDeep"   style="--x:90%;  --size:22px; --dur:40s; --delay:-24s; --drift:-14px;--op:0.14; --spin:12deg;  --blur:0.8px"></i>
+    <i class="bunga bunga--aBright" style="--x:15%;  --size:14px; --dur:33s; --delay:-27s; --drift:16px; --op:0.26; --spin:-22deg; --blur:0"></i>
+    <i class="bunga bunga--bRose"   style="--x:63%;  --size:11px; --dur:29s; --delay:-2s;  --drift:-20px;--op:0.31; --spin:20deg;  --blur:0"></i>
+    <i class="bunga bunga--aMid"    style="--x:40%;  --size:18px; --dur:36s; --delay:-19s; --drift:26px; --op:0.20; --spin:-18deg; --blur:0.4px"></i>
+    <i class="bunga bunga--bDeep"   style="--x:52%;  --size:12px; --dur:31s; --delay:-13s; --drift:-12px;--op:0.15; --spin:14deg;  --blur:0"></i>
+    <i class="bunga bunga--aBright" style="--x:27%;  --size:13px; --dur:35s; --delay:-7s;  --drift:18px; --op:0.25; --spin:-24deg; --blur:0.4px"></i>
+    <i class="bunga bunga--bRose"   style="--x:73%;  --size:17px; --dur:28s; --delay:-22s; --drift:-24px;--op:0.29; --spin:16deg;  --blur:0.3px"></i>
+    <i class="bunga bunga--aMid"    style="--x:84%;  --size:10px; --dur:37s; --delay:-5s;  --drift:12px; --op:0.20; --spin:-12deg; --blur:0"></i>
   </div>
 
   <main class="wrap">
