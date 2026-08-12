@@ -38,6 +38,9 @@ User: zarah emas TAK NAMPAK LANGSUNG, latar bernafas TAK NAMPAK, sway kad belaka
 - GitHub Pages cache ~10 minit; selepas push, uji dengan hard reload / incognito.
 - Firebase console tips: rules editor guna CodeMirror, boleh set lewat JS `document.querySelector('.CodeMirror').CodeMirror.setValue(...)`; layout sempit sorok butang Publish, klik baris "unpublished changes" dulu.
 
+## Rujukan design
+Folder `notaTimbang/` dalam repo: verdict.md (pakej design muktamad + senarai STOP), research.md (token warna disahkan sampel pixel kad rasmi + kiraan kontras WCAG), P2.md (spec penuh ciri interaktif), faktaPack.md (fakta sistem masa run). Ini artifak run /timbang 13 Ogos, rujuk sebelum ubah design besar.
+
 ## Sejarah commit penting
 - `6f78374` bina asal (borang + dinding + rules), `90be819` pecah 3 halaman, `917181a` marquee animasi (DIGANTI), `8ce1fd9` pakej purple + 4 ciri interaktif (run timbang), `36b2835` timbunan swipe ganti marquee, `f09f1e6` like label + kontras teks + swipe thresholds, `6caaa4e` fix spring-back snapshot rebuild, `30a777a` ambient motion (terlalu subtle, bug #2)
 
