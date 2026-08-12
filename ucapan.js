@@ -57,6 +57,9 @@ let sudahMula = false;        // sudah terima snapshot pertama?
 let isAnimating = false;
 let abaikanKlikSayang = false; // true sebentar selepas swipe: elak "klik" hantu cetus like
 let pendingBaru = null;       // { count, targetId } untuk pil "doa baru masuk"
+let dragAktif = false;        // true SEMASA jari betul betul pegang/heret kad depan
+let snapshotTertunggu = null; // snapshot /rsvp yang tiba masa tak sesuai (drag/animasi); diproses lepas selesai
+let tandaTerakhir = null;     // "cap jari" data yang terakhir dirender (elak bina semula DOM sia sia)
 
 // ====== Keadaan "sayang" ======
 const KUNCI_SAYANG = "sayangDitekan.v1";
@@ -315,7 +318,7 @@ function keSebelum() {
   isAnimating = true;
   setIndex(index - 1);
   render(true);
-  window.setTimeout(function () { isAnimating = false; }, 260);
+  window.setTimeout(function () { isAnimating = false; cubaTerapTertunggu(); }, 260);
 }
 
 // Terbangkan kad depan ke kiri, naikkan kad bawah, lalu render kad berikut.
@@ -332,6 +335,7 @@ function flingDepan() {
     setIndex(index + 1);
     render(false);
     isAnimating = false;
+    cubaTerapTertunggu();
   }, 260);
 }
 
@@ -364,6 +368,7 @@ function pasangDrag(kad) {
     mula = { x: e.clientX, y: e.clientY, t: e.timeStamp || Date.now() };
     dragging = true;
     arah = null;
+    dragAktif = true;                        // jari mula pegang kad: kunci rebuild
   }
 
   function gerak(e) {
@@ -398,11 +403,12 @@ function pasangDrag(kad) {
     const dt = (e.timeStamp || Date.now()) - mula.t;
     dragging = false;
     mula = null;
+    dragAktif = false;                        // jari lepas: buka kunci rebuild
     try { kad.releasePointerCapture(pointerId); } catch (err) {}
     kad.classList.remove("swipe-kad--drag");
     tSet.style.opacity = "0";
     tSeb.style.opacity = "0";
-    if (!jadiDrag) return;
+    if (!jadiDrag) { cubaTerapTertunggu(); return; }
 
     // Swipe jadi drag: tahan "klik" hantu supaya tidak tersilap cetus like,
     // walaupun jari lepas tepat atas butang like (kes spring-balik).
@@ -416,14 +422,15 @@ function pasangDrag(kad) {
     if (cetus && dx < 0 && index < deckIds.length - 1) {
       flingDepan();
     } else if (cetus && dx > 0 && index > 0) {
-      if (REDUCED.matches) { keSebelum(); return; }
+      if (REDUCED.matches) { keSebelum(); cubaTerapTertunggu(); return; }
       isAnimating = true;
       kad.style.transform = "translateX(135%) translateY(20px) rotate(18deg)";
       kad.style.opacity = "0";
-      window.setTimeout(function () { setIndex(index - 1); render(true); isAnimating = false; }, 240);
+      window.setTimeout(function () { setIndex(index - 1); render(true); isAnimating = false; cubaTerapTertunggu(); }, 240);
     } else {
       terapkanDepth(kad, 0);                  // tak cukup jarak/laju: spring balik
     }
+    cubaTerapTertunggu();                      // proses snapshot tertunda kalau keadaan dah selamat
   }
 
   kad.addEventListener("pointerdown", turun);
@@ -431,6 +438,8 @@ function pasangDrag(kad) {
   kad.addEventListener("pointerup", naik);
   kad.addEventListener("pointercancel", function () {
     if (dragging) { dragging = false; mula = null; kad.classList.remove("swipe-kad--drag"); terapkanDepth(kad, 0); tSet.style.opacity = "0"; tSeb.style.opacity = "0"; }
+    dragAktif = false;                         // gesture dibatalkan: buka kunci rebuild
+    cubaTerapTertunggu();
   });
 }
 
@@ -542,7 +551,41 @@ document.addEventListener("keydown", function (e) {
 REDUCED.addEventListener("change", function () { if (deckIds.length) render(false); });
 
 // ====== Terap data snapshot ke timbunan (tanpa sentak kad semasa) ======
+// "Cap jari" data yang DIPAPAR: id + nama + ucapan tiap entri. Kalau cap sama,
+// tiada perubahan bermakna pada kad (like dikira oleh listener /sayang secara
+// in-place), jadi tak perlu bina semula DOM timbunan langsung.
+function tandaData(senarai) {
+  let s = "";
+  for (let i = 0; i < senarai.length; i++) {
+    const e = senarai[i];
+    s += e.id + "" + (e.nama || "") + "" + (e.ucapan || "") + "";
+  }
+  return s;
+}
+
+// Kalau ada snapshot yang ditangguh DAN keadaan dah selamat (tiada jari heret,
+// tiada animasi terbang), proses ia sekarang. Dipanggil di hujung setiap gesture
+// dan setiap animasi.
+function cubaTerapTertunggu() {
+  if (snapshotTertunggu && !dragAktif && !isAnimating) {
+    const s = snapshotTertunggu;
+    snapshotTertunggu = null;
+    terapkanData(s);
+  }
+}
+
 function terapkanData(senarai) {
+  // FIX "melantun balik": JANGAN bina semula DOM timbunan bila jari tengah heret
+  // kad atau semasa animasi terbang. Simpan snapshot terkini, proses lepas siap.
+  if (dragAktif || isAnimating) { snapshotTertunggu = senarai; return; }
+
+  // FIX rebuild sia sia: kalau data yang dipapar serupa dengan render terakhir
+  // (kes lazim: snapshot cache diikuti snapshot server dengan data sama saat
+  // pertama muat), langkau terus. Like count tetap dikemas in-place oleh /sayang.
+  const tanda = tandaData(senarai);
+  if (sudahMula && tanda === tandaTerakhir) return;
+  tandaTerakhir = tanda;
+
   const baharuIds = senarai.map(function (e) { return e.id; });
   const baharuSet = new Set(baharuIds);
   const pertamaKali = !sudahMula;
