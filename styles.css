@@ -350,6 +350,156 @@ body {
   padding: var(--space-7) var(--space-5);
 }
 
+/* ============================== DINDING UCAPAN HIDUP ==============================
+   Peningkatan KHAS halaman ucapan.html sahaja. Semua di bawah diskop di dalam
+   .dinding supaya Papan Pengantin (pengantin.html) yang turut guna .ucapan-kad
+   TIDAK terkesan. Idea: kad ucapan berwarna hanyut naik perlahan (marquee dua
+   lajur), sentuh/hover henti untuk baca, kad baru masuk dengan kilauan emas.
+   Semua gerak guna transform + opacity sahaja (mesra GPU, jimat bateri). */
+
+/* --- Nota interaksi (dipapar JS hanya bila marquee aktif) --- */
+.dinding-nota {
+  text-align: center;
+  color: color-mix(in oklch, var(--color-ink-soft) 85%, transparent);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  margin: calc(-1 * var(--space-4)) 0 var(--space-6);
+}
+.dinding-nota[hidden] { display: none; }
+
+/* --- Kad ucapan: susun inisial + teks + nama --- */
+.dinding .ucapan-kad {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "inisial teks" "inisial nama";
+  column-gap: var(--space-5);
+  row-gap: var(--space-3);
+  align-items: start;
+  animation: none; /* gerak masuk diuruskan kelas --baru sahaja, bukan asas */
+}
+.dinding .ucapan-teks { grid-area: teks; }
+.dinding .ucapan-nama { grid-area: nama; }
+
+/* Inisial nama tetamu dalam bulatan (aksen emas antik) */
+.dinding .ucapan-inisial {
+  grid-area: inisial;
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-plum);
+  background: color-mix(in oklch, var(--color-cream) 68%, transparent);
+  color: var(--color-maroon);          /* huruf maroon: kontras tinggi di semua variasi */
+  font-family: var(--font-script);
+  font-size: 1.45rem;
+  line-height: 1;
+  user-select: none;
+}
+
+/* --- Variasi warna deterministik (ikut hash id, bukan rawak) ---
+   Semua latar cerah + teks ink/maroon: kontras kekal tinggi untuk orang tua. */
+.dinding .ucapan-kad--v0 { background: var(--color-cream); border-left-color: var(--color-plum); }
+.dinding .ucapan-kad--v0 .ucapan-inisial { border-color: var(--color-plum); }
+
+.dinding .ucapan-kad--v1 { /* blush lembut */
+  background: color-mix(in oklch, var(--color-cream) 89%, var(--color-maroon));
+  border-left-color: var(--color-maroon-soft);
+}
+.dinding .ucapan-kad--v1 .ucapan-inisial { border-color: var(--color-maroon-soft); }
+
+.dinding .ucapan-kad--v2 { /* plum pudar */
+  background: color-mix(in oklch, var(--color-cream) 87%, var(--color-plum));
+  border-left-color: var(--color-plum);
+}
+.dinding .ucapan-kad--v2 .ucapan-inisial { border-color: var(--color-plum); }
+
+.dinding .ucapan-kad--v3 { /* emas antik */
+  background: color-mix(in oklch, var(--color-cream) 85%, var(--color-gold));
+  border-left-color: var(--color-gold);
+}
+.dinding .ucapan-kad--v3 .ucapan-inisial {
+  border-color: color-mix(in oklch, var(--color-gold) 78%, var(--color-maroon));
+}
+
+/* --- Susun statik: ucapan sikit atau prefers-reduced-motion --- */
+.dinding .ucapan-senarai--statik {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 560px) {
+  .dinding .ucapan-senarai--statik { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* --- Mod marquee: tingkap tinggi tetap, kad hanyut naik --- */
+.dinding .ucapan-senarai--marquee { display: block; }
+
+.dinding .marquee-tingkap {
+  display: grid;
+  grid-template-columns: 1fr;                 /* 1 lajur di phone */
+  gap: var(--space-5);
+  height: min(72vh, 620px);
+  overflow: hidden;
+  /* lembutkan tepi atas & bawah: kad lut masuk/keluar, bukan terpotong keras */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 91%, transparent 100%);
+}
+@media (min-width: 560px) {                    /* 2 lajur di skrin lebar */
+  .dinding .marquee-tingkap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.dinding .marquee-kolum { min-width: 0; overflow: hidden; }
+
+.dinding .marquee-track {
+  display: block;
+  will-change: transform;
+  animation: marqueeNaik var(--marquee-dur, 60s) linear infinite;
+}
+.dinding .marquee-copy { display: block; }
+/* Jarak sekata (termasuk di sambungan dua salinan) supaya loop mulus tanpa
+   sentakan. Guna margin, bukan gap, supaya translateY(-50%) = tepat satu salinan. */
+.dinding .marquee-copy .ucapan-kad { margin-bottom: var(--space-5); }
+
+@keyframes marqueeNaik {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+
+/* Hover (desktop) atau kelas .is-pause (sentuh, dari JS) hentikan hanyutan */
+.dinding .marquee-tingkap:hover .marquee-track,
+.dinding .marquee-tingkap.is-pause .marquee-track {
+  animation-play-state: paused;
+}
+
+/* --- Kad baru masuk (live onSnapshot): naik lembut + kilauan emas sekali --- */
+.dinding .ucapan-kad--baru { animation: kadMasuk 640ms var(--ease-out) both; }
+@keyframes kadMasuk {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.dinding .ucapan-kad--baru::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(105deg,
+    transparent 38%,
+    color-mix(in oklch, var(--color-gold) 72%, white) 50%,
+    transparent 62%);
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  animation: kilauEmas 1700ms var(--ease-out) 160ms 1 both;
+}
+@keyframes kilauEmas {
+  from { background-position: 150% 0; opacity: 0; }
+  18%  { opacity: 0.85; }
+  to   { background-position: -60% 0; opacity: 0; }
+}
+
 /* ============================== HALAMAN PENGANTIN ============================== */
 .ringkasan { display: grid; grid-template-columns: 1fr; gap: var(--space-5); margin-bottom: var(--space-7); }
 @media (min-width: 480px) { .ringkasan { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
