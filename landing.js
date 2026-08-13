@@ -162,21 +162,44 @@ function svgIkon(jenis) {
   });
 })();
 
-// ====== 5. DOCK: pautan dalam-page skrol lembut ======
+// ====== 5. DOCK: pautan dalam-page skrol lembut (rAF, elak flash gelap) ======
 (function dockInit() {
   const dock = document.getElementById("lpDock");
   if (!dock) return;
+  const OFFSET = 18;   // jarak dari atas viewport supaya tajuk seksyen tak terlalu rapat
+
+  function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function skrolY() { return window.scrollY || window.pageYOffset || 0; }
+
+  // Animasi scroll SENDIRI guna requestAnimationFrame. KENAPA: scrollIntoView
+  // behavior:"smooth" Chrome untuk jarak JAUH ambil 3+ saat dan compositor tak
+  // sempat paint -> viewport "flash gelap" sekejap. rAF paint tiap frame, durasi
+  // berskala dgn jarak tapi DIHAD 800ms, jadi tiada kad gelap kosong.
+  function scrollKe(targetY) {
+    const startY = skrolY();
+    const dist = targetY - startY;
+    if (Math.abs(dist) < 2) return;
+    const dur = Math.min(800, Math.max(280, Math.abs(dist) * 0.5));
+    const mula = performance.now();
+    function langkah(now) {
+      const p = Math.min((now - mula) / dur, 1);
+      window.scrollTo(0, Math.round(startY + dist * easeInOutCubic(p)));
+      if (p < 1) requestAnimationFrame(langkah);
+    }
+    requestAnimationFrame(langkah);
+  }
+
   dock.addEventListener("click", function (e) {
     const a = e.target.closest("a");
     if (!a) return;
     const href = a.getAttribute("href") || "";
-    if (href.charAt(0) !== "#") return;          // rsvp.html / ucapan.html: biar navigasi biasa
+    if (href.charAt(0) !== "#") return;          // rsvp.html / ucapan.html: navigasi biasa
     const sasaran = document.querySelector(href);
     if (!sasaran) return;
     e.preventDefault();
-    try {
-      sasaran.scrollIntoView({ behavior: REDUCED.matches ? "auto" : "smooth", block: "start" });
-    } catch (err) { location.hash = href; }
+    const targetY = Math.max(0, sasaran.getBoundingClientRect().top + skrolY() - OFFSET);
+    if (REDUCED.matches) { window.scrollTo(0, targetY); return; }   // reduced: lompat terus
+    scrollKe(targetY);
   });
 })();
 
