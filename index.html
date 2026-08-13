@@ -2,122 +2,275 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Khadizah &amp; Anwar , RSVP</title>
-  <meta name="description" content="Sila sahkan kehadiran anda ke majlis perkahwinan Khadizah & Anwar, Ahad 30 Ogos 2026." />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Khadizah &amp; Anwar , Jemputan Walimatulurus</title>
+  <meta name="description" content="Jemputan Majlis Perkahwinan Khadizah & Anwar, Ahad 30 Ogos 2026, ADH Hall Kota Marudu." />
+
+  <!-- Font 3 lapis (semua display=swap; kegagalan CDN jatuh ke serif sistem, halaman
+       tak pernah kosong): Great Vibes = nama script; Cormorant SC = label besar
+       berjarak; EB Garamond = badan serif. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+SC:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
+
+  <!-- styles.css: token warna disahkan + aset bunga ambient (WebKit selamat) +
+       reduced-motion. landing.css: susun atur khas laman jemputan (dimuat selepas,
+       jadi menang atas mana mana pertindihan). -->
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./landing.css" />
+
+  <!-- Penanda "JS hidup": kalau modul landing.js gagal muat, seksyen reveal TIDAK
+       disorok (CSS hanya sorok bila .lp-js ada), jadi kandungan tak pernah kosong. -->
+  <script>document.documentElement.className += " lp-js";</script>
 </head>
-<body>
-  <main class="wrap">
+<body class="lp">
 
-    <!-- Notis kalau tetapan Firebase belum diisi -->
-    <div class="notis-setup" id="notisSetup" role="status">
-      <strong>Setup belum lengkap</strong>
-      <p>Sambungan pangkalan data belum disetkan. Borang RSVP dan dinding ucapan akan aktif sebaik sahaja tetapan Firebase diisi. Buat masa ini anda boleh lihat rekaan laman.</p>
+  <!-- ============ AMBIENT GUTTER (desktop): bunga ungu hanyut di latar gelap ============
+       Guna semula kelas .ambient + .bunga dari styles.css (SVG kelopak eksplisit,
+       disahkan sama di WebKit & Chromium, dimatikan oleh reduced-motion). Bunga muncul
+       di ruang kiri/kanan kad; kad berlatar hangat legap menutupnya di tengah. Tiada
+       teks duduk atas gutter, jadi tiada kebimbangan kontras di sini. -->
+  <div class="ambient" aria-hidden="true">
+    <i class="bunga bunga--aDeep"   style="--x:5%;   --size:26px; --dur:34s; --delay:-3s;  --drift:22px; --op:0.5; --spin:16deg;  --blur:0.8px"></i>
+    <i class="bunga bunga--bMid"    style="--x:12%;  --size:18px; --dur:42s; --delay:-14s; --drift:-16px;--op:0.42;--spin:-14deg; --blur:0.4px"></i>
+    <i class="bunga bunga--aBright" style="--x:9%;   --size:14px; --dur:30s; --delay:-9s;  --drift:14px; --op:0.4; --spin:22deg;  --blur:0"></i>
+    <i class="bunga bunga--bRose"   style="--x:3%;   --size:12px; --dur:38s; --delay:-20s; --drift:-12px;--op:0.38;--spin:-18deg; --blur:0"></i>
+    <i class="bunga bunga--aMid"    style="--x:16%;  --size:20px; --dur:46s; --delay:-6s;  --drift:18px; --op:0.4; --spin:14deg;  --blur:0.6px"></i>
+    <i class="bunga bunga--bBright" style="--x:88%;  --size:24px; --dur:36s; --delay:-16s; --drift:-20px;--op:0.5; --spin:-16deg; --blur:0.8px"></i>
+    <i class="bunga bunga--aRose"   style="--x:94%;  --size:16px; --dur:40s; --delay:-2s;  --drift:16px; --op:0.4; --spin:20deg;  --blur:0.3px"></i>
+    <i class="bunga bunga--bDeep"   style="--x:91%;  --size:13px; --dur:31s; --delay:-24s; --drift:-14px;--op:0.42;--spin:12deg;  --blur:0"></i>
+    <i class="bunga bunga--aMid"    style="--x:84%;  --size:19px; --dur:44s; --delay:-11s; --drift:20px; --op:0.4; --spin:-20deg; --blur:0.5px"></i>
+    <i class="bunga bunga--bBright" style="--x:97%;  --size:14px; --dur:33s; --delay:-27s; --drift:-16px;--op:0.4; --spin:18deg;  --blur:0"></i>
+  </div>
+
+  <!-- ============ COVER (sampul, tekan untuk buka) ============
+       Skrin penuh; latar ungu gelap band kad rasmi + tekstur kertas halus + vignette.
+       Wax seal monogram K&A (SVG tulen, tiada imej dicuri). Tekan mana mana = buka. -->
+  <div class="lp-cover" id="lpCover" role="button" tabindex="0" aria-label="Tekan untuk membuka jemputan">
+    <div class="lp-cover-inner">
+      <p class="lp-cover-atas">Bismillahirrahmanirrahim</p>
+
+      <div class="lp-seal" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="150" height="150" role="img">
+          <!-- Lilitan wax: cakera dengan gradien radial + rim emas. Path/circle
+               eksplisit, TIADA filter/use/symbol (selamat WebKit background/inline). -->
+          <circle cx="60" cy="60" r="52" fill="#3a2340" stroke="#bfa065" stroke-width="1.5"/>
+          <circle cx="60" cy="60" r="46" fill="none" stroke="#8a6a93" stroke-width="0.8" stroke-dasharray="1.5 3.5"/>
+          <circle cx="60" cy="60" r="40" fill="none" stroke="#bfa065" stroke-width="0.8"/>
+          <!-- Daun kecil atas & bawah -->
+          <path d="M60 16c-4 4-4 9 0 13 4-4 4-9 0-13Z" fill="#bfa065" opacity="0.85"/>
+          <path d="M60 104c-4-4-4-9 0-13 4 4 4 9 0 13Z" fill="#bfa065" opacity="0.85"/>
+        </svg>
+        <span class="lp-seal-mono">K<em>&amp;</em>A</span>
+      </div>
+
+      <p class="lp-cover-eyebrow">Walimatulurus</p>
+      <p class="lp-cover-nama">Khadizah &amp; Anwar</p>
+      <p class="lp-cover-tarikh">Ahad, 30 Ogos 2026</p>
+      <span class="lp-cover-buka">
+        <span class="lp-cover-buka-titik" aria-hidden="true"></span>
+        Tekan untuk buka
+      </span>
     </div>
+  </div>
 
-    <!-- Header pengantin -->
-    <header class="header">
-      <p class="eyebrow">Walimatulurus</p>
-      <h1 class="nama-script">Khadizah &amp; Anwar</h1>
-      <p class="nama-serif">Khadizah Binti Razali<br />&amp; Muhammad Anwar Bin Sawal</p>
+  <!-- ============ KAD BENTUK TELEFON ============ -->
+  <main class="lp-kad" id="lpKad">
 
-      <!-- Krest hero botani (SVG halus): aksen ungu tumpu + titik emas sebagai
-           isyarat "majlis sama" dengan kad jemputan. Warna dipacu token CSS. -->
-      <svg class="ornamen krest" width="150" height="34" viewBox="0 0 150 34" fill="none" aria-hidden="true">
-        <path class="krest-rule" d="M14 17h40" stroke-width="1" stroke-linecap="round"/>
-        <path class="krest-rule" d="M96 17h40" stroke-width="1" stroke-linecap="round"/>
-        <g class="krest-daun" stroke-width="1" fill="none">
-          <path d="M60 17c4-6 8-7 10-5s0 7-5 8"/>
-          <path d="M90 17c-4-6-8-7-10-5s0 7 5 8"/>
-          <path d="M75 6c-4 4-4 8-1 10"/>
-          <path d="M75 6c4 4 4 8 1 10"/>
-        </g>
-        <circle class="krest-nadi" cx="75" cy="18" r="3.4"/>
-        <circle class="krest-emas" cx="56" cy="17" r="1.8"/>
-        <circle class="krest-emas" cx="94" cy="17" r="1.8"/>
-      </svg>
+    <!-- 1. HERO -->
+    <section class="lp-sec lp-hero reveal">
+      <p class="lp-bismillah" dir="rtl" lang="ar">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+      <p class="lp-eyebrow">Walimatulurus</p>
+      <h1 class="lp-nama-script">Khadizah &amp; Anwar</h1>
+      <div class="lp-divider" aria-hidden="true">
+        <svg viewBox="0 0 160 20" width="160" height="20" fill="none">
+          <path d="M10 10h48" stroke="#bfa065" stroke-width="1" stroke-linecap="round"/>
+          <path d="M102 10h48" stroke="#bfa065" stroke-width="1" stroke-linecap="round"/>
+          <path d="M74 10c3-4 6-5 8-3.5S82 11 78 12" stroke="#674b77" stroke-width="1" stroke-linecap="round"/>
+          <path d="M86 10c-3-4-6-5-8-3.5S78 11 82 12" stroke="#674b77" stroke-width="1" stroke-linecap="round"/>
+          <circle cx="80" cy="10" r="2.6" fill="#382443"/>
+          <circle cx="62" cy="10" r="1.6" fill="#bfa065"/>
+          <circle cx="98" cy="10" r="1.6" fill="#bfa065"/>
+        </svg>
+      </div>
+      <p class="lp-tarikh">Ahad, 30 Ogos 2026</p>
+    </section>
 
-      <p class="tarikh">Ahad, 30 Ogos 2026<br />17 Rabiulawal 1448H</p>
-      <p class="masa">12:00 tengah hari hingga 6:00 petang</p>
-      <p class="tempat">ADH Hall KM</p>
-      <p class="jemputan-teks">Dengan penuh kesyukuran, kami menjemput anda meraikan hari bahagia kami. Sudi sudikanlah mengesahkan kehadiran di bawah.</p>
-    </header>
+    <!-- 2. SALAM + JEMPUTAN -->
+    <section class="lp-sec reveal">
+      <p class="lp-salam">Assalamu'alaikum Warahmatullahi Wabarakatuh</p>
+      <p class="lp-pantun">
+        Dari Kota Marudu kami mula,<br />
+        Menyusun kata mengukir bicara;<br />
+        Dengan hati yang penuh gembira,<br />
+        Kami jemput tuan meraikan bahagia.
+      </p>
+      <p class="lp-jemputan">
+        Dengan penuh rasa kesyukuran, kami
+      </p>
+      <p class="lp-ibubapa">Razali Bin Milek<br /><span class="lp-amp">&amp;</span><br />Juliana Simpokan</p>
+      <p class="lp-jemputan">
+        ingin menjemput Dato' / Datin / Tuan / Puan / Encik / Cik ke Majlis Perkahwinan puteri kami
+      </p>
+    </section>
 
-    <!-- Kad RSVP -->
-    <section class="kad" aria-labelledby="tajukRsvp">
-      <h2 class="seksyen-tajuk" id="tajukRsvp">Kehadiran Tetamu</h2>
-      <p class="seksyen-sari">Mohon sahkan kehadiran anda</p>
+    <!-- 3. NAMA PENUH PENGANTIN -->
+    <section class="lp-sec lp-pengantin reveal">
+      <p class="lp-pengantin-nama">Khadizah Binti Razali</p>
+      <p class="lp-amp-besar" aria-hidden="true">&amp;</p>
+      <p class="lp-pengantin-nama">Muhammad Anwar Bin Sawal</p>
+    </section>
 
-      <form id="borangRsvp" novalidate>
-        <div class="medan">
-          <label class="medan-label" for="nama">Nama Penuh <span class="wajib">(wajib)</span></label>
-          <input class="input" type="text" id="nama" name="nama" maxlength="80" autocomplete="name"
-                 placeholder="Contoh: Ahmad bin Yusof" required aria-describedby="ralatNama" />
-          <p class="ralat-medan" id="ralatNama">Sila isi nama anda.</p>
-        </div>
-
-        <div class="medan">
-          <span class="medan-label" id="labelStatus">Adakah anda dapat hadir? <span class="wajib">(wajib)</span></span>
-          <div class="pilihan" role="radiogroup" aria-labelledby="labelStatus">
-            <label>
-              <input type="radio" name="status" value="hadir" />
-              <span class="tanda" aria-hidden="true"></span>
-              <span class="pilihan-teks">Ya, saya hadir</span>
-            </label>
-            <label>
-              <input type="radio" name="status" value="tidak" />
-              <span class="tanda" aria-hidden="true"></span>
-              <span class="pilihan-teks">Maaf, tidak dapat hadir</span>
-            </label>
-          </div>
-          <p class="ralat-medan" id="ralatStatus">Sila pilih sama ada anda hadir atau tidak.</p>
-        </div>
-
-        <div class="medan medan-pax" id="medanPax">
-          <label class="medan-label" for="pax">Bilangan Kehadiran <span style="font-weight:400;">(termasuk diri anda)</span></label>
-          <select class="select" id="pax" name="pax">
-            <option value="1">1 orang</option>
-            <option value="2">2 orang</option>
-            <option value="3">3 orang</option>
-            <option value="4">4 orang</option>
-            <option value="5">5 orang</option>
-            <option value="6">6 orang</option>
-            <option value="7">7 orang</option>
-            <option value="8">8 orang</option>
-            <option value="9">9 orang</option>
-            <option value="10">10 orang</option>
-          </select>
-        </div>
-
-        <div class="medan">
-          <label class="medan-label" for="ucapan">Ucapan &amp; Doa <span style="font-weight:400;">(pilihan)</span></label>
-          <textarea class="textarea" id="ucapan" name="ucapan" maxlength="1000"
-                    placeholder="Titipkan sepatah dua kata untuk pengantin..."></textarea>
-        </div>
-
-        <button class="butang" type="submit" id="butangHantar">Hantar Kehadiran</button>
-      </form>
-
-      <!-- Keadaan terima kasih (dipapar selepas berjaya) -->
-      <div class="terima-kasih" id="terimaKasih" role="status">
-        <p class="nama-script">Terima kasih</p>
-        <p id="terimaKasihTeks"></p>
-        <a class="pautan-halus pautan-halus--tengah" href="./ucapan.html">Lihat ucapan tetamu &rarr;</a>
+    <!-- 4. BUTIRAN MAJLIS (sasaran dock "Tarikh") -->
+    <section class="lp-sec lp-butiran reveal" id="tarikh">
+      <div class="lp-butir">
+        <span class="lp-butir-ikon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+            <rect x="3.5" y="5" width="17" height="15" rx="2.5" stroke="#6e2029" stroke-width="1.4"/>
+            <path d="M3.5 9.5h17M8 3.5v3M16 3.5v3" stroke="#6e2029" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="12" cy="14.5" r="1.7" fill="#bfa065"/>
+          </svg>
+        </span>
+        <p class="lp-butir-utama">Ahad, 30 Ogos 2026</p>
+        <p class="lp-butir-sub">bersamaan 17 Rabiulawal 1448H</p>
+      </div>
+      <div class="lp-butir">
+        <span class="lp-butir-ikon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+            <circle cx="12" cy="12" r="8.5" stroke="#6e2029" stroke-width="1.4"/>
+            <path d="M12 7.2v5l3.2 2" stroke="#6e2029" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <p class="lp-butir-utama">12:00 tengah hari hingga 6:00 petang</p>
+      </div>
+      <div class="lp-butir">
+        <span class="lp-butir-ikon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+            <path d="M12 21c4.2-4.2 6.3-7.6 6.3-10.6A6.3 6.3 0 0 0 5.7 10.4C5.7 13.4 7.8 16.8 12 21Z" stroke="#6e2029" stroke-width="1.4" stroke-linejoin="round"/>
+            <circle cx="12" cy="10.2" r="2.4" fill="#bfa065"/>
+          </svg>
+        </span>
+        <p class="lp-butir-utama">ADH Hall, Kota Marudu</p>
       </div>
     </section>
 
-    <p class="nav-halaman">
-      Ingin baca doa daripada tetamu lain?
-      <a class="pautan-halus" href="./ucapan.html">Buka dinding ucapan</a>
-    </p>
+    <!-- 5. COUNTDOWN -->
+    <section class="lp-sec lp-countdown-sec reveal">
+      <p class="lp-label">Menghitung Hari</p>
+      <div class="lp-countdown" id="lpCountdown" aria-live="off">
+        <div class="lp-cd-kotak"><span class="lp-cd-nombor" id="cdHari">0</span><span class="lp-cd-label">Hari</span></div>
+        <div class="lp-cd-kotak"><span class="lp-cd-nombor" id="cdJam">0</span><span class="lp-cd-label">Jam</span></div>
+        <div class="lp-cd-kotak"><span class="lp-cd-nombor" id="cdMinit">0</span><span class="lp-cd-label">Minit</span></div>
+        <div class="lp-cd-kotak"><span class="lp-cd-nombor" id="cdSaat">0</span><span class="lp-cd-label">Saat</span></div>
+      </div>
+      <p class="lp-countdown-selesai" id="lpCountdownSelesai" hidden>Alhamdulillah, majlis selamat berlangsung</p>
+    </section>
 
-    <footer class="footer">Khadizah &amp; Anwar &middot; 30 Ogos 2026</footer>
+    <!-- 6. RSVP (dalam page, menuju borang) -->
+    <section class="lp-sec lp-rsvp reveal">
+      <p class="lp-label">Maklumat Kehadiran</p>
+      <p class="lp-teks">Sudi sudikanlah memaklumkan kehadiran anda sebelum 30 Ogos 2026 supaya kami dapat menyediakan sambutan yang sempurna buat anda.</p>
+      <a class="lp-btn-besar" href="./rsvp.html">RSVP</a>
+    </section>
+
+    <!-- 7. BUKU TETAMU -->
+    <section class="lp-sec lp-buku reveal" id="bukuTetamu">
+      <p class="lp-label">Buku Tetamu</p>
+      <div class="lp-buku-senarai" id="lpBukuSenarai" hidden></div>
+      <div class="lp-buku-butang">
+        <a class="lp-btn-halus" href="./rsvp.html">Berikan Ucapan</a>
+        <a class="lp-btn-halus" href="./ucapan.html">Lihat Semua Ucapan</a>
+      </div>
+    </section>
+
+    <!-- 8. HUBUNGI (sasaran dock "Hubungi") -->
+    <section class="lp-sec lp-hubungi reveal" id="hubungi">
+      <p class="lp-label">Hubungi</p>
+      <p class="lp-teks">Pihak Pengantin Perempuan</p>
+      <div class="lp-kontak" id="lpKontak"></div>
+    </section>
+
+    <!-- 9. LOKASI (sasaran dock "Lokasi") -->
+    <section class="lp-sec lp-lokasi reveal" id="lokasi">
+      <p class="lp-label">Lokasi Majlis</p>
+      <p class="lp-teks">ADH Hall, Kota Marudu</p>
+      <a class="lp-btn-besar" href="https://www.google.com/maps/place/ADH+Hall/@6.4574857,116.7776901,17z/data=!4m6!3m5!1s0x323a494c15034071:0x96df07963654b267!8m2!3d6.4577042!4d116.777615!16s%2Fg%2F11wwz0ds1f" target="_blank" rel="noopener">
+        <span class="lp-btn-ikon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <path d="M12 21c4.2-4.2 6.3-7.6 6.3-10.6A6.3 6.3 0 0 0 5.7 10.4C5.7 13.4 7.8 16.8 12 21Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <circle cx="12" cy="10.2" r="2.3" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </span>
+        Buka Lokasi di Google Maps
+      </a>
+    </section>
+
+    <!-- 10. PENUTUP -->
+    <section class="lp-sec lp-penutup reveal">
+      <p class="lp-label">Doa Buat Pengantin</p>
+      <p class="lp-doa">Semoga Allah mengurniakan keberkatan buat kalian berdua, menyatukan kalian dalam kebaikan, dan mengekalkan kasih sayang hingga ke syurga.</p>
+      <p class="lp-teks">Semoga kehadiran Tuan / Puan menyerikan lagi majlis dan diberkati Allah SWT.</p>
+      <p class="lp-terima">Terima Kasih</p>
+      <div class="lp-penutup-mono" aria-hidden="true">
+        <svg viewBox="0 0 60 60" width="52" height="52" fill="none">
+          <circle cx="30" cy="30" r="26" stroke="#bfa065" stroke-width="1"/>
+          <circle cx="30" cy="30" r="21" stroke="#674b77" stroke-width="0.7" stroke-dasharray="1.2 3"/>
+        </svg>
+        <span class="lp-penutup-mono-teks">K&amp;A</span>
+      </div>
+    </section>
+
+    <footer class="lp-footer">Khadizah &amp; Anwar &middot; 30 Ogos 2026 &middot; ADH Hall, Kota Marudu</footer>
   </main>
 
-  <script type="module" src="./app.js"></script>
+  <!-- ============ DOCK NAVIGASI TERAPUNG ============ -->
+  <nav class="lp-dock" id="lpDock" aria-label="Navigasi laman">
+    <a class="lp-dock-btn" href="#tarikh">
+      <span class="lp-dock-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><rect x="4" y="5.5" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 9.5h16M8 4v3M16 4v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </span>
+      <span class="lp-dock-teks">Tarikh</span>
+    </a>
+    <a class="lp-dock-btn" href="#lokasi">
+      <span class="lp-dock-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M12 21c4-4 6-7.2 6-10A6 6 0 0 0 6 11c0 2.8 2 6 6 10Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.1" stroke="currentColor" stroke-width="1.5"/></svg>
+      </span>
+      <span class="lp-dock-teks">Lokasi</span>
+    </a>
+    <a class="lp-dock-btn lp-dock-btn--utama" href="./rsvp.html">
+      <span class="lp-dock-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M5 6.5h14M5 12h14M5 17.5h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M16.5 17.5l2 2 3.5-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="lp-dock-teks">RSVP</span>
+    </a>
+    <a class="lp-dock-btn" href="./ucapan.html">
+      <span class="lp-dock-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 19 16.5H9.5L6 20v-3.5H5A1.5 1.5 0 0 1 3.5 15V7A1.5 1.5 0 0 1 5 5.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="lp-dock-teks">Ucapan</span>
+    </a>
+    <a class="lp-dock-btn" href="#hubungi">
+      <span class="lp-dock-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M7 4.5c.6 0 1.1.4 1.3 1l.9 2.7c.2.6 0 1.2-.5 1.6l-1.2 1a12 12 0 0 0 4.7 4.7l1-1.2c.4-.5 1-.7 1.6-.5l2.7.9c.6.2 1 .7 1 1.3V19c0 .8-.7 1.5-1.5 1.5A13.5 13.5 0 0 1 5.5 7 1.5 1.5 0 0 1 7 4.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="lp-dock-teks">Hubungi</span>
+    </a>
+  </nav>
+
+  <!-- ============ BUTANG MUZIK ============
+       Iframe YouTube HANYA dicipta selepas tekan (patuh dasar autoplay). Kalau gagal
+       muat, butang senyap sahaja (guard dalam landing.js), page tak rosak. -->
+  <button class="lp-muzik" id="lpMuzik" type="button" aria-pressed="false" aria-label="Main muzik latar">
+    <span class="lp-muzik-ikon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+        <path d="M9 18V6l10-2v12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6.5" cy="18" r="2.6" stroke="currentColor" stroke-width="1.6"/>
+        <circle cx="16.5" cy="16" r="2.6" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+    </span>
+  </button>
+  <div id="lpMuzikHost" hidden aria-hidden="true"></div>
+
+  <script type="module" src="./landing.js"></script>
 </body>
 </html>

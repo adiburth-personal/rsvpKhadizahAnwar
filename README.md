@@ -1,6 +1,6 @@
 # RSVP Khadizah & Anwar
 
-Mini website jemputan kahwin untuk majlis Khadizah & Anwar, Ahad 30 Ogos 2026 (17 Rabiulawal 1448H), 12:00 tengah hari hingga 6:00 petang. Tiga halaman berasingan: borang pengesahan kehadiran (`index.html`), dinding ucapan langsung (`ucapan.html`), dan papan ringkasan rahsia pengantin (`pengantin.html`). Dilink dari kad jemputan rasmi di Canva lewat butang "RSVP" dan "Lihat ucapan". Kedua dua halaman tetamu berpaut halus antara satu sama lain (dari borang ke ucapan selepas hantar, dari ucapan balik ke borang).
+Mini website jemputan kahwin untuk majlis Khadizah & Anwar, Ahad 30 Ogos 2026 (17 Rabiulawal 1448H), 12:00 tengah hari hingga 6:00 petang. Empat halaman berasingan: laman jemputan utama gaya e-kad (`index.html`, pintu masuk yang disebar), borang pengesahan kehadiran (`rsvp.html`), dinding ucapan langsung (`ucapan.html`), dan papan ringkasan rahsia pengantin (`pengantin.html`). Dilink dari kad jemputan rasmi di Canva lewat butang yang menuju ke root URL (laman jemputan). Halaman tetamu berpaut halus antara satu sama lain (laman jemputan ke borang/ucapan, borang ke ucapan selepas hantar).
 
 Stack: static HTML + CSS + JS tulen (tiada build step, tiada npm), Firebase Firestore lewat CDN modular SDK v10. Direka mobile first sebab 90% tetamu buka dari WhatsApp guna telefon. Dihost di GitHub Pages path bukan root, jadi semua asset guna path relatif.
 
@@ -8,7 +8,10 @@ Stack: static HTML + CSS + JS tulen (tiada build step, tiada npm), Firebase Fire
 
 | Fail | Fungsi |
 |------|--------|
-| `index.html` | Halaman borang RSVP: header pengantin + borang kehadiran sahaja |
+| `index.html` | Laman jemputan utama (e-kad): kad bentuk telefon, cover, dock navigasi, countdown, buku tetamu, hubungi, lokasi |
+| `landing.css` | Stail khas laman jemputan (`index.html`) |
+| `landing.js` | Otak laman jemputan (cover, dock, countdown, muzik, buku tetamu) |
+| `rsvp.html` | Halaman borang RSVP: header pengantin + borang kehadiran sahaja |
 | `app.js` | Otak halaman borang (hantar RSVP) |
 | `ucapan.html` | Halaman dinding ucapan langsung sahaja |
 | `ucapan.js` | Otak halaman ucapan (papar ucapan langsung, baca sahaja) |
@@ -53,7 +56,8 @@ Rules ni benarkan sesiapa create + read RSVP, tolak update + delete, dan tolak s
 
 Push repo ke GitHub, aktifkan Pages (Settings, Pages, sumber branch `main`). Laman akan hidup di path bukan root, contoh:
 
-- Halaman borang RSVP: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/` (atau `.../index.html`)
+- Laman jemputan utama: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/` (atau `.../index.html`)
+- Halaman borang RSVP: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/rsvp.html`
 - Halaman dinding ucapan: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/ucapan.html`
 - Halaman pengantin: `https://adiburth-personal.github.io/rsvpKhadizahAnwar/pengantin.html?kunci=khadizahAnwar3008x7qz`
 

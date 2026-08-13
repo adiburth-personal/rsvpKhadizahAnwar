@@ -1,0 +1,595 @@
+/* Hallmark · macrostructure: e-kad / phone-frame · tone: luxury · anchor hue: aubergine ~313deg */
+/*
+  Stail KHAS laman jemputan utama (index.html). Meniru KONSEP e-kad: kad bentuk
+  telefon di tengah, latar gutter gelap dengan bunga ambient, cover "tekan untuk
+  buka", skrol seksyen demi seksyen dengan reveal halus, dock navigasi terapung,
+  butang muzik bulat.
+
+  WARNA: guna semula token disahkan dari styles.css (:root + @supports oklch).
+  Latar luar kad = ungu gelap band kad rasmi (aubergine). Semua kombinasi teks/latar
+  lulus WCAG AA (>=4.5:1), dikira dalam scratchpad/contrast.py.
+
+  PERATURAN (ikut HANDOVER):
+  , SVG background-image: path/circle eksplisit, TIADA use/symbol/href/filter (WebKit).
+  , color-mix/oklch WAJIB dalam @supports + fallback hex (gotcha 9391d48); di sini
+    kebanyakan warna guna token terus (sudah selamat), color-mix hanya utk hiasan.
+  , sasaran sentuh >=44px, dock/butang tak ganggu scroll menegak native.
+*/
+
+/* ============================== FONT 3 LAPIS ============================== */
+:root {
+  --lp-script: "Great Vibes", "Snell Roundhand", cursive;
+  --lp-label: "Cormorant SC", "Cormorant Garamond", Georgia, serif;
+  --lp-body: "EB Garamond", "Cormorant Garamond", "Hoefler Text", Georgia, serif;
+  --lp-gutter: #2b1d31;   /* ungu gelap gutter (bukan token, tiada teks di atasnya) */
+}
+
+/* ============================== GUTTER (LATAR LUAR KAD) ============================== */
+body.lp {
+  background-color: var(--lp-gutter);
+  /* Lapisan: cahaya lembut atas + tenggelam gelap bawah + serat kertas halus. Semua
+     hex/rgba terus (tiada var/color-mix) supaya bulletproof merentas pelayar. */
+  background-image:
+    radial-gradient(130% 80% at 50% -8%, #4a3352 0%, #33223b 48%, #241a2b 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-attachment: fixed, scroll;
+  color: var(--color-ink);
+  font-family: var(--lp-body);
+}
+/* Veil lilac styles.css (body::before) tak sesuai atas gutter gelap: matikan. Bunga
+   ambient (dari styles.css) kekal sebagai latar hidup. */
+body.lp::before { display: none !important; }
+
+/* ============================== KAD BENTUK TELEFON ============================== */
+.lp-kad {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: var(--color-cream);
+  /* tekstur kertas kraft dalam kad (halus) */
+  background-image:
+    radial-gradient(120% 60% at 50% 0%, #ffffff 0%, transparent 42%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  padding: 0 var(--space-6) calc(env(safe-area-inset-bottom, 0px) + 120px);
+  overflow: hidden;   /* pastikan hiasan dalam kad tak terkeluar */
+}
+@media (min-width: 480px) {
+  /* Desktop: kad "terapung" atas gutter macam bingkai telefon. */
+  .lp-kad {
+    min-height: auto;
+    margin: var(--space-8) auto;
+    border-radius: 26px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.5) inset,
+      0 24px 60px rgba(20, 10, 26, 0.55),
+      0 4px 14px rgba(20, 10, 26, 0.4);
+    border: 1px solid rgba(191, 160, 101, 0.35);
+  }
+}
+
+/* ============================== SEKSYEN + REVEAL ============================== */
+.lp-sec {
+  padding: var(--space-8) 0;
+  text-align: center;
+  border-top: 1px solid rgba(142, 124, 111, 0.22);
+}
+.lp-sec:first-child { border-top: 0; }
+
+/* Reveal halus (fade + naik). HANYA disorok bila .lp-js ada pada <html>: kalau modul
+   gagal muat, kandungan kekal nampak (tak pernah kosong). is-lihat ditambah oleh
+   IntersectionObserver dalam landing.js. */
+.lp-js .reveal { opacity: 0; transform: translateY(18px); }
+.lp-js .reveal { transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out); }
+.lp-js .reveal.is-lihat { opacity: 1; transform: none; }
+
+/* ============================== HERO ============================== */
+.lp-bismillah {
+  font-family: var(--lp-body);
+  font-size: 1.55rem;
+  line-height: 1.8;
+  color: var(--color-maroon);
+  margin: 0 0 var(--space-5);
+}
+.lp-eyebrow {
+  font-family: var(--lp-label);
+  font-size: 0.9rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-maroon-soft);
+  font-weight: 600;
+  margin: 0;
+}
+.lp-nama-script {
+  font-family: var(--lp-script);
+  font-weight: 400;
+  font-size: clamp(3.4rem, 18vw, 4.6rem);
+  line-height: 1;
+  color: var(--color-maroon);
+  margin: var(--space-4) 0 var(--space-2);
+  overflow-wrap: anywhere;
+}
+.lp-divider { margin: var(--space-5) auto var(--space-4); line-height: 0; }
+.lp-tarikh {
+  font-family: var(--lp-label);
+  font-size: 1.15rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+/* ============================== TEKS AM SEKSYEN ============================== */
+.lp-label {
+  font-family: var(--lp-label);
+  font-size: 0.92rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-maroon-soft);
+  font-weight: 600;
+  margin: 0 0 var(--space-5);
+}
+.lp-teks {
+  font-size: var(--text-base);
+  color: var(--color-ink-soft);
+  line-height: 1.75;
+  max-width: 34ch;
+  margin: 0 auto;
+}
+.lp-salam {
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--color-maroon);
+  margin: 0 0 var(--space-6);
+}
+.lp-pantun {
+  font-size: var(--text-base);
+  font-style: italic;
+  color: var(--color-ink);
+  line-height: 1.9;
+  margin: 0 0 var(--space-6);
+}
+.lp-jemputan {
+  font-size: var(--text-base);
+  color: var(--color-ink-soft);
+  line-height: 1.75;
+  max-width: 32ch;
+  margin: 0 auto;
+}
+.lp-ibubapa {
+  font-family: var(--lp-body);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-maroon);
+  line-height: 1.5;
+  margin: var(--space-6) auto;
+}
+.lp-ibubapa .lp-amp { color: var(--color-gold); font-size: 1.1rem; }
+
+/* ============================== NAMA PENUH PENGANTIN ============================== */
+.lp-pengantin-nama {
+  font-family: var(--lp-script);
+  font-size: clamp(2.4rem, 11vw, 3.1rem);
+  line-height: 1.1;
+  color: var(--color-maroon);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.lp-amp-besar {
+  font-family: var(--lp-body);
+  font-size: 1.8rem;
+  color: var(--color-gold);
+  margin: var(--space-3) 0;
+}
+
+/* ============================== BUTIRAN MAJLIS ============================== */
+.lp-butir { margin: var(--space-6) 0; }
+.lp-butir-ikon { display: inline-flex; margin-bottom: var(--space-3); }
+.lp-butir-utama {
+  font-size: 1.2rem;
+  color: var(--color-ink);
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.5;
+}
+.lp-butir-sub {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  margin: var(--space-2) 0 0;
+}
+
+/* ============================== COUNTDOWN ============================== */
+.lp-countdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  max-width: 360px;
+  margin: 0 auto;
+}
+.lp-cd-kotak {
+  background-color: var(--color-cream-2);
+  border: 1px solid rgba(191, 160, 101, 0.4);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.lp-cd-nombor {
+  font-family: var(--lp-label);
+  font-size: clamp(1.6rem, 8vw, 2rem);
+  font-weight: 600;
+  color: var(--color-maroon);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.lp-cd-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+.lp-countdown-selesai {
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--color-maroon);
+  margin: 0;
+}
+.lp-countdown-selesai[hidden] { display: none; }
+
+/* ============================== BUTANG BESAR (CTA) ============================== */
+.lp-btn-besar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  margin-top: var(--space-6);
+  padding: 0 var(--space-8);
+  border: 1.5px solid var(--color-maroon);
+  border-radius: 40px;
+  background: transparent;
+  color: var(--color-maroon);
+  font-family: var(--lp-label);
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.lp-btn-besar:hover { background: var(--color-maroon); color: var(--color-cream); }
+.lp-btn-besar:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.4);
+}
+.lp-btn-ikon { display: inline-flex; }
+
+/* ============================== BUKU TETAMU ============================== */
+.lp-buku-senarai {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-6);
+  text-align: left;
+}
+.lp-buku-senarai[hidden] { display: none; }
+.lp-buku-kad {
+  background-color: var(--color-cream-2);
+  border-left: 3px solid var(--color-plum);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-5);
+}
+.lp-buku-ucap {
+  font-family: var(--lp-script);
+  font-size: 1.5rem;
+  line-height: 1.4;
+  color: var(--color-ink);
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+}
+.lp-buku-nama {
+  font-size: var(--text-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-maroon-soft);
+  font-weight: 600;
+  margin: 0;
+}
+.lp-buku-nama::before { content: "— "; }
+.lp-buku-butang {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: center;
+}
+.lp-btn-halus {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0 var(--space-6);
+  border: 1px solid rgba(142, 124, 111, 0.5);
+  border-radius: 40px;
+  background: transparent;
+  color: var(--color-maroon-soft);
+  font-family: var(--lp-label);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.lp-btn-halus:hover { border-color: var(--color-maroon); color: var(--color-maroon); }
+.lp-btn-halus:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.34); }
+
+/* ============================== HUBUNGI ============================== */
+.lp-kontak {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  text-align: left;
+}
+.lp-kontak-baris {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  background-color: var(--color-cream-2);
+  border: 1px solid rgba(142, 124, 111, 0.28);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+}
+.lp-kontak-nama {
+  font-size: var(--text-base);
+  color: var(--color-ink);
+  font-weight: 500;
+}
+.lp-kontak-btns { display: flex; gap: var(--space-3); flex: 0 0 auto; }
+.lp-kontak-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(142, 124, 111, 0.45);
+  background: var(--color-cream);
+  color: var(--color-maroon);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.lp-kontak-btn:hover { background: var(--color-maroon); color: var(--color-cream); }
+.lp-kontak-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.34); }
+
+/* ============================== PENUTUP ============================== */
+.lp-doa {
+  font-size: var(--text-base);
+  font-style: italic;
+  color: var(--color-ink);
+  line-height: 1.85;
+  max-width: 34ch;
+  margin: 0 auto var(--space-6);
+}
+.lp-terima {
+  font-family: var(--lp-script);
+  font-size: 2.8rem;
+  color: var(--color-maroon);
+  margin: var(--space-6) 0 var(--space-5);
+}
+.lp-penutup-mono { position: relative; display: inline-block; line-height: 0; }
+.lp-penutup-mono-teks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--lp-label);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  color: var(--color-maroon);
+  line-height: 1;
+}
+.lp-footer {
+  text-align: center;
+  padding: var(--space-8) 0 var(--space-6);
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+  border-top: 1px solid rgba(142, 124, 111, 0.22);
+}
+
+/* ============================== COVER (SAMPUL) ============================== */
+.lp-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-7);
+  text-align: center;
+  cursor: pointer;
+  color: var(--color-cream);
+  background-color: var(--lp-gutter);
+  background-image:
+    radial-gradient(115% 80% at 50% 12%, #52395c 0%, #33233d 52%, #201628 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out), visibility 700ms var(--ease-out);
+}
+.lp-cover.is-buka {
+  opacity: 0;
+  transform: translateY(-18px);
+  visibility: hidden;
+  pointer-events: none;
+}
+.lp-cover-inner { max-width: 340px; }
+.lp-cover-atas {
+  font-family: var(--lp-label);
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #d9c7a4;             /* emas pucat atas gelap (kontras tinggi) */
+  margin: 0 0 var(--space-7);
+}
+.lp-seal { position: relative; display: inline-block; line-height: 0; margin-bottom: var(--space-7); }
+.lp-seal-mono {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--lp-script);
+  font-size: 3rem;
+  color: #e9d9bd;
+  line-height: 1;
+}
+.lp-seal-mono em { font-style: normal; font-size: 1.6rem; color: #bfa065; margin: 0 2px; }
+.lp-cover-eyebrow {
+  font-family: var(--lp-label);
+  font-size: 0.95rem;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: #cbb7c9;            /* lilac pucat atas gelap */
+  margin: 0 0 var(--space-3);
+}
+.lp-cover-nama {
+  font-family: var(--lp-script);
+  font-size: clamp(3rem, 15vw, 4rem);
+  line-height: 1;
+  color: var(--color-cream);
+  margin: 0 0 var(--space-4);
+}
+.lp-cover-tarikh {
+  font-family: var(--lp-label);
+  font-size: 1rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e6dcd0;
+  margin: 0 0 var(--space-8);
+}
+.lp-cover-buka {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--lp-body);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  color: var(--color-cream);
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid rgba(233, 217, 189, 0.5);
+  border-radius: 40px;
+}
+.lp-cover-buka-titik {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #bfa065;
+  animation: lpDenyut 1.8s var(--ease-in-out) infinite;
+}
+@keyframes lpDenyut {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50%      { opacity: 1; transform: scale(1.1); }
+}
+
+/* ============================== DOCK NAVIGASI ============================== */
+.lp-dock {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  gap: 2px;
+  width: min(406px, calc(100vw - 24px));
+  padding: 6px;
+  border-radius: 24px;
+  /* Kaca: fallback legap dulu (readable tanpa backdrop-filter), diperhalus bila
+     backdrop-filter disokong. Bg terang supaya label maroon kekal >=4.5:1. */
+  background: rgba(249, 245, 235, 0.94);
+  border: 1px solid rgba(191, 160, 101, 0.45);
+  box-shadow: 0 10px 30px rgba(20, 10, 26, 0.4);
+}
+@supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+  .lp-dock {
+    background: rgba(249, 245, 235, 0.82);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    backdrop-filter: blur(14px) saturate(1.2);
+  }
+}
+.lp-dock-btn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 52px;
+  border-radius: 18px;
+  color: var(--color-maroon);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.lp-dock-btn:hover { background: rgba(110, 32, 41, 0.08); }
+.lp-dock-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.34); }
+.lp-dock-ikon { display: inline-flex; }
+.lp-dock-teks {
+  font-family: var(--lp-label);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+/* RSVP = fokus: pil maroon pejal, teks krim (10:1). */
+.lp-dock-btn--utama {
+  background: var(--color-maroon);
+  color: var(--color-cream);
+}
+.lp-dock-btn--utama:hover { background: #5c1a22; }
+
+/* ============================== BUTANG MUZIK ============================== */
+.lp-muzik {
+  position: fixed;
+  right: calc(env(safe-area-inset-right, 0px) + 14px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 84px);
+  z-index: 61;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(191, 160, 101, 0.55);
+  background: rgba(249, 245, 235, 0.94);
+  color: var(--color-maroon);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(20, 10, 26, 0.4);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+@supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+  .lp-muzik {
+    background: rgba(249, 245, 235, 0.8);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+.lp-muzik:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.4); }
+.lp-muzik-ikon { display: inline-flex; }
+/* Semasa main: ikon bernafas + berputar halus (earned motion, terikat keadaan main). */
+.lp-muzik.is-main .lp-muzik-ikon { animation: lpMuzikPusing 4.5s linear infinite; }
+@keyframes lpMuzikPusing {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.lp-muzik.is-main {
+  background: var(--color-maroon);
+  color: var(--color-cream);
+  border-color: rgba(191, 160, 101, 0.7);
+}
+
+/* ============================== KURANGKAN GERAK ============================== */
+@media (prefers-reduced-motion: reduce) {
+  .lp-js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .lp-cover-buka-titik { animation: none; opacity: 0.8; }
+  .lp-muzik.is-main .lp-muzik-ikon { animation: none; }
+}
