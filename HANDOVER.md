@@ -38,7 +38,8 @@ INSIDEN "BUNGA JADI BINTANG" di phone user (13 Ogos): SVG 8486513 guna `<use hre
 Berkaitan: `9391d48` fallback hex untuk oklch/color-mix (Safari lama runtuhkan latar kad jadi lutsinar, kad bertindih tak terbaca) + guard supaya kegagalan hiasan/CDN tak buat page kosong. Gotcha: `background:#hex; background:color-mix(...var())` TAK selamat, var() tangguh validasi, baris tak sah tetap timpa hex, kena guna @supports.
 
 ## Kerja tertunda lain
-- **PADAM DATA UJIAN sebelum sebar** (SENGAJA ditahan 13 Ogos: data ujian diperlukan untuk user sahkan fix swipe di phone dulu): collection `/rsvp` dan `/sayang` penuh entri ujian user (11 ucapan, belasan like). Bila user dah sahkan fix / kata "padam semua": buka console Firebase (akaun adiburth@gmail.com, profil Chrome "zafri"), Firestore > Data, padam semua doc dalam `/rsvp` dan `/sayang`. Padam lewat console sebab rules tolak delete dari luar. (Cara UI: pilih doc, menu tiga titik, Delete document.)
+- **DATA UJIAN DAH DIPADAM 13 Ogos** (lepas user sahkan swipe lancar): semua doc ujian dibuang lewat console UI (rules tak diubah). ATAS ARAHAN USER, dikekalkan: ucapan **PytaaMJ** (doc `3FVKhnKilDrlYseUXUyD`) + 2 like miliknya. Keadaan akhir disahkan REST: `/rsvp` = 1 doc (PytaaMJ), `/sayang` = 2 doc. Sistem SEDIA DISEBAR.
+- Nota cara (kalau perlu padam lagi nanti): console Firebase akaun adiburth@gmail.com, Firestore > Data, hover row > menu tiga titik > Delete document > Start delete. Klasifier sekat ubah rules lewat JS, jadi jalan UI sahaja. AWAS: window/layout console boleh reflow tengah automasi, sahkan path dalam dialog "Document Location" sebelum confirm, dan audit lewat REST (`curl .../documents/rsvp`) selepas setiap beberapa padam.
 - GitHub Pages cache ~10 minit; selepas push, uji dengan hard reload / incognito.
 - Firebase console tips: rules editor guna CodeMirror, boleh set lewat JS `document.querySelector('.CodeMirror').CodeMirror.setValue(...)`; layout sempit sorok butang Publish, klik baris "unpublished changes" dulu.
 
@@ -55,4 +56,4 @@ Folder `notaTimbang/` dalam repo: verdict.md (pakej design muktamad + senarai ST
 - Ujian keselamatan rules: curl REST PATCH/DELETE/POST tak sah, jangka 403
 
 ## Status
-Sistem berfungsi hujung ke hujung, link Canva betul, 2 bug lama dah difix dan dipush 13 Ogos. TUNGGU: (1) user sahkan fix swipe + ambient di phone sebenar, (2) padam data ujian, (3) sebar. Majlis 30 Ogos, baki ~17 hari.
+SEDIA DISEBAR (13 Ogos malam): swipe disahkan user lancar di phone, bunga ambient 3D disahkan user okay, data ujian dah dipadam (kecuali ucapan + 2 like PytaaMJ, arahan user). Tinggal user sebar link pada tetamu. Majlis 30 Ogos, baki ~17 hari.
