@@ -531,7 +531,26 @@ body.lp::before { display: none !important; }
 .lp-bunga-cover--tr2 { top: 66px; right: 30px; width: 46px; height: 46px; opacity: 0.4; transform: rotate(-8deg); }
 .lp-bunga-cover--bl  { bottom: -14px; left: -8px; width: 104px; height: 104px; transform: rotate(-150deg); }
 .lp-bunga-cover--bl2 { bottom: 74px; left: 34px; width: 50px; height: 50px; opacity: 0.4; transform: rotate(150deg); }
+.lp-bunga-cover--tl { top: -14px; left: -8px; width: 96px; height: 96px; transform: rotate(-28deg) scaleX(-1); }
+.lp-bunga-cover--br { bottom: -14px; right: -8px; width: 104px; height: 104px; transform: rotate(150deg) scaleX(-1); }
 .lp-cover-inner { position: relative; z-index: 1; max-width: 340px; }
+/* Bunga tambahan cover HANYA dalam mod OG (2 bucu lagi untuk imbang landscape). */
+.lp-og-only { display: none; }
+
+/* ---------- Mod OG (landscape 1200x630, aktif bila ?og=1) ---------- */
+.lp-og .lp-og-only { display: block; }
+.lp-og .lp-cover-inner { max-width: 640px; }
+.lp-og .lp-seal svg { width: 176px; height: 176px; }
+.lp-og .lp-seal-mono { font-size: 3.6rem; }
+.lp-og .lp-cover-nama { font-size: 5rem; }
+.lp-og .lp-cover-eyebrow { font-size: 1.1rem; }
+.lp-og .lp-cover-tarikh { font-size: 1.15rem; }
+.lp-og .lp-cover-atas { font-size: 0.9rem; margin-bottom: var(--space-6); }
+.lp-og .lp-cover-buka { display: none; }               /* CTA tak perlu dalam imej preview */
+.lp-og .lp-bunga-cover--tr,
+.lp-og .lp-bunga-cover--bl,
+.lp-og .lp-bunga-cover--tl,
+.lp-og .lp-bunga-cover--br { width: 150px; height: 150px; }
 .lp-cover-atas {
   font-family: var(--lp-label);
   font-size: 0.8rem;

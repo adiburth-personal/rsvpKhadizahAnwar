@@ -13,6 +13,10 @@ import { firebaseConfig, konfigurasiBelumSiap } from "./firebaseConfig.js";
 
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+// Mod OG (?og=1): susun cover versi landscape 1200x630 untuk jana ogImage.png.
+// Tak ganggu paparan biasa (kelas hanya ditambah bila query ada).
+try { if (new URLSearchParams(location.search).has("og")) document.documentElement.classList.add("lp-og"); } catch (e) {}
+
 // ====== Konfig nombor hubungi (PADANAN BELUM SAH, senang tukar di sini) ======
 // wasap.my: buang 0 depan, tambah 60. tel: guna format antarabangsa +60.
 const KONTAK = [

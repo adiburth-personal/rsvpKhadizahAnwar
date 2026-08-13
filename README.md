@@ -17,9 +17,10 @@ Stack: static HTML + CSS + JS tulen (tiada build step, tiada npm), Firebase Fire
 | `ucapan.js` | Otak halaman ucapan (papar ucapan langsung, baca sahaja) |
 | `pengantin.html` | Halaman rahsia pengantin: ringkasan + senarai penuh |
 | `pengantin.js` | Otak halaman pengantin |
-| `styles.css` | Stail kongsi semua halaman (tema kraft + maroon) |
+| `styles.css` | Stail kongsi halaman borang/ucapan/pengantin (tema kraft + maroon) |
 | `firebaseConfig.js` | Tetapan sambungan Firebase (isi nilai sebenar di sini) |
 | `firestore.rules` | Peraturan keselamatan pangkalan data |
+| `ogImage.png` | Imej preview Open Graph 1200x630 (WhatsApp/media sosial), dijana dari cover mod `?og=1` |
 
 ## Langkah setup
 

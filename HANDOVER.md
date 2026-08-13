@@ -10,15 +10,22 @@ Website RSVP + dinding ucapan untuk majlis kahwin **Khadizah Binti Razali & Muha
 ## Seni bina
 - **Hosting**: GitHub Pages, repo public `adiburth-personal/rsvpKhadizahAnwar`. Push guna credential helper: repo local config ada 2 entri `credential.https://github.com.helper` (kosong dulu, kemudian `!/Users/adizaini/.local/bin/ghCredentialPersonal`). gh CLI aktif biasanya akaun Dicci, JANGAN switch tanpa pulangkan balik.
 - **Data**: Firebase Firestore projek `rsvpkhadizahanwar`, akaun Google **adiburth@gmail.com** (profil "zafri"), Spark percuma, lokasi asia-southeast1. Collection `/rsvp` {nama, status hadir/tidak, pax 0-10, ucapan, masa} dan `/sayang` {ucapanId, masa} (ini rekod "like", nama collection kekal sayang, label UI sahaja "like"). Rules: create + read sahaja, update/delete DITOLAK, validasi penuh, teruji 403.
-- **Halaman** (vanilla HTML/CSS/JS, tiada build):
-  - `index.html` + `app.js`: borang RSVP (nama, hadir/tidak, pax 1-10, ucapan optional), nama penuh + ADH Hall KM, hero ada krest purple+emas
+- **Halaman** (vanilla HTML/CSS/JS, tiada build), kini 4 halaman awam:
+  - `index.html` + `landing.css` + `landing.js`: **LAMAN JEMPUTAN UTAMA gaya e-kad** (konsep ditiru dari ekaddigital.com, dibina 13 Ogos malam, commit `7f84004` bina asal + `e1f0b20` fix bug/pencantikan + commit OG/HANDOVER selepasnya). Ini PINTU MASUK yang disebar (butang kad Canva rasmi point ke root URL ini). Struktur: kad bentuk telefon di tengah + gutter ungu gelap dengan bunga ambient; COVER "tekan untuk buka" (wax seal SVG); skrol seksyen demi seksyen (reveal IntersectionObserver); dock navigasi kaca 5 butang (Tarikh/Lokasi/Hubungi = anchor dalam page, RSVP -> rsvp.html, Ucapan -> ucapan.html); butang muzik bulat. Seksyen: hero berbingkai emas + bunga, salam/pantun/ibu bapa (Razali Bin Milek & Juliana Simpokan), nama penuh pengantin, butiran majlis, countdown live ke 2026-08-30T12:00+08, RSVP CTA, buku tetamu (3 ucapan terkini dari Firestore, baca sahaja), hubungi, lokasi, penutup.
+    - MUZIK: YouTube nocookie id `idfnoMuigSA`, iframe dicipta HANYA selepas tekan butang (patuh autoplay policy), toggle main/jeda lewat postMessage, guard penuh (gagal muat = butang senyap, page tak rosak).
+    - LOKASI: Google Maps ADH Hall, link penuh `https://www.google.com/maps/place/ADH+Hall/@6.4574857,116.7776901,17z/data=!4m6!3m5!1s0x323a494c15034071:0x96df07963654b267!8m2!3d6.4577042!4d116.777615!16s%2Fg%2F11wwz0ds1f`.
+    - HUBUNGI: objek `KONTAK` di atas `landing.js`. **PADANAN NOMBOR BELUM DISAHKAN USER** (ikut tekaan susunan kad Canva): Bapa `01174583397`, Abang `01170389498`, Adik `0168380403`. wasap.my = buang 0 depan + tambah 60; tel = +60. WAJIB user sahkan sebelum sebar.
+    - GOTCHA landing: (a) scroll dock guna animasi rAF custom (easeInOutCubic, DIHAD 800ms) sebab `scrollIntoView` behavior:smooth Chrome untuk jarak jauh buat "flash gelap"; (b) grain kertas guna PNG base64 (`--lp-noise`), BUKAN SVG feTurbulence/filter (peraturan repo SVG background); (c) hiasan bunga guna semula kelas `.bunga--*` styles.css TANPA kelas asas `.bunga` (statik, tiada animasi), diletak di bucu/margin sahaja; (d) mod `?og=1` susun cover versi landscape untuk jana `ogImage.png`.
+  - `rsvp.html` + `app.js`: **borang RSVP** (nama, hadir/tidak, pax 1-10, ucapan optional), nama penuh + ADH Hall KM, hero ada krest purple+emas. Ini fail borang LAMA (dulu `index.html`), dipindah tanpa ubah fungsi/Firebase/validasi.
   - `ucapan.html` + `ucapan.js`: dinding ucapan gaya TIMBUNAN SWIPE (dipilih user dari 3 mockup), kad bertimbun, swipe/anak panah/kekunci, bar X/N, butang like (heart burst), grid "Lihat semua", pil "doa baru masuk", kaunter "N ucapan · M like", ambient motion (zarah emas + latar bernafas + sway kad belakang)
   - `pengantin.html` + `pengantin.js`: papan kiraan RAHSIA. Akses: `pengantin.html?kunci=khadizahAnwar3008x7qz`. Papar entri hadir, JUMLAH PAX, tidak hadir, senarai nama, ucapan
+- **OG/preview WhatsApp**: ketiga-tiga page awam (`index.html`, `rsvp.html`, `ucapan.html`) ada tag Open Graph + Twitter (title/description ikut page, URL absolut). `og:image` = `ogImage.png` (1200x630, ~223KB) dijana dari cover mod `?og=1` guna Playwright.
 - `firestore.rules` dalam repo = salinan rules yang dah published di console (publish manual lewat console, cara: CodeMirror setValue lewat JS pastu butang Publish)
 - Design: base kraft/krim/maroon/emas + aksen purple dari kad rasmi (token disahkan sampel pixel, lihat run timbang 13 Ogos, log `1786551868000_timbangUcapanPurpleInteraktif` dalam agenticOsData/data/runs)
 
 ## URL
-- Tetamu RSVP: https://adiburth-personal.github.io/rsvpKhadizahAnwar/
+- Laman jemputan utama (PINTU MASUK yang disebar): https://adiburth-personal.github.io/rsvpKhadizahAnwar/
+- Borang RSVP: https://adiburth-personal.github.io/rsvpKhadizahAnwar/rsvp.html
 - Dinding ucapan: https://adiburth-personal.github.io/rsvpKhadizahAnwar/ucapan.html
 - Pengantin (RAHSIA): https://adiburth-personal.github.io/rsvpKhadizahAnwar/pengantin.html?kunci=khadizahAnwar3008x7qz
 
@@ -56,4 +63,6 @@ Folder `notaTimbang/` dalam repo: verdict.md (pakej design muktamad + senarai ST
 - Ujian keselamatan rules: curl REST PATCH/DELETE/POST tak sah, jangka 403
 
 ## Status
-SEDIA DISEBAR (13 Ogos malam): swipe disahkan user lancar di phone, bunga ambient 3D disahkan user okay, data ujian dah dipadam (kecuali ucapan + 2 like PytaaMJ, arahan user). Tinggal user sebar link pada tetamu. Majlis 30 Ogos, baki ~17 hari.
+LAMAN JEMPUTAN BARU SIAP (13 Ogos malam): index.html kini laman jemputan e-kad (borang lama pindah ke rsvp.html). Diverifikasi Playwright chromium + webkit (cover buka, dock 5 anchor, countdown, tel/wasap/maps, iframe muzik selepas klik, offline block CDN luar page kekal papar, reveal, tiada overflow melintang, tiada SVG filter dalam data URI, scroll rAF tiada flash gelap, OG tags absolut, ogImage 1200x630 ~223KB). Bug flash gelap + langgar peraturan SVG filter DAH DIFIX. OG preview WhatsApp ditambah 3 page.
+TUNGGU USER: (1) sahkan paparan di phone sebenar (Safari iOS), (2) **SAHKAN PADANAN NOMBOR HUBUNGI** (Bapa/Abang/Adik, kini tekaan susunan kad Canva) sebelum sebar. Lepas 2 gate ini, tinggal sebar link.
+Sejarah sebelum ini kekal sah: swipe + bunga ambient 3D ucapan.html disahkan user okay, data ujian dah dipadam (kecuali ucapan + 2 like PytaaMJ). Majlis 30 Ogos, baki ~17 hari.
