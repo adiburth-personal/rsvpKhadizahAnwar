@@ -354,8 +354,10 @@
   </nav>
 
   <!-- ============ BUTANG MUZIK ============
-       Iframe YouTube HANYA dicipta selepas tekan (patuh dasar autoplay). Kalau gagal
-       muat, butang senyap sahaja (guard dalam landing.js), page tak rosak. -->
+       Elemen <audio> HTML5 (./laguMajlis.mp3, same-origin) dicipta lewat landing.js dan
+       dimainkan SEGERAK dalam gesture tekan cover. Same-origin dipilih ganti YouTube
+       kerana iOS Safari sekat audio iframe cross-origin. Kalau fail gagal muat, butang
+       senyap sahaja (guard + event 'error' dalam landing.js), page tak rosak. -->
   <button class="lp-muzik" id="lpMuzik" type="button" aria-pressed="false" aria-label="Main muzik latar">
     <span class="lp-muzik-ikon" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
@@ -365,7 +367,6 @@
       </svg>
     </span>
   </button>
-  <div id="lpMuzikHost" hidden aria-hidden="true"></div>
 
   <!-- ============ MODAL RSVP ============
        Butang menuju rsvp.html (CTA RSVP, dock RSVP, "Berikan Ucapan") dipintas oleh
