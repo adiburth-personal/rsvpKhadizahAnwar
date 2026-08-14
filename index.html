@@ -32,6 +32,10 @@
        jadi menang atas mana mana pertindihan). -->
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./landing.css" />
+  <!-- KENAPA preload: bouquet dipakai oleh burst cover yang tercetus SERTA-MERTA pada
+       gesture tap; tanpa preload, webp belum cache = taburan jadi kotak kosong. -->
+  <link rel="preload" as="image" href="./aset/bunga/bouquetAnemone.webp" />
+  <link rel="preload" as="image" href="./aset/bunga/bouquetBesar.webp" />
 
   <!-- Penanda "JS hidup": kalau modul landing.js gagal muat, seksyen reveal TIDAK
        disorok (CSS hanya sorok bila .lp-js ada), jadi kandungan tak pernah kosong. -->
