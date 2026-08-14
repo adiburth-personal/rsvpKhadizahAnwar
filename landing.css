@@ -1349,25 +1349,9 @@ button.lp-dock-btn {
 }
 
 /* ---------- Salam Kaut / Hadiah dalam aliran halaman (seksyen sebelum doa penutup) ----------
-   Preview QR KECIL (isyarat visual, aria-hidden) + butang CTA yang buka modal Salam Kaut
-   sedia ada. Popup kekal cara utama. Gaya selari lp-lokasi-qr (kad krim, bingkai emas nipis). */
-.lp-salamkaut-qr {
-  margin: var(--space-6) auto var(--space-2);
-  max-width: 170px;
-}
-.lp-salamkaut-qr-imej {
-  display: block;
-  width: 150px;
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-  padding: var(--space-3);
-  background: var(--color-cream);
-  border: 1px solid rgba(191, 160, 101, 0.4);
-  border-radius: var(--radius-md);
-  box-shadow: 0 6px 18px rgba(20, 10, 26, 0.1);
-}
-/* Butang (bukan <a>): normalkan supaya sama rupa dengan .lp-btn-besar lain. */
+   Label + ayat + butang CTA yang buka modal Salam Kaut sedia ada. QR penuh HANYA dalam
+   popup (permintaan user), tiada preview dalam seksyen. Jarak menegak CTA diwarisi dari
+   margin-top .lp-btn-besar. Butang (bukan <a>) dinormalkan supaya sama rupa butang lain. */
 .lp-salamkaut-cta { cursor: pointer; }
 
 /* ============================== ATURCARA MAJLIS (timeline menegak) ============================== */
