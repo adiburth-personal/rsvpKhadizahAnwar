@@ -31,7 +31,12 @@
        kad Canva), jadi jangan rosakkan. Defensif: gagal parse = biar rupa penuh. -->
   <script>try{if(new URLSearchParams(location.search).has("embed"))document.documentElement.className+=" rsvp-embed";}catch(e){}</script>
   <style>
-    html.rsvp-embed .wrap { padding-top: var(--space-4); padding-bottom: var(--space-6); }
+    /* FIX A (ujian telefon): dalam modal, header sticky "RSVP KEHADIRAN" duduk terus
+       atas kandungan iframe. Bila iframe di posisi skrol paling atas, tajuk pertama
+       kandungan rapat/terlindung header. Beri padding-top lebih lega supaya kandungan
+       bermula di bawah header dengan ruang bernafas. Hanya mod embed (paparan biasa
+       rsvp.html kekal tak berubah). */
+    html.rsvp-embed .wrap { padding-top: var(--space-7); padding-bottom: var(--space-6); }
     html.rsvp-embed .header { margin-bottom: var(--space-5); animation: none; }
     html.rsvp-embed .header .ornamen,
     html.rsvp-embed .krest { display: none; }
@@ -39,6 +44,12 @@
     html.rsvp-embed .nama-serif { margin-top: var(--space-3); font-size: var(--text-base); }
     html.rsvp-embed .jemputan-teks { display: none; }
     html.rsvp-embed .nav-halaman { display: none; }
+
+    /* FIX B (ujian telefon): span hiasan bulatan radio (.tanda) menangkap tap, jadi
+       tap TEPAT atas bulatan tak sampai ke <label>/<input> -> tak terpilih. Biar tap
+       tembus ke label. Tak scope embed: pembetulan sah untuk rsvp.html standalone juga
+       (borang sama). Tiada kesan lain , .tanda cuma hiasan aria-hidden. */
+    .pilihan .tanda { pointer-events: none; }
   </style>
 </head>
 <body>

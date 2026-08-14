@@ -22,6 +22,12 @@
   --lp-label: "Cormorant SC", "Cormorant Garamond", Georgia, serif;
   --lp-body: "EB Garamond", "Cormorant Garamond", "Hoefler Text", Georgia, serif;
   --lp-gutter: #2b1d31;   /* ungu gelap gutter (bukan token, tiada teks di atasnya) */
+  /* Easing khas reveal dramatik (tiru rasa GSAP e-kad tanpa library):
+     , soft   = ekspo keluar lembut (teks/blok panjang, TIADA overshoot supaya baris
+                 tak "melantun" ganggu bacaan).
+     , pop    = overshoot halus (elemen aksen KECIL sahaja: berlian/ikon butir). */
+  --lp-ease-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --lp-ease-pop:  cubic-bezier(0.34, 1.56, 0.64, 1);
   --lp-noise: url("data:image/png;base64,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");  /* grain kertas, PNG pre-baked TANPA sebarang SVG filter (ganti grain lama) */
   --lp-sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23674b77'%3E%3Cellipse cx='12' cy='6.6' rx='2.4' ry='4'/%3E%3Cellipse cx='12' cy='6.6' rx='2.4' ry='4' transform='rotate(72 12 12)'/%3E%3Cellipse cx='12' cy='6.6' rx='2.4' ry='4' transform='rotate(144 12 12)'/%3E%3Cellipse cx='12' cy='6.6' rx='2.4' ry='4' transform='rotate(216 12 12)'/%3E%3Cellipse cx='12' cy='6.6' rx='2.4' ry='4' transform='rotate(288 12 12)'/%3E%3C/g%3E%3Ccircle cx='12' cy='12' r='2.1' fill='%23bfa065'/%3E%3C/svg%3E");  /* bunga kecil pemisah seksyen (path eksplisit, tiada filter/use) */
 }
@@ -109,17 +115,14 @@ body.lp::before { display: none !important; }
   pointer-events: none;
 }
 
-/* Reveal halus (fade + naik). HANYA disorok bila .lp-js ada pada <html>: kalau modul
-   gagal muat, kandungan kekal nampak (tak pernah kosong). is-lihat ditambah oleh
-   IntersectionObserver dalam landing.js. */
-.lp-js .reveal { opacity: 0; transform: translateY(18px); }
-.lp-js .reveal { transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out); }
-/* Arah skrol NAIK: keadaan tersembunyi datang dari ATAS (translateY negatif). Kelas
-   .lp-arah-atas diset pada <html> oleh landing.js. Specificity sama dgn .is-lihat,
-   jadi DILETAK SEBELUM .is-lihat supaya seksyen yang tampak (is-lihat) tetap menang
-   ke transform:none dalam kedua-dua arah. */
-.lp-js.lp-arah-atas .reveal { transform: translateY(-18px); }
-.lp-js .reveal.is-lihat { opacity: 1; transform: none; }
+/* Reveal (fade halus di peringkat SEKSYEN, gerakan besar di peringkat ELEMEN , lihat
+   blok "STAGGER REVEAL" di bawah). Seksyen = unit yang diperhati IntersectionObserver;
+   ia HANYA pudar opacity sebagai satu blok (TIADA translate seksyen) supaya setiap
+   elemen dalamnya kelihatan bergerak SENDIRI, bukan blok bergeser sekali (resipi
+   e-kad: per-elemen, bukan per-seksyen). HANYA disorok bila .lp-js ada pada <html>:
+   kalau JS mati, kandungan kekal nampak. is-lihat ditambah oleh landing.js. */
+.lp-js .reveal { opacity: 0; transition: opacity 900ms var(--lp-ease-soft); }
+.lp-js .reveal.is-lihat { opacity: 1; }
 
 /* ============================== HERO ============================== */
 /* Bingkai emas dua garis (double hairline) + berlian kecil atas/bawah, mengelilingi
@@ -138,6 +141,8 @@ body.lp::before { display: none !important; }
   border: 1px solid rgba(191, 160, 101, 0.4);
   border-radius: 13px;
   pointer-events: none;
+  /* Latar hero bernafas (lihat blok 2c): skala perlahan hairline dalam sahaja. */
+  animation: lpHeroNafas 16s var(--ease-in-out) infinite;
 }
 .lp-berlian {
   position: absolute;
@@ -757,31 +762,97 @@ body.lp::before { display: none !important; }
   50%      { opacity: 0.6;  transform: scale(1.06); }
 }
 
-/* ---------- 2. STAGGER REVEAL: anak seksyen muncul bergilir ---------- */
-/* Kekalkan reveal seksyen sedia ada; DI SAMPING itu, anak langsung tiap seksyen
-   fade+naik dengan delay berperingkat. Kecualikan hiasan (.lp-deko) dan bekas kelopak
-   supaya transform mereka sendiri (rotate/parallax) tak dirampas. HANYA bila .lp-js. */
-.lp-js .lp-sec.reveal > :not(.lp-deko):not(.lp-kelopak) {
+/* ---------- 2. STAGGER REVEAL: anak seksyen muncul bergilir (ENJIN PER-ELEMEN) ---------- */
+/* Inilah gerakan utama sekarang: setiap anak langsung seksyen fade + naik JAUH (56px,
+   naik dari ~2x nilai lama) dengan durasi PANJANG (1000ms) dan easing ekspo lembut,
+   jadi masuknya besar dan perlahan (rasa GSAP), bukan sentak halus. Kecualikan hiasan
+   (.lp-deko), bekas kelopak (.lp-kelopak), dan bingkai hero (.lp-hero-frame , hero
+   dikendali urutan dramatik tersendiri di bawah) supaya transform sendiri mereka tak
+   dirampas. Gerak MENEGAK sahaja -> tiada risiko skrol melintang. HANYA bila .lp-js. */
+.lp-js .lp-sec.reveal > :not(.lp-deko):not(.lp-kelopak):not(.lp-hero-frame) {
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out);
+  transform: translateY(56px);
+  /* Longhand (BUKAN shorthand `transition`): shorthand akan reset transition-delay
+     jadi 0 dan, kerana rule ini kini lebih spesifik (3 :not) dari rule stagger
+     :nth-child, ia akan MENANG dan bunuh stagger. Guna longhand tanpa sentuh
+     transition-delay supaya rule :nth-child di bawah bebas set delay. */
+  transition-property: opacity, transform;
+  transition-duration: 1000ms;
+  transition-timing-function: var(--lp-ease-soft);
 }
-/* Arah naik: anak stagger pun masuk dari ATAS (sejajar seksyen). Diletak SEBELUM
+/* Arah naik: anak stagger pun masuk dari ATAS (sejajar arah skrol). Diletak SEBELUM
    rule is-lihat di bawah supaya keadaan tampak tetap menang. */
-.lp-js.lp-arah-atas .lp-sec.reveal > :not(.lp-deko):not(.lp-kelopak) {
-  transform: translateY(-14px);
+.lp-js.lp-arah-atas .lp-sec.reveal > :not(.lp-deko):not(.lp-kelopak):not(.lp-hero-frame) {
+  transform: translateY(-56px);
 }
-.lp-js .lp-sec.reveal.is-lihat > :not(.lp-deko):not(.lp-kelopak) {
+.lp-js .lp-sec.reveal.is-lihat > :not(.lp-deko):not(.lp-kelopak):not(.lp-hero-frame) {
   opacity: 1;
   transform: none;
 }
-/* Delay berperingkat (delay hanya bermakna utk anak yang memang transisi di atas). */
+/* Delay berperingkat ~110ms antara anak (lebih jarang dari 70ms lama) supaya mata
+   sempat baca setiap elemen masuk satu-satu. */
 .lp-js .lp-sec.reveal.is-lihat > :nth-child(1) { transition-delay: 0ms; }
-.lp-js .lp-sec.reveal.is-lihat > :nth-child(2) { transition-delay: 70ms; }
-.lp-js .lp-sec.reveal.is-lihat > :nth-child(3) { transition-delay: 140ms; }
-.lp-js .lp-sec.reveal.is-lihat > :nth-child(4) { transition-delay: 210ms; }
-.lp-js .lp-sec.reveal.is-lihat > :nth-child(5) { transition-delay: 280ms; }
-.lp-js .lp-sec.reveal.is-lihat > :nth-child(6) { transition-delay: 350ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(2) { transition-delay: 110ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(3) { transition-delay: 220ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(4) { transition-delay: 330ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(5) { transition-delay: 440ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(6) { transition-delay: 550ms; }
+
+/* ---------- 2b. HERO DRAMATIK (urutan tersendiri, tiru corak demo e-kad) ---------- */
+/* Elemen dalam hero animate BERASINGAN (bukan blok): bismillah + eyebrow fadeInUp
+   dahulu (~1s), NAMA SCRIPT zoom masuk perlahan (scale 0.82 -> 1, ~1.9s) selepas
+   jeda, tarikh menyusul. .lp-hero-frame sendiri TIDAK bergerak (dikecualikan dari
+   enjin stagger di atas) supaya bingkai jadi "pentas" dan teks muncul di dalamnya.
+   GATE .lp-buka: urutan hanya main SELEPAS cover dibuka (landing.js tambah .lp-buka
+   masa cover terangkat). Tanpa gate, IntersectionObserver tanda hero is-lihat pada
+   muat (hero di viewport, cuma dilindung cover) -> animasi habis di sebalik cover
+   sebelum sempat dilihat. Dengan is-lihat kekal + gate, urutan mula TEPAT bila cover
+   naik, dan BERULANG bila hero masuk semula viewport (cover dah tiada, .lp-buka kekal). */
+.lp-js .lp-hero.reveal .lp-bismillah,
+.lp-js .lp-hero.reveal .lp-eyebrow {
+  opacity: 0;
+  transform: translateY(46px);
+  transition: opacity 1000ms var(--lp-ease-soft), transform 1000ms var(--lp-ease-soft);
+}
+.lp-js .lp-hero.reveal .lp-nama-script {
+  opacity: 0;
+  transform: scale(0.82);
+  transition: opacity 1900ms var(--lp-ease-soft), transform 1900ms var(--lp-ease-soft);
+}
+.lp-js .lp-hero.reveal .lp-tarikh {
+  opacity: 0;
+  transform: translateY(34px);
+  transition: opacity 1400ms var(--lp-ease-soft), transform 1400ms var(--lp-ease-soft);
+}
+/* Arah naik: yang guna translate ditukar tanda (masuk dari atas); nama guna scale,
+   arah tak berkaitan jadi kekal. */
+.lp-js.lp-arah-atas .lp-hero.reveal .lp-bismillah,
+.lp-js.lp-arah-atas .lp-hero.reveal .lp-eyebrow { transform: translateY(-46px); }
+.lp-js.lp-arah-atas .lp-hero.reveal .lp-tarikh { transform: translateY(-34px); }
+/* Reveal (hanya selepas .lp-buka): urutan berperingkat , eyebrow dulu, nama zoom
+   perlahan selepas jeda ~0.65s, tarikh menyusul selepas nama hampir penuh. */
+.lp-js.lp-buka .lp-hero.reveal.is-lihat .lp-bismillah {
+  opacity: 1; transform: none; transition-delay: 0ms;
+}
+.lp-js.lp-buka .lp-hero.reveal.is-lihat .lp-eyebrow {
+  opacity: 1; transform: none; transition-delay: 200ms;
+}
+.lp-js.lp-buka .lp-hero.reveal.is-lihat .lp-nama-script {
+  opacity: 1; transform: none; transition-delay: 650ms;
+}
+.lp-js.lp-buka .lp-hero.reveal.is-lihat .lp-tarikh {
+  opacity: 1; transform: none; transition-delay: 1150ms;
+}
+
+/* ---------- 2c. LATAR HERO BERNAFAS (frame breathing) ---------- */
+/* Bingkai hero "bernafas": hairline dalam (::before, lapisan HIASAN, BUKAN teks)
+   skala sangat perlahan 1 -> 1.03 ulang-alik. Kekal dalam jurang 5px antara border
+   luar dan dalam, jadi tiada tembus. transform sahaja (compositor). Teks hero TIDAK
+   diskala -> tiada kabur. Dimatikan penuh oleh reduced-motion. */
+@keyframes lpHeroNafas {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
 
 /* ---------- 3. DIVIDER MELUKIS DIRI ---------- */
 /* Garis emas "dilukis" dari tengah ke luar bila hero dapat is-lihat (stroke-dashoffset
@@ -996,6 +1067,15 @@ body.lp::before { display: none !important; }
   .lp-js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
   /* Anak stagger: tunjuk penuh, tiada gerak. */
   .lp-js .lp-sec.reveal > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+  /* Hero dramatik: elemen dalam hero statik penuh (tiada fade/zoom/urutan). */
+  .lp-js .lp-hero.reveal .lp-bismillah,
+  .lp-js .lp-hero.reveal .lp-eyebrow,
+  .lp-js .lp-hero.reveal .lp-nama-script,
+  .lp-js .lp-hero.reveal .lp-tarikh {
+    opacity: 1 !important; transform: none !important; transition: none !important;
+  }
+  /* Latar hero bernafas: mati. */
+  .lp-hero-frame::before { animation: none !important; }
   .lp-cover-buka-titik { animation: none; opacity: 0.8; }
   .lp-muzik.is-main .lp-muzik-ikon { animation: none; }
   /* Pakej dramatik: matikan semua animation baru (getAnimations() jadi kosong). */

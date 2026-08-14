@@ -75,6 +75,10 @@ function svgIkon(jenis) {
   // hentakan seal (bukan reduced-motion).
   function angkat() {
     cover.classList.add("is-buka");
+    // Buka gate urutan hero dramatik: CSS hero (.lp-buka .lp-hero...) hanya animate
+    // SELEPAS ini, jadi nama zoom + tarikh main TEPAT bila cover naik, bukan di
+    // sebalik cover masa muat. Hero dah is-lihat (IO), jadi transisi mula serta-merta.
+    try { document.documentElement.classList.add("lp-buka"); } catch (e) {}
     try { document.documentElement.style.overflow = ""; document.body.style.overflow = ""; } catch (e) {}
     // Auto-skrol sedikit supaya jelas kandungan bermula (hormat reduced-motion).
     try {
