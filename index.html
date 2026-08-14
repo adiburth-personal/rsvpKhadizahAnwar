@@ -36,6 +36,11 @@
   <!-- Penanda "JS hidup": kalau modul landing.js gagal muat, seksyen reveal TIDAK
        disorok (CSS hanya sorok bila .lp-js ada), jadi kandungan tak pernah kosong. -->
   <script>document.documentElement.className += " lp-js";</script>
+  <!-- Mod preview tema LILAC (?tema=lilac): tambah kelas lp-lilac SEAWAL mungkin dalam
+       <head> supaya latar/warna lilac dicat terus tanpa kelip (elak FOUC), sama corak
+       penanda lp-js di atas. Tanpa query, className kekal " lp-js" tepat = rupa default
+       TIDAK berubah langsung. Defensif: sebarang ralat diabaikan. -->
+  <script>try{if(new URLSearchParams(location.search).get("tema")==="lilac")document.documentElement.classList.add("lp-lilac");}catch(e){}</script>
 </head>
 <body class="lp">
 

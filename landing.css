@@ -1330,3 +1330,73 @@ button.lp-dock-btn {
   /* Modal RSVP: muncul/hilang terus tanpa fade/naik. */
   .lp-modal-overlay, .lp-modal-kad { transition: none !important; }
 }
+
+/* ============================================================================
+   TEMA LILAC (MOD PREVIEW: aktif HANYA bila URL ada ?tema=lilac)
+   ============================================================================
+   Meniru kad Canva rasmi pasangan: gutter mauve ungu (#6b5164), kad tengah lilac
+   cerah (#d4c6e8, sampel pixel kad rasmi ~#d3c5e8), panel lilac muda bertingkat,
+   teks kekal maroon/ink gelap (SEMUA kombinasi disahkan >=4.5:1 / >=3:1 teks besar
+   dalam scratchpad/contrast.py). TIADA rupa default berubah: skop html.lp-lilac
+   sahaja, dan kelas itu HANYA ditambah bila query wujud (lihat <head> index.html).
+
+   Strategi: override TOKEN warna surface (cream/cream-2/lp-gutter) dalam skop lilac
+   supaya kebanyakan elemen (kotak countdown, baris kontak, kad buku, modal, QR,
+   titik timeline) ikut automatik, PLUS override eksplisit untuk surface hard-coded
+   (body/kad/cover gradient, dock/muzik glass). Aksen emas (hairline/berlian/cincin
+   timeline) KEKAL sebagai kilau antik lembut di atas lilac (hiasan, bukan teks, jadi
+   tiada isu kontras). Hanya teks "&" (emas) ditukar ke plum supaya kekal terbaca.
+   Specificity html.lp-lilac (0,1,1) menang atas :root (0,1,0) termasuk blok @supports
+   oklch styles.css, jadi override hex ini sah merentas semua pelayar. */
+
+html.lp-lilac {
+  --lp-gutter: #6b5164;       /* mauve gutter kad rasmi */
+  --color-cream: #f3eefa;     /* surface putih-lilac (modal, QR, butang kontak, titik timeline) + teks terang atas maroon */
+  --color-cream-2: #e7ddf3;   /* panel lilac muda (kotak countdown, baris kontak, kad buku, input) */
+}
+
+/* Gutter (latar luar kad): gradien mauve kad rasmi + grain kekal (halus atas mauve). */
+html.lp-lilac body.lp {
+  background-color: #6b5164;
+  background-image:
+    radial-gradient(130% 80% at 50% -8%, #7a6072 0%, #6b5164 48%, #59435a 100%),
+    var(--lp-noise);
+}
+
+/* Kad tengah: lilac cerah + cahaya lembut atas (lilac muda, BUKAN putih supaya tak
+   ada tompok cerah), grain dikekalkan tapi lembut. */
+html.lp-lilac .lp-kad {
+  background-color: #d4c6e8;
+  background-image:
+    radial-gradient(120% 60% at 50% 0%, #e6dcf4 0%, transparent 46%),
+    var(--lp-noise);
+}
+
+/* Cover (sampul): kekal GELAP (padan kad rasmi) tapi digeser ke keluarga mauve supaya
+   peralihan buka masuk ke gutter mauve licin. Kekal cukup gelap: stop paling cerah
+   #5c4260 lulus AA untuk eyebrow/atas (disahkan). */
+html.lp-lilac .lp-cover {
+  background-color: #5c4260;
+  background-image:
+    radial-gradient(115% 80% at 50% 12%, #5c4260 0%, #3d2a44 52%, #26192e 100%),
+    var(--lp-noise);
+}
+
+/* Teks "&" (asalnya emas, kontras rendah atas lilac) -> plum, kekal aksen tapi terbaca. */
+html.lp-lilac .lp-ibubapa .lp-amp,
+html.lp-lilac .lp-amp-besar { color: var(--color-plum); }
+
+/* Dock + butang muzik: kaca lilac muda (asal cream hard-coded), sempadan mauve lembut.
+   Label maroon atas kaca ~#ece5f6 = 8.99:1 (disahkan). */
+html.lp-lilac .lp-dock {
+  background: rgba(236, 229, 246, 0.94);
+  border-color: rgba(103, 75, 119, 0.4);
+}
+html.lp-lilac .lp-muzik {
+  background: rgba(236, 229, 246, 0.94);
+  border-color: rgba(103, 75, 119, 0.5);
+}
+@supports ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
+  html.lp-lilac .lp-dock { background: rgba(236, 229, 246, 0.82); }
+  html.lp-lilac .lp-muzik { background: rgba(236, 229, 246, 0.8); }
+}
