@@ -590,57 +590,197 @@ muzikApi = (function muzikInit() {
   return { mulaAuto: mulaAuto };
 })();
 
-// ====== 7. BUKU TETAMU (3 ucapan terkini, baca sahaja, defensif) ======
+// ====== 7. BUKU TETAMU (feed auto-scroll, baca sahaja, defensif) ======
+// Wave 4: viewport tinggi tetap yang mengalir sendiri perlahan DALAM bekas dia sahaja.
+// Tekan kad = terus ke ucapan.html (like hanya di sana); ♥ n paparan sahaja.
 (function bukuInit() {
+  const viewport = document.getElementById("lpBukuViewport");
   const senarai = document.getElementById("lpBukuSenarai");
-  if (!senarai) return;
-  if (konfigurasiBelumSiap(firebaseConfig)) { senarai.hidden = true; return; }
+  if (!viewport || !senarai) return;
+  if (konfigurasiBelumSiap(firebaseConfig)) return;   // viewport kekal hidden; nota + butang cukup
 
-  muatBuku().catch(function (err) {
+  // WebKit kadang-kadang GANTUNG (bukan gagal) webchannel Firestore pada muatan
+  // pertama (diukur intermittent ~1/3 dalam ujian): getDocs tak settle langsung.
+  // Ubat: had masa pada janji + SATU percubaan semula selepas 3s.
+  let cubaKedua = false;
+  function lepasGagal(err) {
     console.error("Gagal muat buku tetamu:", err);
-    senarai.hidden = true;   // sorok preview dengan elok; butang kekal
-  });
+    if (!cubaKedua) {
+      cubaKedua = true;
+      window.setTimeout(function () { muatBuku().catch(lepasGagal); }, 3000);
+      return;
+    }
+    viewport.hidden = true;   // sorok feed dengan elok; nota + butang kekal
+  }
+  muatBuku().catch(lepasGagal);
+
+  function hadMasa(janji, ms) {
+    return Promise.race([janji, new Promise(function (ok, tolak) {
+      window.setTimeout(function () { tolak(new Error("tamat masa " + ms + "ms")); }, ms);
+    })]);
+  }
 
   async function muatBuku() {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
     const { getFirestore, collection, query, orderBy, limit, getDocs } =
       await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
 
-    const app = initializeApp(firebaseConfig);
+    // Guard duplicate-app: percubaan kedua (atau modul lain) mungkin dah initialize.
+    const app = appMod.getApps && appMod.getApps().length ? appMod.getApp() : appMod.initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    // Ambil lebih (15) sebab perlu tapis yang ADA ucapan, pastu ambil 3 teratas.
-    const soalan = query(collection(db, "rsvp"), orderBy("masa", "desc"), limit(15));
-    const petikan = await getDocs(soalan);
+    // Ambil lebih (40) sebab perlu tapis yang ADA ucapan, papar maksimum 12.
+    const soalan = query(collection(db, "rsvp"), orderBy("masa", "desc"), limit(40));
+    const petikan = await hadMasa(getDocs(soalan), 8000);
 
     const ucapanBaik = [];
     petikan.forEach(function (dok) {
       const data = dok.data() || {};
       const ucapan = (data.ucapan || "").trim();
-      if (ucapan) ucapanBaik.push({ nama: (data.nama || "Tetamu").trim() || "Tetamu", ucapan: ucapan });
+      if (ucapan) ucapanBaik.push({ id: dok.id, nama: (data.nama || "Tetamu").trim() || "Tetamu", ucapan: ucapan });
     });
+    const papar = ucapanBaik.slice(0, 12);
+    if (!papar.length) return;   // tiada ucapan: feed kekal hidden, seksyen masih lengkap
 
-    const tiga = ucapanBaik.slice(0, 3);
-    if (!tiga.length) { senarai.hidden = true; return; }
+    // Tally ♥ dari /sayang: satu dokumen = satu like (corak sama ucapan.js, cuma
+    // one-shot getDocs sebab landing tak perlu realtime). Gagal tally = feed tetap
+    // jalan tanpa kiraan (jangan korbankan feed kerana kaunter hiasan).
+    const sayangKira = new Map();
+    try {
+      const semuaSayang = await hadMasa(getDocs(collection(db, "sayang")), 8000);
+      semuaSayang.forEach(function (d) {
+        const id = (d.data() || {}).ucapanId;
+        if (!id) return;
+        sayangKira.set(id, (sayangKira.get(id) || 0) + 1);
+      });
+    } catch (e) { console.error("Gagal tally sayang:", e); }
 
     senarai.innerHTML = "";
-    tiga.forEach(function (u, i) {
-      const kad = document.createElement("article");
+    papar.forEach(function (u, i) {
+      // Kad = pautan penuh ke dinding ucapan (navigasi biasa, bukan butang like).
+      const kad = document.createElement("a");
       kad.className = "lp-buku-kad";
-      // Luncur masuk bergilir sekali (delay ikut index). Reduced-motion: terus nampak.
+      kad.href = "./ucapan.html";
       if (!REDUCED.matches) {
         kad.classList.add("is-masuk");
-        kad.style.animationDelay = (i * 90) + "ms";
+        kad.style.animationDelay = (Math.min(i, 6) * 90) + "ms";  // had stagger: kad bawah lipatan tak perlu tunggu lama
       }
       const teks = document.createElement("p");
       teks.className = "lp-buku-ucap";
       teks.textContent = u.ucapan;           // XSS selamat
+      const bawah = document.createElement("div");
+      bawah.className = "lp-buku-bawah";
       const nama = document.createElement("p");
       nama.className = "lp-buku-nama";
       nama.textContent = u.nama;             // XSS selamat
-      kad.append(teks, nama);
+      bawah.appendChild(nama);
+      const kira = sayangKira.get(u.id) || 0;
+      if (kira > 0) {                        // sorok bila 0: kad tanpa like kekal bersih
+        const sayang = document.createElement("span");
+        sayang.className = "lp-buku-sayang";
+        sayang.textContent = "♥ " + kira;
+        sayang.setAttribute("aria-label", kira + " tanda sayang");
+        bawah.appendChild(sayang);
+      }
+      kad.append(teks, bawah);
       senarai.appendChild(kad);
     });
-    senarai.hidden = false;
+    viewport.hidden = false;
+    autoSkrol(viewport);
+  }
+
+  // ---- Auto-scroll dalam bekas: rAF + scrollTop (bukan CSS translate) supaya user
+  // boleh skrol manual pada bila-bila masa dan kedua-duanya kongsi satu kedudukan. ----
+  function autoSkrol(bekas) {
+    if (REDUCED.matches) return;             // reduced-motion: senarai statik, skrol manual sahaja
+    const HALAJU = 15;                       // px sesaat: perlahan macam kredit filem
+    let aktif = false;                       // seksyen dalam viewport halaman? (gate IO)
+    let jeda = false;                        // user tengah berinteraksi
+    let balik = false;                       // sedang gelung balik ke atas
+    // Penanda skrol sendiri: simpan NILAI scrollTop yang kita tetapkan, bukan boolean.
+    // KENAPA: pelayar menggabungkan event scroll dalam satu frame; kalau auto + user
+    // menulis serentak, satu event sahaja tiba dan boolean akan "termakan" oleh event
+    // yang salah. Banding nilai sebenar = kebal gabungan.
+    let nilaiAuto = -1;
+    let baki = 0;                            // akumulasi subpixel (scrollTop dipotong integer sesetengah enjin)
+    let masaDulu = 0;
+    let rafId = 0;
+    let idSambung = 0;
+    let idBalik = 0;
+
+    function jadual() {
+      if (!rafId && aktif && !jeda && !balik) rafId = requestAnimationFrame(langkah);
+    }
+    function langkah(now) {
+      rafId = 0;
+      if (!aktif || jeda || balik) { masaDulu = 0; return; }
+      if (!masaDulu) masaDulu = now;
+      const dt = Math.min(80, now - masaDulu);   // clamp: balik dari tab tidur jangan melompat
+      masaDulu = now;
+      const maks = bekas.scrollHeight - bekas.clientHeight;
+      if (maks <= 4) return;                     // kandungan tak melimpah: tiada apa nak gerak (cuba lagi bila IO masuk semula)
+      baki += (HALAJU * dt) / 1000;
+      if (baki >= 1) {
+        const px = Math.floor(baki);
+        baki -= px;
+        nilaiAuto = Math.min(maks, bekas.scrollTop + px);  // rekod SEBELUM assign
+        bekas.scrollTop = nilaiAuto;
+      }
+      if (bekas.scrollTop >= maks - 0.5) {       // sampai bawah: rehat 2s, luncur balik atas
+        balik = true;
+        window.clearTimeout(idBalik);
+        idBalik = window.setTimeout(luncurBalik, 2000);
+        return;
+      }
+      jadual();
+    }
+    // Luncur balik ke atas guna rAF sendiri (corak scrollKe repo; HARAM scrollIntoView smooth).
+    function luncurBalik() {
+      const dari = bekas.scrollTop;
+      if (dari < 2) { balik = false; masaDulu = 0; jadual(); return; }
+      const dur = Math.min(900, Math.max(400, dari * 0.6));
+      const mula = performance.now();
+      (function gelung(now) {
+        if (jeda || !aktif) { balik = false; masaDulu = 0; return; }  // user ambil alih: serah terus
+        const p = Math.min((now - mula) / dur, 1);
+        nilaiAuto = Math.round(dari * (1 - easeInOutCubic(p)));
+        bekas.scrollTop = nilaiAuto;
+        if (p < 1) { requestAnimationFrame(gelung); return; }
+        balik = false; baki = 0; masaDulu = 0;
+        jadual();
+      })(performance.now());
+    }
+    // Jeda pada sebarang interaksi user; sambung selepas 4s senyap.
+    function rehat() {
+      jeda = true;
+      window.clearTimeout(idSambung);
+      idSambung = window.setTimeout(function () {
+        jeda = false; baki = 0; masaDulu = 0;
+        jadual();
+      }, 4000);
+    }
+    // TIADA pointerenter di sini: bila HALAMAN diskrol, bekas boleh lalu di bawah
+    // kursor yang PEGUN dan pointerenter tercetus tanpa niat user (diukur dalam ujian)
+    // -> feed terjeda 4s secara hantu. pointermove hanya tercetus bila tetikus
+    // betul-betul digerakkan atas feed, itu isyarat niat sebenar.
+    ["pointermove", "pointerdown", "touchstart", "wheel", "focusin"].forEach(function (nama) {
+      bekas.addEventListener(nama, rehat, { passive: true });
+    });
+    // Event scroll: padankan dengan nilai auto terakhir; padan = milik kita, abaikan.
+    // Tak padan = user (momentum iOS, seret scrollbar, set terus) -> jeda. Ini elak
+    // rAF berlawan dengan momentum sentuhan.
+    bekas.addEventListener("scroll", function () {
+      if (nilaiAuto >= 0 && Math.abs(bekas.scrollTop - nilaiAuto) < 1.5) { nilaiAuto = -1; return; }
+      nilaiAuto = -1;
+      rehat();
+    }, { passive: true });
+    // Gate IO: jalan hanya bila seksyen kelihatan (jimat bateri, elak kerja ghaib).
+    try {
+      const io = new IntersectionObserver(function (entri) {
+        aktif = !!(entri[0] && entri[0].isIntersecting);
+        if (aktif) { masaDulu = 0; jadual(); }
+      }, { threshold: 0.15 });
+      io.observe(bekas);
+    } catch (e) { aktif = true; jadual(); }      // pelayar tanpa IO: jalan terus
   }
 })();
 

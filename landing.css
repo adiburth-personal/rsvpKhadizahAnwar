@@ -579,19 +579,68 @@ body.lp::before { display: none !important; }
 }
 
 /* ============================== BUKU TETAMU ============================== */
+/* Nota santai di bawah kepala: kecil, tenang, bukan arahan tegas. */
+.lp-buku-nota {
+  font-family: var(--lp-body);
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--color-ink-soft, var(--color-ink));
+  max-width: 34ch;
+  margin: 0 auto var(--space-5);
+}
+.lp-buku-nota-hati { color: var(--color-maroon); }
+/* Viewport feed: tinggi tetap, skrol DALAM bekas sahaja. overscroll-behavior contain
+   supaya momentum tak melimpah jadi skrol halaman (kehendak user: "hanya dekat section
+   dia je"). Mask fade atas/bawah buat kad masuk/keluar rasa melarut, bukan terpotong. */
+.lp-buku-viewport {
+  height: 360px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;               /* feed hiasan; skrol manual masih jalan */
+  margin: 0 0 var(--space-5);
+  padding: 26px 2px;                   /* ruang untuk zon mask supaya kad pertama tak lahir terpotong */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+}
+.lp-buku-viewport::-webkit-scrollbar { display: none; }
+.lp-buku-viewport[hidden] { display: none; }
+.lp-buku-viewport:focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
 .lp-buku-senarai {
   display: grid;
   gap: var(--space-4);
-  margin: 0 0 var(--space-6);
+  margin: 0;                           /* jarak ke butang diurus viewport, elak ekor skrol kosong */
   text-align: left;
 }
 .lp-buku-senarai[hidden] { display: none; }
+/* Kad kini pautan penuh ke dinding ucapan: warisi rupa kad, buang gaya pautan. */
 .lp-buku-kad {
   position: relative;
+  display: block;
   background-color: var(--color-cream-2);
   border-left: 3px solid var(--color-plum);
   border-radius: var(--radius-md);
   padding: var(--space-5) var(--space-5) var(--space-5) var(--space-6);
+  color: inherit;
+  text-decoration: none;
+  /* Guna properti `scale` berasingan (bukan transform): kad hidup dalam enjin
+     reveal/animasi lain yang memiliki transform (teknik sama Wave 2/3). */
+  transition: scale var(--btnTekanDur, 160ms) var(--ease-out);
+}
+.lp-buku-kad:active { scale: 0.985; }
+/* Baris bawah kad: nama kiri, kiraan ♥ kanan (paparan sahaja, tekan = ke dinding). */
+.lp-buku-bawah {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.lp-buku-sayang {
+  font-family: var(--lp-label);
+  font-size: 0.92rem;
+  letter-spacing: 0.03em;
+  color: var(--color-maroon);
+  white-space: nowrap;
 }
 /* Tanda petik hiasan (script HANYA untuk hiasan, bukan kandungan tetamu). */
 .lp-buku-kad::before {
@@ -1927,6 +1976,9 @@ button.lp-dock-btn {
   .lp-btn-halus, .lp-kontak-btn { animation: none !important; translate: none !important; }
   .lp-btn-besar:active, .lp-btn-halus:active, .lp-kontak-btn:active,
   .lp-dock-btn:active, .lp-muzik:active, .lp-modal-tutup:active { scale: none !important; }
+  /* Wave 4 buku tetamu: feedback tekan kad mati (auto-scroll dah digate REDUCED dlm JS). */
+  .lp-buku-kad { transition: none !important; }
+  .lp-buku-kad:active { scale: none !important; }
 }
 
 /* ============================================================================

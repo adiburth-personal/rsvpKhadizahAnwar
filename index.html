@@ -308,7 +308,14 @@
     <section class="lp-sec lp-sec--panel lp-buku reveal" id="bukuTetamu">
       <span class="lp-deko lp-botani lp-rb-regalis lp-b-buku" aria-hidden="true"></span>
       <h2 class="lp-kepala">Buku Tetamu</h2>
-      <div class="lp-buku-senarai" id="lpBukuSenarai" hidden></div>
+      <!-- Nota santai: beritahu tetamu ucapan boleh ditekan & ada ♥ di dinding penuh.
+           Statik dalam HTML (bukan dijana JS) supaya JS mati pun seksyen masih bermakna. -->
+      <p class="lp-buku-nota">Doa &amp; ucapan rakan tetamu berkumpul di sini. Tekan mana&#8209;mana ucapan untuk ke dinding penuh, boleh tekan <span class="lp-buku-nota-hati" aria-hidden="true">&#9829;</span> untuk ucapan yang anda suka.</p>
+      <!-- Viewport feed: hidden sehingga data Firestore tiba (JS mati = kekal sorok,
+           nota + butang di bawah tetap ada). Skrol sendiri DALAM bekas ini sahaja. -->
+      <div class="lp-buku-viewport" id="lpBukuViewport" role="region" aria-label="Ucapan tetamu terkini" tabindex="0" hidden>
+        <div class="lp-buku-senarai" id="lpBukuSenarai"></div>
+      </div>
       <div class="lp-buku-butang">
         <a class="lp-btn-halus" href="./rsvp.html">Berikan Ucapan</a>
         <a class="lp-btn-halus" href="./ucapan.html">Lihat Semua Ucapan</a>
