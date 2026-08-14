@@ -145,49 +145,53 @@ function svgIkon(jenis) {
   });
 })();
 
-// ====== 2. REVEAL seksyen (ikut arah skrol, BERULANG) ======
-// Beza dari sebelum: TIDAK unobserve. Seksyen animate masuk setiap kali masuk balik
-// viewport, dan keadaan tersembunyinya ikut ARAH skrol (turun = masuk dari bawah,
-// naik = masuk dari atas, dipacu kelas .lp-arah-atas pada <html>). Fallback/reduced:
-// tunjuk semua statik.
+// ====== 2. REVEAL per-ELEMEN (resipi e-kad rujukan, BERULANG) ======
+// APA MAKSUDNYA: setiap blok teks/elemen muncul SENDIRI bila IA masuk viewport (bukan
+// seluruh seksyen sekali). Setiap elemen mula tersembunyi (op 0 + turun 100px, dari
+// BAWAH sahaja pada semua arah skrol) dan main tween ~1s quad-out bila is-lihat ditanda.
+//
+// BEZA dari versi lama: (1) diperhati PER-ELEMEN, bukan per-seksyen; (2) mekanisme
+// arah-atas (.lp-arah-atas) DIBUANG , elemen sentiasa masuk dari bawah; (3) stagger
+// datang semulajadi dari susunan layout, bukan transition-delay panjang.
+//
+// RESET: bila elemen keluar viewport SEPENUHNYA (atas ATAU bawah, ratio ~0), buang
+// is-lihat serta-merta (tiada animasi keluar) -> main semula setiap kali masuk balik.
+// HISTERESIS: elemen yang masih separa kelihatan TAK direset (elak flicker di tengah).
+//
+// HERO: seksyen .lp-hero kekal diperhati sebagai SATU unit supaya urutan dramatiknya
+// (nama zoom dll, gated .lp-buka) main sebagai identiti istimewa; ia pun main semula
+// bila hero masuk balik viewport. Fallback/reduced: tunjuk semua statik.
 (function revealInit() {
-  const seksyen = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
-  if (!seksyen.length) return;
-  function tunjukSemua() { seksyen.forEach(function (s) { s.classList.add("is-lihat"); }); }
+  // Elemen per-elemen: anak langsung seksyen (kecuali hiasan/kelopak/bingkai hero/ol
+  // timeline) + setiap item timeline. Padan selector CSS enjin reveal (landing.css 2/2b).
+  const elemen = Array.prototype.slice.call(document.querySelectorAll(
+    ".lp-sec.reveal > :not(.lp-deko):not(.lp-kelopak):not(.lp-hero-frame):not(.lp-tl), " +
+    ".lp-aturcara.reveal .lp-tl-item"
+  ));
+  // Hero diperhati sebagai seksyen (is-lihat pada .lp-hero mencetus urutan dramatik).
+  const hero = document.querySelector(".lp-hero.reveal");
+  const sasaran = elemen.slice();
+  if (hero) sasaran.push(hero);
+  if (!sasaran.length) return;
+
+  function tunjukSemua() { sasaran.forEach(function (s) { s.classList.add("is-lihat"); }); }
   if (REDUCED.matches || typeof IntersectionObserver === "undefined") { tunjukSemua(); return; }
 
-  const root = document.documentElement;
-
-  // --- Jejak arah skrol: banding scrollY frame ke frame (throttle rAF). Skrol NAIK
-  //     -> tambah .lp-arah-atas (CSS flip tanda translateY keadaan tersembunyi). ---
-  let lastY = window.scrollY || window.pageYOffset || 0;
-  let menunggu = false;
-  function kemasArah() {
-    menunggu = false;
-    const y = window.scrollY || window.pageYOffset || 0;
-    if (y < lastY - 1) root.classList.add("lp-arah-atas");
-    else if (y > lastY + 1) root.classList.remove("lp-arah-atas");
-    lastY = y;
-  }
-  window.addEventListener("scroll", function () {
-    if (!menunggu) { menunggu = true; requestAnimationFrame(kemasArah); }
-  }, { passive: true });
-
   try {
-    // Threshold [0, 0.12] beri HISTERESIS: seksyen perlu >=12% kelihatan untuk reveal,
-    // tapi is-lihat HANYA dibuang bila betul-betul keluar viewport (ratio ~0). Jadi
-    // seksyen di tengah yang tengah dibaca TAK pernah hilang is-lihat -> tiada flicker
-    // di sempadan. Zon antara (0 < ratio < 0.12) kekalkan keadaan semasa.
+    // Threshold [0, 0.05] beri HISTERESIS: elemen reveal bila >=5% kelihatan (trigger
+    // kecil, mula awal), tapi is-lihat HANYA dibuang bila betul-betul keluar viewport
+    // (ratio ~0). Zon antara (0.001 < ratio < 0.05) kekalkan keadaan semasa -> elemen
+    // di tengah yang sedang dibaca TAK pernah hilang is-lihat (tiada flicker).
     const io = new IntersectionObserver(function (entri) {
       entri.forEach(function (en) {
-        if (en.isIntersecting && en.intersectionRatio >= 0.12) {
+        if (en.isIntersecting && en.intersectionRatio >= 0.05) {
           en.target.classList.add("is-lihat");
         } else if (en.intersectionRatio <= 0.001) {
-          en.target.classList.remove("is-lihat");
+          en.target.classList.remove("is-lihat");   // keluar penuh: reset, main semula nanti
         }
       });
-    }, { threshold: [0, 0.12], rootMargin: "0px 0px -6% 0px" });
-    seksyen.forEach(function (s) { io.observe(s); });
+    }, { threshold: [0, 0.05] });
+    sasaran.forEach(function (s) { io.observe(s); });
   } catch (e) { tunjukSemua(); }
 })();
 
@@ -375,13 +379,21 @@ muzikApi = (function muzikInit() {
     audio.addEventListener("error",   function () { tandaMain(false); });
   } catch (e) {}
 
-  // Cuba main SEGERAK (dipanggil dalam gesture). play() pulangkan Promise yang mungkin
-  // REJECT (dasar autoplay / fail belum sedia). .catch() defensif: kalau ditolak, event
-  // 'pause' belum tentu tercetus, jadi kita betulkan butang OFF sendiri = jujur, dan
-  // tekanan butang berikut jadi percubaan gesture baru.
+  // Timer unmute (teknik muted-unlock, lihat mulaMuted). Disimpan supaya boleh dibatal
+  // kalau user jeda dalam tempoh 2 saat atau play() ditolak.
+  let unmuteTimer = null;
+  function batalUnmute() {
+    if (unmuteTimer) { try { window.clearTimeout(unmuteTimer); } catch (e) {} unmuteTimer = null; }
+  }
+
+  // Cuba main SEGERAK, TIDAK muted (dipanggil dari tekan butang muzik = user minta bunyi
+  // terus). play() pulangkan Promise yang mungkin REJECT (dasar autoplay / fail belum
+  // sedia). .catch() defensif: kalau ditolak, event 'pause' belum tentu tercetus, jadi
+  // kita betulkan butang OFF sendiri = jujur, dan tekanan butang berikut jadi gesture baru.
   function cubaMain() {
     pernahCuba = true;
     try {
+      audio.muted = false;
       const p = audio.play();
       if (p && typeof p.catch === "function") {
         p.catch(function () { tandaMain(false); });   // ditolak: butang kekal off (jujur)
@@ -391,17 +403,54 @@ muzikApi = (function muzikInit() {
     }
   }
 
+  // MULA muzik guna teknik MUTED-UNLOCK, 2 saat selepas cover ditekan (dipanggil dari
+  // gesture cover). KENAPA muted-unlock: iOS/Safari hanya benarkan audio.play() semasa
+  // "transient user activation" (kebenaran gesture yang LUPUT sekejap selepas handler).
+  // Kalau kita setTimeout(play, 2000) terus, aktivasi dah luput -> play() disekat = punca
+  // kegagalan klasik. Jadi kita play() SEGERAK dalam gesture TETAPI audio.muted=true
+  // (dibenarkan tanpa bunyi) yang MEMBUKA KUNCI elemen audio. Lepas 2 saat baru
+  // currentTime=0 + muted=false supaya lagu berbunyi DARI MULA, 2 saat selepas cover.
+  // Butang muzik boleh ON dari mula (audio memang 'playing' walau muted , status jujur).
+  function mulaMuted() {
+    pernahCuba = true;
+    try {
+      audio.muted = true;                 // muted: dibenarkan main dalam gesture, buka kunci
+      const p = audio.play();
+      if (p && typeof p.catch === "function") {
+        // Ditolak: batal jadual unmute, nyahmute (elak senyap tersekat), butang OFF (jujur).
+        p.catch(function () { batalUnmute(); try { audio.muted = false; } catch (e) {} tandaMain(false); });
+      }
+      // Jadual unmute 2s: reset ke mula + bunyikan. Kalau user jeda dalam tempoh ini,
+      // btn handler batalkan timer ini supaya lagu tak tiba-tiba bunyi selepas jeda.
+      batalUnmute();
+      unmuteTimer = window.setTimeout(function () {
+        unmuteTimer = null;
+        try { audio.currentTime = 0; audio.muted = false; } catch (e) {}
+      }, 2000);
+    } catch (e) {
+      batalUnmute();
+      try { audio.muted = false; } catch (e2) {}
+      tandaMain(false);
+    }
+  }
+
   // Butang: toggle jeda/main, dipacu keadaan SEBENAR audio.paused. Tengah main -> jeda
-  // (event 'pause' tanda butang off). Jeda/belum -> cuba main dalam gesture ini.
+  // (event 'pause' tanda butang off). Jeda/belum -> cuba main (unmuted) dalam gesture ini.
   btn.addEventListener("click", function () {
     try {
-      if (!audio.paused) { audio.pause(); return; }   // main -> jeda
+      if (!audio.paused) {                              // main (termasuk tempoh muted 2s) -> jeda
+        batalUnmute();                                 // batal unmute supaya tak bunyi selepas jeda
+        try { audio.muted = false; } catch (e) {}      // main berikut jadi bunyi biasa
+        audio.pause();
+        return;
+      }
     } catch (e) {}
     cubaMain();                                        // jeda/belum -> cuba main (gesture baru)
   });
 
-  // Dipanggil dari cover (gesture pengguna) SEGERAK, sebelum sebarang setTimeout.
-  function mulaAuto() { cubaMain(); }
+  // Dipanggil dari cover (gesture pengguna) SEGERAK, sebelum sebarang setTimeout dalam
+  // buka(). Guna muted-unlock: lagu mula 2 saat selepas cover ditekan.
+  function mulaAuto() { mulaMuted(); }
 
   // Naikkan preload ke "auto" SELEPAS page settle supaya audio siap buffer & main
   // serta-merta bila cover ditekan, TANPA merebut jalur kritikal (font/Firebase) masa

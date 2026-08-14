@@ -36,11 +36,13 @@
   <!-- Penanda "JS hidup": kalau modul landing.js gagal muat, seksyen reveal TIDAK
        disorok (CSS hanya sorok bila .lp-js ada), jadi kandungan tak pernah kosong. -->
   <script>document.documentElement.className += " lp-js";</script>
-  <!-- Mod preview tema LILAC (?tema=lilac): tambah kelas lp-lilac SEAWAL mungkin dalam
-       <head> supaya latar/warna lilac dicat terus tanpa kelip (elak FOUC), sama corak
-       penanda lp-js di atas. Tanpa query, className kekal " lp-js" tepat = rupa default
-       TIDAK berubah langsung. Defensif: sebarang ralat diabaikan. -->
-  <script>try{if(new URLSearchParams(location.search).get("tema")==="lilac")document.documentElement.classList.add("lp-lilac");}catch(e){}</script>
+  <!-- Tema LILAC kini RUPA DEFAULT semua pengunjung: tambah kelas lp-lilac SEAWAL
+       mungkin dalam <head> supaya latar/warna lilac dicat terus tanpa kelip (elak FOUC),
+       sama corak penanda lp-js di atas. Lilac diaktif untuk SEMUA muat KECUALI bila
+       ?tema=kraft diberi (kraft dikekalkan sebagai fallback tersembunyi untuk patah
+       balik). ?tema=lilac kekal berfungsi (idempotent, classList.add tak berganda).
+       Defensif: sebarang ralat diabaikan (kandungan tetap terpapar). -->
+  <script>try{if(new URLSearchParams(location.search).get("tema")!=="kraft")document.documentElement.classList.add("lp-lilac");}catch(e){}</script>
 </head>
 <body class="lp">
 
@@ -214,7 +216,7 @@
       <ol class="lp-tl">
         <li class="lp-tl-item">
           <span class="lp-tl-titik" aria-hidden="true"></span>
-          <span class="lp-tl-masa">12:00 tengah hari</span>
+          <span class="lp-tl-masa">11:00 pagi</span>
           <span class="lp-tl-acara">Ketibaan Tetamu</span>
         </li>
         <li class="lp-tl-item">

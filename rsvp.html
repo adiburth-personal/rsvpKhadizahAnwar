@@ -50,6 +50,27 @@
        tembus ke label. Tak scope embed: pembetulan sah untuk rsvp.html standalone juga
        (borang sama). Tiada kesan lain , .tanda cuma hiasan aria-hidden. */
     .pilihan .tanda { pointer-events: none; }
+
+    /* ===================== TEMA LILAC (mod embed sahaja) =====================
+       Laman jemputan (index.html) kini LILAC secara default, dan borang ini dibuka
+       dalam modal iframe (rsvp.html?embed=1) ATAS laman itu. Supaya modal tiada "seam"
+       kraft (tan) yang terserlah di sebelah cangkerang modal lilac, kita geser SEMUA
+       surface borang ke keluarga lilac. Skop html.rsvp-embed SAHAJA -> rsvp.html
+       standalone (tanpa query, disebar terus dalam kad Canva) KEKAL kraft, tak berubah.
+
+       Strategi = sama macam blok tema lilac landing.css: override 4 TOKEN surface
+       (kraft/kraft-deep/cream/cream-2) dalam skop embed supaya SEMUA elemen (kad borang,
+       input/select/textarea, pilihan radio, butang, notis, terima kasih, latar body +
+       gradien sudut) ikut automatik. Teks kekal maroon/ink gelap. SEMUA kombinasi teks
+       atas surface baru disahkan >=4.5:1 (scratchpad/contrastEmbed.py: julat 6.16 hingga
+       11.56:1). Specificity html.rsvp-embed (0,1,1) menang atas :root oklch styles.css
+       (0,1,0), jadi override hex sah merentas semua pelayar termasuk WebKit. */
+    html.rsvp-embed {
+      --color-kraft: #dccfee;       /* latar body di belakang borang (lilac, bukan tan) */
+      --color-kraft-deep: #c9b9e0;  /* gradien bayang sudut body -> kekal lilac, tiada tompok tan */
+      --color-cream: #f3eefa;       /* kad borang + teks butang atas maroon + panel terima kasih */
+      --color-cream-2: #e7ddf3;     /* input/select/textarea + kotak pilihan radio (panel lilac muda) */
+    }
   </style>
 </head>
 <body>
