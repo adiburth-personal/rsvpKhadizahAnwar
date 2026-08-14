@@ -51,26 +51,39 @@
        (borang sama). Tiada kesan lain , .tanda cuma hiasan aria-hidden. */
     .pilihan .tanda { pointer-events: none; }
 
-    /* ===================== TEMA LILAC (mod embed sahaja) =====================
-       Laman jemputan (index.html) kini LILAC secara default, dan borang ini dibuka
-       dalam modal iframe (rsvp.html?embed=1) ATAS laman itu. Supaya modal tiada "seam"
-       kraft (tan) yang terserlah di sebelah cangkerang modal lilac, kita geser SEMUA
-       surface borang ke keluarga lilac. Skop html.rsvp-embed SAHAJA -> rsvp.html
-       standalone (tanpa query, disebar terus dalam kad Canva) KEKAL kraft, tak berubah.
+    /* ===================== TEMA LILAC (standalone + embed) =====================
+       Identiti warna laman kini LILAC. Laman jemputan (index.html) lilac secara
+       default, dan borang ini dipapar dua cara: (a) STANDALONE, rsvp.html dibuka
+       terus tanpa query (disebar dalam kad Canva/link WhatsApp); dan (b) EMBED,
+       dimuat dalam modal iframe (rsvp.html?embed=1) ATAS laman lilac. Kedua-dua kes
+       mesti sekeluarga lilac supaya konsisten dengan landing (tiada "seam" kraft/tan).
 
        Strategi = sama macam blok tema lilac landing.css: override 4 TOKEN surface
-       (kraft/kraft-deep/cream/cream-2) dalam skop embed supaya SEMUA elemen (kad borang,
-       input/select/textarea, pilihan radio, butang, notis, terima kasih, latar body +
-       gradien sudut) ikut automatik. Teks kekal maroon/ink gelap. SEMUA kombinasi teks
-       atas surface baru disahkan >=4.5:1 (scratchpad/contrastEmbed.py: julat 6.16 hingga
-       11.56:1). Specificity html.rsvp-embed (0,1,1) menang atas :root oklch styles.css
-       (0,1,0), jadi override hex sah merentas semua pelayar termasuk WebKit. */
-    html.rsvp-embed {
-      --color-kraft: #dccfee;       /* latar body di belakang borang (lilac, bukan tan) */
+       (kraft/kraft-deep/cream/cream-2) dalam skop :root supaya SEMUA elemen ikut
+       automatik , latar body + gradien sudut, hero krest, kad borang, input/select/
+       textarea, pilihan radio, butang, notis, terima kasih, nav halaman, footer. Teks
+       kekal maroon/ink gelap. Override ini terpakai untuk standalone DAN embed (embed
+       cuma tambah pemampatan hero di atas, tokennya sama). Teks-atas-body standalone
+       (eyebrow, nama, tarikh, footer, pautan nav) kini duduk atas lilac #dccfee yang
+       LEBIH cerah daripada tan lama #cabba5, jadi kontras naik, bukan turun.
+
+       SEMUA kombinasi teks atas surface baru disahkan >=4.5:1 (teks besar >=3:1)
+       (scratchpad/contrastStandalone.py: julat 5.9 hingga 12.9:1). Specificity :root
+       (0,1,0) sama dengan blok oklch styles.css (0,1,0) TAPI blok <style> ini datang
+       SELEPAS <link> styles.css dalam sumber, jadi menang ikut susunan cascade,
+       merentas semua pelayar termasuk WebKit. */
+    :root {
+      --color-kraft: #dccfee;       /* latar body (lilac, bukan tan) , teks hero duduk sini */
       --color-kraft-deep: #c9b9e0;  /* gradien bayang sudut body -> kekal lilac, tiada tompok tan */
       --color-cream: #f3eefa;       /* kad borang + teks butang atas maroon + panel terima kasih */
       --color-cream-2: #e7ddf3;     /* input/select/textarea + kotak pilihan radio (panel lilac muda) */
     }
+    /* Peningkatan oklch styles.css (@supports) menetapkan token ini dalam ruang oklch
+       dengan specificity :root (0,1,0) sama. Blok :root hex di atas datang lebih lewat
+       dalam susunan sumber, jadi ia sudah menang tanpa @supports. Tetapi untuk pelayar
+       yang memilih laluan oklch pada token LAIN (maroon/ink/line dll dikira dalam oklch),
+       kita biar token surface ini kekal hex , hex lilac ini adalah nilai muktamad yang
+       dikehendaki, konsisten dengan blok tema lilac landing.css. */
   </style>
 </head>
 <body>
