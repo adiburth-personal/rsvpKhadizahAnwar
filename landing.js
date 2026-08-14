@@ -34,9 +34,11 @@ const KONTAK = [
 const MASA_MAJLIS = new Date("2026-08-30T12:00:00+08:00").getTime();
 
 // ====== Sumber muzik: YouTube nocookie, iframe dicipta HANYA selepas tekan ======
+// widgetid=1 padan dengan id dalam handshake "listening" (lihat muzikInit) supaya
+// YouTube IFrame API mula hantar mesej status (onStateChange/infoDelivery) balik.
 const YT_ID = "idfnoMuigSA";
 const YT_SRC = "https://www.youtube-nocookie.com/embed/" + YT_ID +
-  "?enablejsapi=1&autoplay=1&playsinline=1&loop=1&playlist=" + YT_ID;
+  "?enablejsapi=1&autoplay=1&playsinline=1&loop=1&widgetid=1&playlist=" + YT_ID;
 
 // ---------- Ikon SVG kecil (inline, tiada CDN ikon) ----------
 function svgIkon(jenis) {
@@ -275,17 +277,36 @@ function svgIkon(jenis) {
   });
 })();
 
-// ====== 6. MUZIK (iframe dicipta selepas tekan/cover, guard penuh) ======
+// ====== 6. MUZIK (iframe dicipta selepas tekan/cover, guard penuh, status JUJUR) ======
 // Pulangkan { mulaAuto } supaya coverInit boleh mula muzik dari gesture klik cover.
-// Butang muzik kekal toggle jeda/main; statusnya (is-main, aria-pressed) sync walau
-// muzik dimulakan dari cover (kedua-dua laluan lalu tandaMain).
+//
+// MASALAH MOBILE: di iOS Safari / Chrome mobile, "user activation" (kebenaran gesture)
+// selalu TAK menjalar ke iframe cross-origin untuk audio bukan-mute. Jadi autoplay
+// berbunyi YouTube embed kerap disekat walaupun kita cipta iframe dalam gesture cover.
+// Di desktop ia jalan. Kita tak boleh paksa, jadi kita buat BERLAPIS + JUJUR:
+//
+//  1) Percubaan asal kekal: cipta iframe autoplay=1 dalam gesture (berjaya sebahagian
+//     browser).
+//  2) Handshake status SEBENAR: selepas iframe load, hantar {"event":"listening",...}
+//     supaya YouTube mula hantar mesej onStateChange/infoDelivery. Kita dengar "message"
+//     dari origin youtube, parse defensif, jejak playerState sebenar (1 = tengah main).
+//  3) Kejujuran butang: kalau ~2.5s selepas cuba TIADA state "main" diterima, butang
+//     dikembalikan OFF supaya user nampak muzik belum main dan boleh tekan sendiri.
+//  4) Recovery gesture kedua: bila user tekan butang sedang iframe wujud tapi BUKAN
+//     tengah main (dan tak pernah main), kita MUSNAH iframe lama dan cipta iframe BARU
+//     dalam gesture itu (percubaan segar = peluang lebih baik daripada postMessage play
+//     yang kerap disekat iOS). Kalau memang tengah main, toggle jeda/main biasa.
 muzikApi = (function muzikInit() {
   const btn = document.getElementById("lpMuzik");
   const host = document.getElementById("lpMuzikHost");
   if (!btn || !host) return null;
   let iframe = null;
-  let main = false;
+  let mainVisual = false;    // keadaan visual butang (optimistik dulu, dibetulkan handshake)
+  let state = -1;            // playerState SEBENAR dari YouTube: -1 belum, 1 main, 2 jeda, 0 tamat
+  let pernahMain = false;    // pernah disahkan tengah main? (bezakan sambung vs percubaan segar)
+  let jujurTimer = null;     // pemeriksa kejujuran selepas cuba main
 
+  // Hantar arahan kawalan (play/pause) ke player lewat postMessage IFrame API.
   function cmd(func) {
     try {
       if (iframe && iframe.contentWindow) {
@@ -294,42 +315,100 @@ muzikApi = (function muzikInit() {
     } catch (e) { /* abai: kegagalan kawalan tak boleh rosakkan page */ }
   }
   function tandaMain(on) {
-    main = on;
+    mainVisual = on;
     btn.classList.toggle("is-main", on);
     btn.setAttribute("aria-pressed", on ? "true" : "false");
     btn.setAttribute("aria-label", on ? "Jeda muzik latar" : "Main muzik latar");
   }
+
+  // Dengar mesej dari iframe YouTube. Defensif sepenuhnya: mesej luar/rosak diabaikan,
+  // tiada apa boleh crash page. Jejak playerState sebenar untuk kejujuran butang.
+  function onMesej(e) {
+    try {
+      if (!e || typeof e.origin !== "string" || e.origin.indexOf("youtube") === -1) return;
+      if (typeof e.data !== "string") return;
+      const d = JSON.parse(e.data);
+      let ps = null;
+      if (d && d.event === "onStateChange" && typeof d.info === "number") ps = d.info;
+      else if (d && d.event === "infoDelivery" && d.info && typeof d.info.playerState === "number") ps = d.info.playerState;
+      if (ps === null) return;
+      state = ps;
+      if (ps === 1) {                 // 1 = tengah main: sahkan JUJUR
+        pernahMain = true;
+        if (jujurTimer) { window.clearTimeout(jujurTimer); jujurTimer = null; }
+        tandaMain(true);
+      } else if (ps === 2) {          // 2 = dijeda: butang off
+        tandaMain(false);
+      }
+      // -1/0/3/5 (belum/tamat/buffer/cued): biar butang ikut keadaan optimistik +
+      // pemeriksa kejujuran; elak flicker pada peralihan loop.
+    } catch (err) { /* abai: mesej luar/rosak tak boleh rosakkan page */ }
+  }
+  try { window.addEventListener("message", onMesej); } catch (e) {}
+
+  // Selepas cuba main, tunggu ~2.5s. Kalau state SEBENAR bukan "main" (1), butang
+  // dikembalikan OFF supaya jujur (mobile sekat autoplay -> user nampak & boleh tekan).
+  function jadualJujur() {
+    if (jujurTimer) { window.clearTimeout(jujurTimer); jujurTimer = null; }
+    jujurTimer = window.setTimeout(function () {
+      jujurTimer = null;
+      if (state !== 1) tandaMain(false);
+    }, 2500);
+  }
+
   function cipta() {
     try {
       iframe = document.createElement("iframe");
       iframe.setAttribute("title", "Muzik latar majlis");
-      iframe.setAttribute("allow", "autoplay; encrypted-media");
+      iframe.setAttribute("allow", "autoplay; encrypted-media; fullscreen");
       iframe.setAttribute("frameborder", "0");
       iframe.width = "1"; iframe.height = "1";
       iframe.style.border = "0";
       iframe.addEventListener("error", function () {
         // Iframe gagal muat (offline/sekat): senyapkan butang, jangan rosakkan page.
         try { iframe.remove(); } catch (e) {}
-        iframe = null; tandaMain(false);
+        iframe = null; state = -1; tandaMain(false);
+      });
+      iframe.addEventListener("load", function () {
+        // Handshake: daftar sebagai pendengar supaya YouTube mula hantar status balik.
+        try {
+          if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ event: "listening", id: 1, channel: "widget" }), "*");
+          }
+        } catch (e) { /* abai */ }
       });
       host.appendChild(iframe);
-      iframe.src = YT_SRC;   // autoplay=1 dalam gesture pengguna: dibenarkan
+      iframe.src = YT_SRC;   // autoplay=1 dalam gesture pengguna: dibenarkan (sebahagian browser)
       host.hidden = false;
-      tandaMain(true);
+      state = -1;
+      tandaMain(true);       // optimistik; pemeriksa kejujuran betulkan kalau tak jadi
+      jadualJujur();
     } catch (e) {
       iframe = null; tandaMain(false);
     }
   }
+
+  // Musnah iframe lama, cipta iframe BARU (percubaan segar dalam gesture langsung).
+  function ciptaSemula() {
+    if (jujurTimer) { window.clearTimeout(jujurTimer); jujurTimer = null; }
+    try { if (iframe) iframe.remove(); } catch (e) {}
+    iframe = null; state = -1; pernahMain = false;
+    cipta();
+  }
+
   btn.addEventListener("click", function () {
-    if (!iframe) { cipta(); return; }
-    if (main) { cmd("pauseVideo"); tandaMain(false); }
-    else { cmd("playVideo"); tandaMain(true); }
+    if (!iframe) { cipta(); return; }                       // percubaan pertama
+    if (state === 1) { cmd("pauseVideo"); state = 2; tandaMain(false); return; }  // main -> jeda
+    if (pernahMain) { cmd("playVideo"); tandaMain(true); jadualJujur(); return; } // dulu main, kini jeda -> sambung
+    ciptaSemula();                                          // tak pernah main (mobile sekat) -> percubaan segar
   });
-  // Dipanggil dari cover (gesture pengguna). Cipta iframe kalau belum ada (autoplay=1
-  // terus main); kalau dah wujud tapi dijeda, main semula. Butang sync ikut tandaMain.
+
+  // Dipanggil dari cover (gesture pengguna). Cipta iframe kalau belum ada (autoplay=1);
+  // kalau dah wujud tapi bukan main, cuba main semula. Kejujuran dijaga jadualJujur.
   function mulaAuto() {
     if (!iframe) { cipta(); return; }
-    if (!main) { cmd("playVideo"); tandaMain(true); }
+    if (state !== 1) { cmd("playVideo"); tandaMain(true); jadualJujur(); }
   }
   return { mulaAuto: mulaAuto };
 })();
