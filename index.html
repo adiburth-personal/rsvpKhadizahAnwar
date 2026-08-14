@@ -341,7 +341,27 @@
       </div>
     </section>
 
-    <!-- 11. PENUTUP -->
+    <!-- 11. SALAM KAUT / HADIAH (dalam aliran halaman, sebelum doa penutup)
+         Butang CTA = <button> (BUKAN <a>) supaya modalInit (pintas a[href=rsvp.html])
+         dan dockInit abaikan; modalHadiahInit dalam landing.js yang bukanya (guna semula
+         modal #lpModalHadiah yang sama dengan dock, tiada duplikasi markup modal).
+         Preview QR kecil aria-hidden (semata isyarat visual), butang kekal pintu masuk. -->
+    <section class="lp-sec lp-salamkaut reveal">
+      <span class="lp-deko lp-botani lp-fl-clem lp-b-salamkaut" aria-hidden="true"></span>
+      <p class="lp-label">Salam Kaut</p>
+      <p class="lp-teks">Kehadiran serta doa restu Tuan / Puan sudah amat bermakna buat kami. Andai ada yang ingin menghulurkan tanda kasih, sebuah QR DuitNow disediakan bagi memudahkan.</p>
+      <div class="lp-salamkaut-qr" aria-hidden="true">
+        <img class="lp-salamkaut-qr-imej" src="./qrSalamKaut.jpeg" width="150" height="150" loading="lazy" decoding="async" alt="" />
+      </div>
+      <button class="lp-btn-besar lp-salamkaut-cta" id="lpSalamKautCta" type="button" aria-haspopup="dialog" aria-controls="lpModalHadiah">
+        <span class="lp-btn-ikon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M4.5 11.5h15V19a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4.5 19v-7.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3.5 8.3h17v3.2h-17z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 8.3v12.2" stroke="currentColor" stroke-width="1.5"/><path d="M12 8.3C11.2 5.4 6.7 5.4 7.6 8.3M12 8.3C12.8 5.4 17.3 5.4 16.4 8.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        Salam Kaut / Hadiah
+      </button>
+    </section>
+
+    <!-- 12. PENUTUP -->
     <section class="lp-sec lp-penutup reveal">
       <span class="lp-deko lp-bunga-footer lp-bunga-footer--kiri lp-bouquet-a" aria-hidden="true"></span>
       <span class="lp-deko lp-bunga-footer lp-bunga-footer--kanan lp-bouquet-b" aria-hidden="true"></span>

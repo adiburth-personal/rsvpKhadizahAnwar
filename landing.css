@@ -1344,6 +1344,28 @@ button.lp-dock-btn {
   margin: 0 auto;
 }
 
+/* ---------- Salam Kaut / Hadiah dalam aliran halaman (seksyen sebelum doa penutup) ----------
+   Preview QR KECIL (isyarat visual, aria-hidden) + butang CTA yang buka modal Salam Kaut
+   sedia ada. Popup kekal cara utama. Gaya selari lp-lokasi-qr (kad krim, bingkai emas nipis). */
+.lp-salamkaut-qr {
+  margin: var(--space-6) auto var(--space-2);
+  max-width: 170px;
+}
+.lp-salamkaut-qr-imej {
+  display: block;
+  width: 150px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  padding: var(--space-3);
+  background: var(--color-cream);
+  border: 1px solid rgba(191, 160, 101, 0.4);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 18px rgba(20, 10, 26, 0.1);
+}
+/* Butang (bukan <a>): normalkan supaya sama rupa dengan .lp-btn-besar lain. */
+.lp-salamkaut-cta { cursor: pointer; }
+
 /* ============================== ATURCARA MAJLIS (timeline menegak) ============================== */
 /* Garis menegak emas nipis + titik bulat setiap acara. Konsisten design kad: label
    Cormorant SC berjarak, masa small-caps maroon, acara badan serif. Timeline duduk
@@ -1506,6 +1528,7 @@ button.lp-dock-btn {
 .lp-b-buku         { top: 22px;  left: -16px;  width: 46px; height: 146px; opacity: 0.42; }
 .lp-b-hubungi      { top: 26px;  right: -14px; width: 48px; height: 48px;  opacity: 0.5;  transform: scaleX(-1) rotate(6deg); }
 .lp-b-lokasi       { top: 4px;   left: -14px;  width: 50px; height: 50px;  opacity: 0.5;  transform: rotate(-12deg); }
+.lp-b-salamkaut    { top: 22px;  right: -14px; width: 48px; height: 48px;  opacity: 0.48; transform: scaleX(-1) rotate(-8deg); }
 .lp-b-penutup-vine { bottom: -4px; left: 50%;  width: 232px; height: 70px; opacity: 0.42; transform: translateX(-50%); }
 
 /* ---------- Gutter (desktop): sprig menjalar tinggi mengapit kad, sway sangat halus ---------- */

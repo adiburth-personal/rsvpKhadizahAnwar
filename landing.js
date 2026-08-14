@@ -737,9 +737,14 @@ const modalHistory = (function () {
 // fokus balik ke pencetus. Defensif: elemen tiada -> senyap.
 (function modalHadiahInit() {
   const modal = document.getElementById("lpModalHadiah");
-  const btnBuka = document.getElementById("lpDockHadiah");
+  // DUA pencetus kongsi modal SAMA (tiada duplikasi markup): butang dock "Hadiah" +
+  // butang CTA dalam seksyen Salam Kaut yang mengalir dalam halaman. Kedua-dua <button>
+  // (bukan <a>) supaya dockInit/modalInit abaikan.
+  const pencetusEls = Array.prototype.slice.call(
+    document.querySelectorAll("#lpDockHadiah, #lpSalamKautCta")
+  );
   const btnTutup = document.getElementById("lpModalHadiahTutup");
-  if (!modal || !btnBuka) return;
+  if (!modal || !pencetusEls.length) return;
   let sedangBuka = false;
   let pencetus = null;
 
@@ -749,10 +754,11 @@ const modalHistory = (function () {
       document.body.style.overflow = on ? "hidden" : "";
     } catch (e) {}
   }
-  function buka() {
+  function buka(dari) {
     if (sedangBuka) return;
     sedangBuka = true;
-    pencetus = btnBuka;
+    // Simpan butang yang membuka supaya fokus PULANG betul bila modal ditutup.
+    pencetus = dari || pencetusEls[0];
     modal.hidden = false;
     kunciSkrol(true);
     // Tambah is-buka frame seterusnya supaya fade + naik main (reduced-motion: CSS
@@ -774,7 +780,9 @@ const modalHistory = (function () {
     pencetus = null;
   }
 
-  btnBuka.addEventListener("click", buka);
+  pencetusEls.forEach(function (el) {
+    el.addEventListener("click", function () { buka(el); });
+  });
   if (btnTutup) btnTutup.addEventListener("click", function () { tutup(); });
   // Klik overlay (luar kad) = tutup.
   modal.addEventListener("click", function (e) {
