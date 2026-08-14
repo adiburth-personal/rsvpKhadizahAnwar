@@ -230,20 +230,40 @@ function svgIkon(jenis) {
   if (REDUCED.matches || typeof IntersectionObserver === "undefined") { tunjukSemua(); return; }
 
   try {
-    // Threshold [0, 0.05] beri HISTERESIS: elemen reveal bila >=5% kelihatan (trigger
-    // kecil, mula awal), tapi is-lihat HANYA dibuang bila betul-betul keluar viewport
-    // (ratio ~0). Zon antara (0.001 < ratio < 0.05) kekalkan keadaan semasa -> elemen
-    // di tengah yang sedang dibaca TAK pernah hilang is-lihat (tiada flicker).
-    const io = new IntersectionObserver(function (entri) {
+    // DUA observer berasingan (fix glitch tepi atas viewport):
+    //
+    // PUNCA BUG LAMA (satu observer, reset pada ratio ~0): bila elemen keluar di TEPI
+    // ATAS semasa skrol turun, is-lihat dibuang -> keadaan sembunyi SNAP translateY(+100px)
+    // MENOLAK elemen itu BALIK ke dalam viewport (bottom -0 jadi +100) -> observer sama
+    // nampak ia "masuk semula" -> is-lihat ditambah balik ~1 frame kemudian -> animate 1s
+    // di tepi atas, berulang-ulang (diukur: sampai 6 kitaran satu elemen, beribu frame
+    // kandungan separa-lutsinar tengah animate di zon atas = glitch yang dilaporkan).
+    //
+    // FIX: pisahkan tanggungjawab supaya snap tak boleh mencetus kemasukan semula.
+    //  ioMasuk: root = viewport SEBENAR, tambah is-lihat bila >=5% kelihatan (trigger
+    //           masuk sama macam dulu, dua-dua arah skrol, replay + feel rujukan kekal).
+    //  ioReset: root DIPERLUAS 140px di ATAS (rootMargin), buang is-lihat HANYA bila
+    //           elemen langsung tak bersilang dengan kawasan luas itu, iaitu dah 140px
+    //           MELEPASI tepi atas (atau keluar penuh di bawah). 140 > snap 100px, jadi
+    //           selepas snap elemen kekal DI LUAR viewport sebenar (bottom <= -40px):
+    //           ioMasuk tak terpicu, tiada gelung, dan reset tetap berlaku -> replay
+    //           bersih bila ia masuk semula kelak. Histeresis jadi lebih lebar sedikit
+    //           di atas sahaja; kemasukan dari bawah tak berubah langsung.
+    const ioMasuk = new IntersectionObserver(function (entri) {
       entri.forEach(function (en) {
         if (en.isIntersecting && en.intersectionRatio >= 0.05) {
           en.target.classList.add("is-lihat");
-        } else if (en.intersectionRatio <= 0.001) {
-          en.target.classList.remove("is-lihat");   // keluar penuh: reset, main semula nanti
         }
       });
-    }, { threshold: [0, 0.05] });
-    sasaran.forEach(function (s) { io.observe(s); });
+    }, { threshold: [0.05] });
+    const ioReset = new IntersectionObserver(function (entri) {
+      entri.forEach(function (en) {
+        if (!en.isIntersecting) {
+          en.target.classList.remove("is-lihat");   // keluar penuh + margin: reset, main semula nanti
+        }
+      });
+    }, { rootMargin: "140px 0px 0px 0px", threshold: [0] });
+    sasaran.forEach(function (s) { ioMasuk.observe(s); ioReset.observe(s); });
   } catch (e) { tunjukSemua(); }
 })();
 
