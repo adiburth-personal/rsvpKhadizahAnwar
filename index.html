@@ -233,11 +233,14 @@
       </div>
     </section>
 
-    <!-- 5. ATURCARA MAJLIS (timeline menegak, dari kad rasmi) -->
-    <section class="lp-sec lp-aturcara reveal">
+    <!-- 5. ATURCARA MAJLIS (timeline menegak, dari kad rasmi)
+         lp-sec--panel (directive D1): seksyen utama duduk dalam PANEL lilac terapung
+         atas jalur kanvas mauve (lapisan kad rasmi), bukan hamparan rata.
+         lp-kepala (D3): kepala script besar ganti label kecil, pecah monotone. -->
+    <section class="lp-sec lp-sec--panel lp-aturcara reveal">
       <span class="lp-deko lp-botani lp-sprigA lp-b-atur-kanan" aria-hidden="true"></span>
       <span class="lp-deko lp-botani lp-fl-fill lp-b-atur-kiri" aria-hidden="true"></span>
-      <p class="lp-label">Aturcara Majlis</p>
+      <h2 class="lp-kepala">Aturcara Majlis</h2>
       <ol class="lp-tl">
         <li class="lp-tl-item">
           <span class="lp-tl-titik" aria-hidden="true"></span>
@@ -275,10 +278,12 @@
           <span class="lp-tl-acara">Bersurai</span>
         </li>
       </ol>
+      <div class="lp-ornamen" aria-hidden="true"><i></i></div>
     </section>
 
-    <!-- 6. COUNTDOWN -->
-    <section class="lp-sec lp-countdown-sec reveal">
+    <!-- 6. COUNTDOWN (lp-sec--panel: bersambung dengan panel aturcara atas jalur
+         mauve yang sama, dua panel terapung bersebelahan macam kad rasmi) -->
+    <section class="lp-sec lp-sec--panel lp-countdown-sec reveal">
       <span class="lp-deko lp-botani lp-fl-anem lp-b-cd-kanan" aria-hidden="true"></span>
       <span class="lp-deko lp-botani lp-fl-fill lp-b-cd-kiri" aria-hidden="true"></span>
       <p class="lp-ayat">&ldquo;Dan Kami jadikan kamu berpasang-pasangan&rdquo;<span class="lp-ayat-rujuk">Surah An-Naba 78:8</span></p>
@@ -299,15 +304,16 @@
       <a class="lp-btn-besar" href="./rsvp.html">RSVP</a>
     </section>
 
-    <!-- 8. BUKU TETAMU -->
-    <section class="lp-sec lp-buku reveal" id="bukuTetamu">
+    <!-- 8. BUKU TETAMU (lp-sec--panel D1 + lp-kepala D3 + ornament emas D12) -->
+    <section class="lp-sec lp-sec--panel lp-buku reveal" id="bukuTetamu">
       <span class="lp-deko lp-botani lp-sprigB lp-b-buku" aria-hidden="true"></span>
-      <p class="lp-label">Buku Tetamu</p>
+      <h2 class="lp-kepala">Buku Tetamu</h2>
       <div class="lp-buku-senarai" id="lpBukuSenarai" hidden></div>
       <div class="lp-buku-butang">
         <a class="lp-btn-halus" href="./rsvp.html">Berikan Ucapan</a>
         <a class="lp-btn-halus" href="./ucapan.html">Lihat Semua Ucapan</a>
       </div>
+      <div class="lp-ornamen" aria-hidden="true"><i></i></div>
     </section>
 
     <!-- 9. HUBUNGI (sasaran dock "Hubungi") -->
@@ -346,9 +352,9 @@
          dan dockInit abaikan; modalHadiahInit dalam landing.js yang bukanya (guna semula
          modal #lpModalHadiah yang sama dengan dock, tiada duplikasi markup modal).
          QR penuh HANYA dalam popup (permintaan user), seksyen ni label + ayat + CTA sahaja. -->
-    <section class="lp-sec lp-salamkaut reveal">
+    <section class="lp-sec lp-sec--panel lp-salamkaut reveal">
       <span class="lp-deko lp-botani lp-fl-clem lp-b-salamkaut" aria-hidden="true"></span>
-      <p class="lp-label">Salam Kaut</p>
+      <h2 class="lp-kepala">Salam Kaut</h2>
       <p class="lp-teks">Kehadiran serta doa restu Tuan / Puan sudah amat bermakna buat kami. Andai ada yang ingin menghulurkan tanda kasih, keikhlasan anda amat kami hargai.</p>
       <button class="lp-btn-besar lp-salamkaut-cta" id="lpSalamKautCta" type="button" aria-haspopup="dialog" aria-controls="lpModalHadiah">
         <span class="lp-btn-ikon" aria-hidden="true">
@@ -356,6 +362,7 @@
         </span>
         Salam Kaut / Hadiah
       </button>
+      <div class="lp-ornamen" aria-hidden="true"><i></i></div>
     </section>
 
     <!-- 12. PENUTUP -->

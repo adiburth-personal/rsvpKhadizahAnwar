@@ -147,6 +147,110 @@ body.lp::before { display: none !important; }
 .lp-sec.lp-pengantin { border-top: 0; padding-top: var(--space-3); }
 .lp-sec.lp-pengantin::before { display: none; }
 
+/* ============================== PANEL TERAPUNG (directive D1 audit anti-slop) ==============================
+   KENAPA: kad rasmi Canva hidup atas 3 lapisan (kanvas mauve gelap -> panel lilac
+   terapung -> bunga bertindih bucu); hamparan lilac rata dari atas ke bawah baca
+   sebagai template. Seksyen utama (aturcara/countdown/buku/salam kaut) diberi jalur
+   kanvas full-bleed (margin negatif melawan padding kad) + panel lilac beradius
+   terapung di atasnya. Panel = pseudo ::after, BUKAN pembalut div baru, supaya enjin
+   reveal per-anak (.lp-sec.reveal > *) tak terganggu. Warna token sahaja: lilac
+   dapat mauve #6b5164 (html.lp-lilac --lp-gutter), fallback kraft kekal ungu gelap
+   gutter asal. Tiada teks duduk atas kanvas (semua dalam panel) = tiada isu kontras. */
+.lp-sec--panel {
+  margin-left: calc(-1 * var(--space-6));
+  margin-right: calc(-1 * var(--space-6));
+  padding: var(--space-8) calc(var(--space-6) + var(--space-5));
+  background-color: var(--lp-gutter);
+  background-image:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 55%),
+    var(--lp-noise);
+  border-top: 0;
+}
+.lp-sec--panel::before { display: none; }   /* sprig pemisah tak sesuai duduk atas kanvas gelap */
+/* Panel lilac terapung: duduk BAWAH anak seksyen (anak diberi z-index 1 di bawah).
+   D11 sekali: grain PNG dilapis DUA kali pada panel SAHAJA supaya tekstur kertas
+   lebih terasa (macam panel kad rasmi), tanpa menyentuh grain atas laluan teks lain. */
+.lp-sec--panel::after {
+  content: "";
+  position: absolute;
+  inset: var(--space-5) 14px;
+  z-index: 0;
+  background-color: var(--color-cream-2);
+  background-image: var(--lp-noise), var(--lp-noise);
+  border-radius: 26px;
+  border: 1px solid rgba(191, 160, 101, 0.4);
+  box-shadow:
+    0 16px 38px rgba(28, 17, 34, 0.35),
+    0 2px 8px rgba(28, 17, 34, 0.22);
+  pointer-events: none;
+}
+.lp-sec--panel > * { position: relative; z-index: 1; }
+/* Kad/kotak DALAM panel: surface asal cream-2 sama warna dengan panel (tenggelam
+   rata). Naik satu tingkat ke cream supaya lapisan kad-atas-panel-atas-kanvas jelas. */
+.lp-sec--panel .lp-buku-kad,
+.lp-sec--panel .lp-cd-kotak { background-color: var(--color-cream); }
+/* Seksyen selepas panel: jalur kanvas sudah jadi pemisah visual, garis + sprig lebih. */
+.lp-sec--panel + .lp-sec { border-top: 0; }
+.lp-sec--panel + .lp-sec::before { display: none; }
+@media (min-width: 1024px) {
+  .lp-sec--panel {
+    margin-left: calc(-1 * var(--space-7));
+    margin-right: calc(-1 * var(--space-7));
+  }
+}
+
+/* Kepala script besar (directive D3): DUA jenis kepala sahaja , seksyen utama dapat
+   kepala Great Vibes besar (macam "Aturcara Majlis" kad rasmi) TANPA label kecil di
+   atasnya, seksyen kecil kekal label small-caps. Maroon atas panel lilac = teks
+   besar jauh melepasi 3:1. */
+.lp-kepala {
+  font-family: var(--lp-script);
+  font-weight: 400;
+  font-size: clamp(2.15rem, 9.5vw, 2.5rem);
+  line-height: 1.2;
+  color: var(--color-maroon);
+  margin: 0 0 var(--space-5);
+}
+
+/* Ornament penutup panel (directive D12): motif berlian emas + hairline dari hero
+   diguna semula sebagai PENUTUP panel utama sahaja (konsistensi motif jadi jenama,
+   bukan hiasan setiap seksyen). Garis pudar KELUAR dari berlian di tengah. */
+.lp-ornamen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: var(--space-6);
+  line-height: 0;
+}
+.lp-ornamen::before,
+.lp-ornamen::after {
+  content: "";
+  width: 46px;
+  height: 1px;
+}
+.lp-ornamen::before { background: linear-gradient(to right, rgba(191, 160, 101, 0), rgba(191, 160, 101, 0.85)); }
+.lp-ornamen::after  { background: linear-gradient(to right, rgba(191, 160, 101, 0.85), rgba(191, 160, 101, 0)); }
+.lp-ornamen i {
+  width: 7px;
+  height: 7px;
+  background: var(--color-gold);
+  transform: rotate(45deg);
+}
+
+/* Bias kiri (directive D4): HANYA butiran majlis + hubungi, pecah "centred-everything"
+   tanpa sentuh seksyen lain. Butir jadi baris ikon-kiri + teks-kanan. */
+.lp-butiran { text-align: left; }
+.lp-butiran .lp-butir {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-5);
+  align-items: start;
+}
+.lp-butiran .lp-butir-ikon { grid-row: 1 / span 2; margin: 2px 0 0; }
+.lp-hubungi { text-align: left; }
+.lp-hubungi .lp-teks { margin-left: 0; }
+
 /* ---------- Hiasan bunga (guna semula background-image kelas .bunga--* styles.css,
    TANPA kelas asas .bunga supaya tiada animasi/posisi hanyut). Diletak di BUCU/margin
    sahaja, tak pernah di belakang kolum teks. ---------- */
@@ -276,8 +380,9 @@ body.lp::before { display: none !important; }
   margin: 0 0 var(--space-6);
 }
 .lp-pantun {
-  font-size: var(--text-base);
-  font-style: italic;
+  /* Directive D5: roman + saiz naik sedikit, BUKAN italic , italic dikhaskan untuk
+     petikan sebenar (ucapan tetamu/ayat) sahaja; perenggan penuh italic = tell generik. */
+  font-size: 1.13rem;
   color: var(--color-ink);
   line-height: 1.9;
   margin: 0 0 var(--space-6);
@@ -302,7 +407,11 @@ body.lp::before { display: none !important; }
 /* ============================== NAMA PENUH PENGANTIN ============================== */
 .lp-pengantin-nama {
   font-family: var(--lp-script);
-  font-size: clamp(2.4rem, 11vw, 3.1rem);
+  /* Directive D7 (size-by-length): "Muhammad Anwar Bin Sawal" ialah copy TERPANJANG
+     laman; clamp lama (lantai 2.4rem, 11vw) buat hujungnya mencecah tepi pada 390px
+     dan pecah baris hodoh pada 320px. Koefisien diturun supaya nama pengantin TAK
+     pernah terpotong: 390px -> ~38px, 320px -> ~31px (diuji 320/360/390). */
+  font-size: clamp(1.9rem, 9.8vw, 3.1rem);
   line-height: 1.1;
   color: var(--color-maroon);
   margin: 0;
@@ -558,8 +667,9 @@ body.lp::before { display: none !important; }
 .lp-bunga-footer--kiri { left: calc(50% - 72px); transform: translateY(var(--lp-par, 0px)) rotate(-28deg); }
 .lp-bunga-footer--kanan { right: calc(50% - 72px); transform: translateY(var(--lp-par, 0px)) rotate(28deg) scaleX(-1); }
 .lp-doa {
-  font-size: var(--text-base);
-  font-style: italic;
+  /* Directive D5: doa jadi roman saiz sedikit besar (italic perenggan penuh dibuang,
+     sebab sama dengan .lp-pantun di atas). */
+  font-size: 1.13rem;
   color: var(--color-ink);
   line-height: 1.85;
   max-width: 34ch;
@@ -831,6 +941,16 @@ button.lp-dock-btn {
   color: var(--color-cream);
 }
 .lp-dock-btn--utama:hover { background: #5c1a22; }
+/* Dock sempit (directive D8): pada <=420px label "TARIKH"/"HADIAH" terpotong di tepi
+   viewport (nampak tak diuji). Kecilkan font label + jarak huruf + padding dock
+   sehingga 6 label muat PENUH; diuji 320/375/390. */
+@media (max-width: 420px) {
+  .lp-dock { width: calc(100vw - 10px); padding: 6px 3px; gap: 0; }
+  .lp-dock-teks { font-size: 0.55rem; letter-spacing: 0.02em; }
+}
+@media (max-width: 340px) {
+  .lp-dock-teks { font-size: 0.5rem; letter-spacing: 0; }
+}
 
 /* ============================== BUTANG MUZIK ============================== */
 .lp-muzik {

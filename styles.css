@@ -583,11 +583,15 @@ body {
    peraturan TIDAK selamat di sini kerana ungkapan color-mix mengandungi var();
    var() menangguh pengesahan melepasi masa parse, jadi baris color-mix yang tak
    sah tetap menimpa hex (disahkan harness). @supports satu satunya cara betul. */
-.swipe-kad--v1 { background: #e8dece; border-left-color: var(--color-maroon-soft); }
+/* Directive D10 audit anti-slop: hex tona v1-v3 lama (#e8dece/#e9ddd0/#f0e8d7)
+   ialah campuran KRAFT/tan tinggalan tema asal , atas laman lilac ia baca sebagai
+   rose-cream lari palet. Diganti keluarga lilac/krim-lilac (variasi kekal lewat
+   kecerahan + aksen border kiri yang berbeza). */
+.swipe-kad--v1 { background: #ece2f4; border-left-color: var(--color-maroon-soft); }
 .swipe-kad--v1 .kad-inisial { border-color: var(--color-maroon-soft); }
-.swipe-kad--v2 { background: #e9ddd0; border-left-color: var(--color-plum); }
+.swipe-kad--v2 { background: #e4d8ef; border-left-color: var(--color-plum); }
 .swipe-kad--v2 .kad-inisial { border-color: var(--color-plum); }
-.swipe-kad--v3 { background: #f0e8d7; border-left-color: var(--color-gold); }
+.swipe-kad--v3 { background: #f1ebf8; border-left-color: var(--color-gold); }
 .swipe-kad--v3 .kad-inisial { border-color: color-mix(in oklch, var(--color-gold) 78%, var(--color-maroon)); }
 .swipe-kad--v4 {
   background: var(--color-aubergine);
@@ -728,11 +732,13 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
 .grid-kad--v0 { background: var(--color-cream); border-left-color: var(--color-plum); }
 .grid-kad--v0 .kad-inisial { border-color: var(--color-plum); }
 /* Latar hex legap sebagai asas (lihat nota kad swipe); color-mix di @supports. */
-.grid-kad--v1 { background: #e8dece; border-left-color: var(--color-maroon-soft); }
+/* Directive D10: hex kraft/tan lama diganti keluarga lilac (sebab sama macam
+   .swipe-kad--v1..v3 di atas). */
+.grid-kad--v1 { background: #ece2f4; border-left-color: var(--color-maroon-soft); }
 .grid-kad--v1 .kad-inisial { border-color: var(--color-maroon-soft); }
-.grid-kad--v2 { background: #e9ddd0; border-left-color: var(--color-plum); }
+.grid-kad--v2 { background: #e4d8ef; border-left-color: var(--color-plum); }
 .grid-kad--v2 .kad-inisial { border-color: var(--color-plum); }
-.grid-kad--v3 { background: #f0e8d7; border-left-color: var(--color-gold); }
+.grid-kad--v3 { background: #f1ebf8; border-left-color: var(--color-gold); }
 .grid-kad--v3 .kad-inisial { border-color: color-mix(in oklch, var(--color-gold) 78%, var(--color-maroon)); }
 .grid-kad--v4 { background: var(--color-aubergine); border-color: color-mix(in oklch, var(--color-lilac) 22%, transparent); border-left-color: var(--color-gold); }
 .grid-kad--v4 .grid-teks { color: var(--color-lilac-wash); }
@@ -744,9 +750,12 @@ button.pautan-halus:hover { border-bottom-color: var(--color-maroon); }
    menyokong (cth Safari iOS < 16.2) kekal dengan hex legap di atas , kad tetap
    solid dan boleh dibaca, tiada timbunan lut sinar bertindih. */
 @supports (color: color-mix(in oklch, red, blue)) {
-  .swipe-kad--v1, .grid-kad--v1 { background: color-mix(in oklch, var(--color-cream) 89%, var(--color-maroon)); }
-  .swipe-kad--v2, .grid-kad--v2 { background: color-mix(in oklch, var(--color-cream) 87%, var(--color-plum)); }
-  .swipe-kad--v3, .grid-kad--v3 { background: color-mix(in oklch, var(--color-cream) 85%, var(--color-gold)); }
+  /* Directive D10: campuran maroon (v1) + gold (v3) lama menghasilkan tona rose/
+     kuning yang lari dari keluarga lilac. Semua varian kini campur PLUM pada kadar
+     berbeza , variasi kekal (gelap/sederhana/cerah), keluarga warna satu. */
+  .swipe-kad--v1, .grid-kad--v1 { background: color-mix(in oklch, var(--color-cream) 88%, var(--color-plum)); }
+  .swipe-kad--v2, .grid-kad--v2 { background: color-mix(in oklch, var(--color-cream) 82%, var(--color-plum)); }
+  .swipe-kad--v3, .grid-kad--v3 { background: color-mix(in oklch, var(--color-cream) 94%, var(--color-plum)); }
 }
 
 /* ============================== BUTANG SAYANG + HEART-BURST ==============================
