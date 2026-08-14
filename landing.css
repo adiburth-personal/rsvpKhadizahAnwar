@@ -64,6 +64,29 @@ body.lp::before { display: none !important; }
   padding: 0 var(--space-6) calc(env(safe-area-inset-bottom, 0px) + 120px);
   overflow: hidden;   /* pastikan hiasan dalam kad tak terkeluar */
 }
+/* CAHAYA EMAS LEMBUT BERGERAK: lapisan sapuan emas sangat lembut atas kad, menyapu
+   perlahan (translate ulang-alik ~26s). z-index:-1 = di ATAS latar kraft/lilac tapi
+   di BAWAH semua teks/seksyen (kekal terkurung dalam kad kerana .lp-kad stacking
+   context + overflow:hidden). pointer-events:none. Opacity 0.08 * puncak gradien 0.55
+   = tokok emas komposit maks ~0.044 => kesan kontras teks boleh diabai (disahkan
+   contrast.py: teks terburuk kekal jauh >4.5:1 pada titik paling terang). */
+.lp-kad::after {
+  content: "";
+  position: absolute;
+  inset: -25% -35%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(52% 40% at 32% 26%, rgba(191, 160, 101, 0.55) 0%, rgba(191, 160, 101, 0) 62%),
+    radial-gradient(46% 38% at 72% 74%, rgba(191, 160, 101, 0.4) 0%, rgba(191, 160, 101, 0) 60%);
+  opacity: 0.08;
+  will-change: transform;
+  animation: lpCahayaSapu 26s var(--ease-in-out) infinite alternate;
+}
+@keyframes lpCahayaSapu {
+  from { transform: translate3d(-7%, -4%, 0); }
+  to   { transform: translate3d(9%, 6%, 0); }
+}
 @media (min-width: 480px) {
   /* Desktop: kad "terapung" atas gutter macam bingkai telefon. */
   .lp-kad {
@@ -490,19 +513,22 @@ body.lp::before { display: none !important; }
   color: var(--color-maroon);
   margin: var(--space-6) 0 var(--space-5);
 }
-.lp-penutup-mono { position: relative; display: inline-block; line-height: 0; }
-.lp-penutup-mono-teks {
-  position: absolute;
-  inset: 0;
-  display: flex;
+/* Penutup: versi kecil monogram, warna maroon/emas atas kad terang. */
+.lp-penutup-mono {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-family: var(--lp-label);
-  font-size: 0.95rem;
-  letter-spacing: 0.05em;
-  color: var(--color-maroon);
+  gap: 6px;
   line-height: 1;
 }
+.lp-penutup-mono .lp-mono-k, .lp-penutup-mono .lp-mono-a {
+  font-size: 1.8rem;
+  letter-spacing: 0.03em;
+  color: var(--color-maroon);
+}
+.lp-penutup-mono .lp-mono-amp { font-size: 1.1rem; color: var(--color-gold); margin: 0 0.03em; }
+.lp-penutup-mono .lp-mono-garis { width: 32px; }
 .lp-footer {
   text-align: center;
   padding: var(--space-8) 0 var(--space-6);
@@ -552,8 +578,10 @@ body.lp::before { display: none !important; }
 /* ---------- Mod OG (landscape 1200x630, aktif bila ?og=1) ---------- */
 .lp-og .lp-og-only { display: block; }
 .lp-og .lp-cover-inner { max-width: 640px; }
-.lp-og .lp-seal svg { width: 176px; height: 176px; }
-.lp-og .lp-seal-mono { font-size: 3.6rem; }
+.lp-og .lp-mono { margin-bottom: var(--space-6); }
+.lp-og .lp-mono .lp-mono-k, .lp-og .lp-mono .lp-mono-a { font-size: 4.6rem; }
+.lp-og .lp-mono .lp-mono-amp { font-size: 2.9rem; }
+.lp-og .lp-mono .lp-mono-garis { width: 72px; }
 .lp-og .lp-cover-nama { font-size: 5rem; }
 .lp-og .lp-cover-eyebrow { font-size: 1.1rem; }
 .lp-og .lp-cover-tarikh { font-size: 1.15rem; }
@@ -571,19 +599,58 @@ body.lp::before { display: none !important; }
   color: #d9c7a4;             /* emas pucat atas gelap (kontras tinggi) */
   margin: 0 0 var(--space-7);
 }
-.lp-seal { position: relative; display: inline-block; line-height: 0; margin-bottom: var(--space-7); }
-.lp-seal-mono {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
+/* ---------- MONOGRAM K & A (kongsi cover + penutup) ----------
+   Huruf "K"/"A" serif tinggi Cormorant SC (rasa Didot/Playfair mahal) + ampersand
+   script Great Vibes kecil, garis nipis emas klasik atas/bawah. TIADA bulatan
+   dasharray / daun (gaya henna lama dibuang). Struktur dalaman dikongsi; WARNA & SAIZ
+   diset ikut konteks (.lp-mono = cover gelap, .lp-penutup-mono = kad terang). */
+.lp-mono-huruf {
+  display: inline-flex;
+  align-items: baseline;
   justify-content: center;
-  font-family: var(--lp-script);
-  font-size: 3rem;
-  color: #e9d9bd;
+  gap: 0.1em;
   line-height: 1;
 }
-.lp-seal-mono em { font-style: normal; font-size: 1.6rem; color: #bfa065; margin: 0 2px; }
+.lp-mono-k, .lp-mono-a { font-family: var(--lp-label); font-weight: 600; line-height: 1; }
+.lp-mono-amp { font-family: var(--lp-script); font-weight: 400; line-height: 1; }
+.lp-mono-garis {
+  display: block;
+  height: 1px;
+  margin: 0 auto;
+  /* garis emas pudar ke tepi (klasik, bukan etnik) */
+  background: linear-gradient(90deg, transparent, rgba(191, 160, 101, 0.9) 50%, transparent);
+}
+
+/* Cover: krim/emas pucat atas cover gelap. */
+.lp-mono {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+.lp-mono .lp-mono-k, .lp-mono .lp-mono-a {
+  font-size: 3.4rem;
+  letter-spacing: 0.03em;
+  color: #e9d9bd;            /* krim emas pucat, kontras tinggi atas cover gelap */
+}
+.lp-mono .lp-mono-amp { font-size: 2.1rem; color: #cba867; margin: 0 0.02em; }  /* emas script kecil */
+.lp-mono .lp-mono-garis { width: 50px; }
+/* Kilau emas lembut di belakang monogram (radial, tepi lembut, tiada tepi tajam). */
+.lp-mono::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 158px;
+  height: 158px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(191, 160, 101, 0.3) 0%, rgba(191, 160, 101, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
 .lp-cover-eyebrow {
   font-family: var(--lp-label);
   font-size: 0.95rem;
@@ -746,35 +813,59 @@ button.lp-dock-btn {
    gagal, tiada apa disorok) DAN dimatikan penuh oleh blok reduced-motion di hujung.
    ============================================================================ */
 
-/* ---------- 1. COVER: wax seal denyut idle + tekan membesar ---------- */
-/* Idle: seal bernafas sangat lembut (skala + kilau emas) supaya sampul terasa hidup
-   tanpa mengganggu keterbacaan (teks cover berpusat, seal di atasnya). */
-.lp-cover .lp-seal { animation: lpSealDenyut 3s var(--ease-in-out) infinite; }
-.lp-seal::after {
-  content: "";
-  position: absolute;
-  inset: -14px;
-  border-radius: 50%;
-  /* kilau emas lembut di belakang seal; radial supaya lembut ke tepi, tiada tepi tajam */
-  background: radial-gradient(circle, rgba(191, 160, 101, 0.45) 0%, rgba(191, 160, 101, 0) 70%);
-  z-index: -1;
-  pointer-events: none;
-  animation: lpSealGlow 3s var(--ease-in-out) infinite;
-}
-/* Tekan: seal membesar sekejap SEBELUM cover terangkat (dipacu kelas dari JS). Matikan
-   denyut supaya transisi skala bersih, guna transition (bukan keyframe) untuk hentak sekali. */
-.lp-seal.is-tekan {
-  animation: none;
-  transform: scale(1.12);
-  transition: transform 250ms var(--ease-out);
-}
-@keyframes lpSealDenyut {
+/* ---------- 1. COVER: monogram bernafas idle + PEMBUKAAN zoom + bunga bertaburan ---------- */
+/* Idle: monogram + kilau belakang bernafas sangat lembut (skala) supaya sampul terasa
+   hidup tanpa ganggu keterbacaan (teks cover berpusat). */
+.lp-cover .lp-mono { animation: lpMonoNafas 3.6s var(--ease-in-out) infinite; }
+.lp-cover .lp-mono::before { animation: lpMonoGlow 3.6s var(--ease-in-out) infinite; }
+@keyframes lpMonoNafas {
   0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.03); }
+  50%      { transform: scale(1.025); }
 }
-@keyframes lpSealGlow {
-  0%, 100% { opacity: 0.25; transform: scale(0.92); }
-  50%      { opacity: 0.6;  transform: scale(1.06); }
+@keyframes lpMonoGlow {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.94); }
+  50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.06); }
+}
+/* PEMBUKAAN (dipacu .is-pecah dari JS bila cover ditekan): monogram ZOOM ke arah skrin
+   (scale ~1.6) sambil fade. Serentak, bunga taburan (dicipta JS) meletup dari tengah ke
+   tepi. Matikan denyut supaya zoom bersih; guna transition untuk hentak sekali. */
+.lp-cover.is-pecah .lp-mono {
+  animation: none;
+  transform: scale(1.6);
+  opacity: 0;
+  transition: transform 620ms var(--lp-ease-soft), opacity 620ms var(--lp-ease-soft);
+}
+.lp-cover.is-pecah .lp-mono::before { animation: none; opacity: 0; transition: opacity 300ms var(--ease-out); }
+
+/* Bunga bertaburan: bekas + biji dicipta JS SEMASA transisi buka sahaja, dibuang bila
+   cover di-remove. Setiap biji meletup dari tengah (--tx/--ty arah berbeza) + putar +
+   fade. transform/opacity SAHAJA (compositor). */
+.lp-taburan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+.lp-taburan-i {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: var(--tsz, 22px);
+  height: var(--tsz, 22px);
+  margin: calc(var(--tsz, 22px) / -2) 0 0 calc(var(--tsz, 22px) / -2);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: lpTabur 920ms var(--lp-ease-soft) var(--tdelay, 0ms) forwards;
+}
+@keyframes lpTabur {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.35); opacity: 0; }
+  22%  { opacity: 0.95; }
+  70%  { opacity: 0.85; }
+  100% { transform: translate3d(var(--tx, 0), var(--ty, 0), 0) rotate(var(--rot, 0deg)) scale(1); opacity: 0; }
 }
 
 /* ---------- 2. STAGGER REVEAL: anak seksyen muncul bergilir (ENJIN PER-ELEMEN) ---------- */
@@ -955,12 +1046,22 @@ button.lp-dock-btn {
   will-change: transform, opacity;
   animation: lpKelopakJatuh var(--kdur, 11s) linear var(--kdelay, 0s) infinite;
 }
-/* Kelopak diletak di jalur tepi (kiri 3-8%, kanan 90-96%), jauh dari kolum teks tengah. */
-.lp-kelopak--k1 { left: 4%;  --ksize: 15px; --kop: 0.15; --kdur: 12s; --kdelay: -1s;  --ksway: 10px; }
-.lp-kelopak--k2 { left: 92%; --ksize: 13px; --kop: 0.20; --kdur: 14s; --kdelay: -6s;  --ksway: -12px; }
-.lp-kelopak--k3 { left: 7%;  --ksize: 12px; --kop: 0.26; --kdur: 10s; --kdelay: -3s;  --ksway: 9px; }
-.lp-kelopak--k4 { left: 95%; --ksize: 14px; --kop: 0.31; --kdur: 13s; --kdelay: -9s;  --ksway: -10px; }
-.lp-kelopak--k5 { left: 90%; --ksize: 11px; --kop: 0.24; --kdur: 11s; --kdelay: -4s;  --ksway: 8px; }
+/* JALUR TEPI (kiri 3-9%, kanan 90-96%): jauh dari kolum teks berpusat, jadi opacity
+   TINGGI (0.5-0.72) + saiz besar DIBENARKAN = kelopak nampak jelas (strategi kontras
+   repo: elemen di luar zon teks boleh terang). */
+.lp-kelopak--t1 { left: 4%;  --ksize: 22px; --kop: 0.62; --kdur: 12s; --kdelay: -1s;  --ksway: 11px; }
+.lp-kelopak--t2 { left: 93%; --ksize: 21px; --kop: 0.60; --kdur: 14s; --kdelay: -6s;  --ksway: -12px; }
+.lp-kelopak--t3 { left: 7%;  --ksize: 18px; --kop: 0.52; --kdur: 10s; --kdelay: -3s;  --ksway: 9px; }
+.lp-kelopak--t4 { left: 95%; --ksize: 23px; --kop: 0.68; --kdur: 13s; --kdelay: -9s;  --ksway: -10px; }
+.lp-kelopak--t5 { left: 3%;  --ksize: 25px; --kop: 0.70; --kdur: 15s; --kdelay: -12s; --ksway: 13px; }
+.lp-kelopak--t6 { left: 96%; --ksize: 24px; --kop: 0.72; --kdur: 11s; --kdelay: -4s;  --ksway: -13px; }
+.lp-kelopak--t7 { left: 9%;  --ksize: 19px; --kop: 0.55; --kdur: 16s; --kdelay: -8s;  --ksway: 8px; }
+.lp-kelopak--t8 { left: 90%; --ksize: 20px; --kop: 0.56; --kdur: 12.5s; --kdelay: -2s; --ksway: -9px; }
+/* AGAK KE DALAM (kiri 14-17%, kanan 84%): laluan sway boleh hampiri kolum teks, jadi
+   KEKAL bawah siling repo per ton (deep<=0.15, mid<=0.20, bright<=0.26). */
+.lp-kelopak--d1 { left: 15%; --ksize: 13px; --kop: 0.20; --kdur: 17s; --kdelay: -5s;  --ksway: 7px; }
+.lp-kelopak--d2 { left: 84%; --ksize: 14px; --kop: 0.26; --kdur: 18s; --kdelay: -11s; --ksway: -6px; }
+.lp-kelopak--d3 { left: 17%; --ksize: 12px; --kop: 0.15; --kdur: 19s; --kdelay: -14s; --ksway: 6px; }
 /* Jatuh 0 -> ~480px (dilebihkan, dipotong overflow) + sway kiri-kanan + putaran perlahan. */
 @keyframes lpKelopakJatuh {
   0%   { transform: translate3d(0, -40px, 0) rotate(0deg); opacity: 0; }
@@ -996,10 +1097,10 @@ button.lp-dock-btn {
   50%      { background-position: -20% 0; }
 }
 
-/* ---------- OG mode: seal statik (imej preview mesti tajam, bukan mid-animation) ---------- */
-.lp-og .lp-seal,
-.lp-og .lp-seal::after { animation: none; }
-.lp-og .lp-seal { transform: none; }
+/* ---------- OG mode: monogram statik (imej preview mesti tajam, bukan mid-animation) ---------- */
+.lp-og .lp-mono,
+.lp-og .lp-mono::before { animation: none; }
+.lp-og .lp-mono { transform: none; }
 
 /* ============================== MODAL RSVP ============================== */
 /* Overlay gelap ungu lut sinar + bekas kad borang (iframe rsvp.html?embed=1). Transisi
@@ -1316,8 +1417,11 @@ button.lp-dock-btn {
   .lp-cover-buka-titik { animation: none; opacity: 0.8; }
   .lp-muzik.is-main .lp-muzik-ikon { animation: none; }
   /* Pakej dramatik: matikan semua animation baru (getAnimations() jadi kosong). */
-  .lp-cover .lp-seal, .lp-seal::after { animation: none; }
-  .lp-seal.is-tekan { transform: none; transition: none; }
+  .lp-cover .lp-mono, .lp-cover .lp-mono::before { animation: none !important; }
+  .lp-cover.is-pecah .lp-mono { transform: none !important; opacity: 1 !important; transition: none !important; }
+  .lp-cover.is-pecah .lp-mono::before { opacity: 0.55 !important; transition: none !important; }
+  .lp-taburan { display: none !important; }
+  .lp-kad::after { animation: none !important; }
   .lp-divider-garis { stroke-dashoffset: 0 !important; transition: none !important; }
   .lp-divider circle, .lp-divider path:not(.lp-divider-garis) { opacity: 1 !important; transition: none !important; }
   .lp-cd-nombor.is-pop { animation: none; }

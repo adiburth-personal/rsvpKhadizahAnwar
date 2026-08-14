@@ -66,12 +66,46 @@ function svgIkon(jenis) {
 (function coverInit() {
   const cover = document.getElementById("lpCover");
   if (!cover) return;
-  const seal = cover.querySelector(".lp-seal");
+  const mono = cover.querySelector(".lp-mono");
   // Kunci skrol semasa cover naik supaya sampul terasa "penuh".
   try { document.documentElement.style.overflow = "hidden"; document.body.style.overflow = "hidden"; } catch (e) {}
   let dibuka = false;
+
+  // Cipta bunga bertaburan: 8 biji kelopak watercolor (aset .bunga--* sedia ada) yang
+  // MELETUP dari tengah cover ke tepi (arah/putaran berbeza setiap satu). Elemen HANYA
+  // wujud sewaktu transisi buka; dibuang automatik bila cover.remove(). transform/opacity
+  // sahaja (CSS keyframe lpTabur). Defensif: sebarang ralat diabai (cover tetap buka).
+  function taburBunga() {
+    try {
+      const bekas = document.createElement("div");
+      bekas.className = "lp-taburan";
+      bekas.setAttribute("aria-hidden", "true");
+      const aset = ["bunga--aBright", "bunga--bBright", "lp-bouquet-a", "bunga--aRose",
+                    "bunga--bRose", "lp-bouquet-b", "bunga--aMid", "bunga--bBright"];
+      const n = aset.length;                       // 8 biji (dalam julat 6-9)
+      for (let i = 0; i < n; i++) {
+        // Sebar sekata sekeliling bulatan + kacau sikit supaya organik.
+        const sudut = (i / n) * Math.PI * 2 + (Math.random() * 0.6 - 0.3);
+        const jarak = 130 + Math.random() * 130;   // px keluar dari tengah
+        const tx = Math.cos(sudut) * jarak;
+        const ty = Math.sin(sudut) * jarak - 30;   // condong sikit ke atas
+        const rot = Math.random() * 170 - 85;      // putaran -85..85deg
+        const sz = 18 + Math.random() * 16;        // 18-34px
+        const el = document.createElement("span");
+        el.className = "lp-taburan-i " + aset[i];
+        el.style.setProperty("--tx", tx.toFixed(0) + "px");
+        el.style.setProperty("--ty", ty.toFixed(0) + "px");
+        el.style.setProperty("--rot", rot.toFixed(0) + "deg");
+        el.style.setProperty("--tsz", sz.toFixed(0) + "px");
+        el.style.setProperty("--tdelay", (i * 22) + "ms");
+        bekas.appendChild(el);
+      }
+      cover.appendChild(bekas);
+    } catch (e) {}
+  }
+
   // Angkat cover + skrol + buang dari DOM. Diasingkan supaya boleh ditangguh selepas
-  // hentakan seal (bukan reduced-motion).
+  // zoom monogram + taburan bermula (bukan reduced-motion).
   function angkat() {
     cover.classList.add("is-buka");
     // Buka gate urutan hero dramatik: CSS hero (.lp-buka .lp-hero...) hanya animate
@@ -95,12 +129,15 @@ function svgIkon(jenis) {
     // putus. Guard: kalau modul muzik gagal / play() ditolak, senyap sahaja, cover tetap
     // terbuka. Ini juga jalan pada laluan reduced-motion (mulaAuto sebelum cabang REDUCED).
     try { if (muzikApi) muzikApi.mulaAuto(); } catch (e) {}
-    // Reduced-motion: buka terus tanpa hentakan/tangguh (macam sebelum ini).
-    if (REDUCED.matches || !seal) { angkat(); return; }
-    // Dramatik: seal membesar (~250ms) DULU, cover terangkat selepas ~200ms. Jumlah
-    // keseluruhan (200 + 800 buang) ~1000ms, di bawah siling ~1200ms.
-    try { seal.classList.add("is-tekan"); } catch (e) {}
-    window.setTimeout(angkat, 200);
+    // Reduced-motion: buka terus tanpa zoom/taburan/tangguh, muzik tetap main.
+    if (REDUCED.matches || !mono) { angkat(); return; }
+    // PEMBUKAAN dramatik: monogram ZOOM masuk (scale 1.6 + fade, 620ms) SERENTAK bunga
+    // bertaburan (920ms) letup dari tengah. Cover mula terangkat selepas 420ms supaya
+    // zoom + taburan sempat dilihat, lepas tu fade (700ms). Jumlah cover hilang ~1120ms
+    // (di bawah siling 1.4s), taburan habis ~1140ms lalu dibuang bersama cover.
+    try { cover.classList.add("is-pecah"); } catch (e) {}
+    taburBunga();
+    window.setTimeout(angkat, 420);
   }
   cover.addEventListener("click", buka);
   cover.addEventListener("keydown", function (e) {

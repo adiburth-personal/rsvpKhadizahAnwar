@@ -75,18 +75,18 @@
     <div class="lp-cover-inner">
       <p class="lp-cover-atas">Bismillahirrahmanirrahim</p>
 
-      <div class="lp-seal" aria-hidden="true">
-        <svg viewBox="0 0 120 120" width="150" height="150" role="img">
-          <!-- Lilitan wax: cakera dengan gradien radial + rim emas. Path/circle
-               eksplisit, TIADA filter/use/symbol (selamat WebKit background/inline). -->
-          <circle cx="60" cy="60" r="52" fill="#3a2340" stroke="#bfa065" stroke-width="1.5"/>
-          <circle cx="60" cy="60" r="46" fill="none" stroke="#8a6a93" stroke-width="0.8" stroke-dasharray="1.5 3.5"/>
-          <circle cx="60" cy="60" r="40" fill="none" stroke="#bfa065" stroke-width="0.8"/>
-          <!-- Daun kecil atas & bawah -->
-          <path d="M60 16c-4 4-4 9 0 13 4-4 4-9 0-13Z" fill="#bfa065" opacity="0.85"/>
-          <path d="M60 104c-4-4-4-9 0-13 4 4 4 9 0 13Z" fill="#bfa065" opacity="0.85"/>
-        </svg>
-        <span class="lp-seal-mono">K<em>&amp;</em>A</span>
+      <!-- MONOGRAM K & A (identiti kad rasmi): huruf serif tinggi Cormorant SC +
+           ampersand script Great Vibes, garis nipis emas klasik atas/bawah. Teks HTML
+           tulen (lebih tajam dari SVG untuk huruf), TIADA bulatan/dasharray/daun (gaya
+           henna lama dibuang). aria-hidden: hiasan, nama penuh dibaca di bawah. -->
+      <div class="lp-mono" aria-hidden="true">
+        <span class="lp-mono-garis lp-mono-garis--atas"></span>
+        <span class="lp-mono-huruf">
+          <span class="lp-mono-k">K</span>
+          <span class="lp-mono-amp">&amp;</span>
+          <span class="lp-mono-a">A</span>
+        </span>
+        <span class="lp-mono-garis lp-mono-garis--bawah"></span>
       </div>
 
       <p class="lp-cover-eyebrow">Walimatulurus</p>
@@ -130,14 +130,23 @@
         <p class="lp-tarikh">Ahad, 30 Ogos 2026</p>
         <span class="lp-berlian lp-berlian--bawah" aria-hidden="true"></span>
       </div>
-      <!-- Kelopak jatuh: HANYA di jalur tepi kiri/kanan (bekas overflow:hidden, jauh
-           dari kolum teks). Guna semula aset .bunga--* tanpa kelas .bunga asas. -->
+      <!-- Kelopak jatuh (~11 biji): kelas .lp-kelopak--tepi* di JALUR TEPI kiri/kanan kad
+           (luar kolum teks) boleh opacity TINGGI + besar (nampak jelas); kelas
+           .lp-kelopak--dalam* laluannya condong ke kolum teks jadi kekal BAWAH siling
+           repo (deep<=0.15, mid<=0.20, bright<=0.26, rose<=0.31). Bekas overflow:hidden
+           = sway/putaran tak boleh cetus skrol melintang. Guna aset .bunga--* standalone. -->
       <div class="lp-kelopak" aria-hidden="true">
-        <span class="lp-kelopak-i lp-kelopak--k1 bunga--aDeep"></span>
-        <span class="lp-kelopak-i lp-kelopak--k2 bunga--bMid"></span>
-        <span class="lp-kelopak-i lp-kelopak--k3 bunga--aBright"></span>
-        <span class="lp-kelopak-i lp-kelopak--k4 bunga--bRose"></span>
-        <span class="lp-kelopak-i lp-kelopak--k5 bunga--aBright"></span>
+        <span class="lp-kelopak-i lp-kelopak--t1 bunga--aBright"></span>
+        <span class="lp-kelopak-i lp-kelopak--t2 bunga--bBright"></span>
+        <span class="lp-kelopak-i lp-kelopak--t3 bunga--aRose"></span>
+        <span class="lp-kelopak-i lp-kelopak--t4 bunga--bRose"></span>
+        <span class="lp-kelopak-i lp-kelopak--t5 bunga--aMid"></span>
+        <span class="lp-kelopak-i lp-kelopak--t6 bunga--bBright"></span>
+        <span class="lp-kelopak-i lp-kelopak--t7 bunga--aBright"></span>
+        <span class="lp-kelopak-i lp-kelopak--t8 bunga--aRose"></span>
+        <span class="lp-kelopak-i lp-kelopak--d1 bunga--bMid"></span>
+        <span class="lp-kelopak-i lp-kelopak--d2 bunga--aBright"></span>
+        <span class="lp-kelopak-i lp-kelopak--d3 bunga--aDeep"></span>
       </div>
     </section>
 
@@ -298,12 +307,17 @@
       <p class="lp-doa">Semoga Allah mengurniakan keberkatan buat kalian berdua, menyatukan kalian dalam kebaikan, dan mengekalkan kasih sayang hingga ke syurga.</p>
       <p class="lp-teks">Semoga kehadiran Tuan / Puan menyerikan lagi majlis dan diberkati Allah SWT.</p>
       <p class="lp-terima">Terima Kasih</p>
+      <!-- Monogram penutup: versi kecil gaya sama (huruf serif + ampersand script +
+           garis emas), warna maroon/emas ikut tema kad. Selaras cover, TIADA bulatan
+           dasharray lama. -->
       <div class="lp-penutup-mono" aria-hidden="true">
-        <svg viewBox="0 0 60 60" width="52" height="52" fill="none">
-          <circle cx="30" cy="30" r="26" stroke="#bfa065" stroke-width="1"/>
-          <circle cx="30" cy="30" r="21" stroke="#674b77" stroke-width="0.7" stroke-dasharray="1.2 3"/>
-        </svg>
-        <span class="lp-penutup-mono-teks">K&amp;A</span>
+        <span class="lp-mono-garis lp-mono-garis--atas"></span>
+        <span class="lp-mono-huruf">
+          <span class="lp-mono-k">K</span>
+          <span class="lp-mono-amp">&amp;</span>
+          <span class="lp-mono-a">A</span>
+        </span>
+        <span class="lp-mono-garis lp-mono-garis--bawah"></span>
       </div>
     </section>
 
