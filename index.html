@@ -64,6 +64,16 @@
     <i class="bunga bunga--bBright" style="--x:97%;  --size:14px; --dur:33s; --delay:-27s; --drift:-16px;--op:0.4; --spin:18deg;  --blur:0"></i>
   </div>
 
+  <!-- ============ GUTTER BOTANI (desktop): sprig menjalar mengapit kad ============
+       Dua sprig tinggi (sage + baby's-breath + batang kering beige + bunga kecil) di
+       ruang gutter kiri/kanan kad, bingkai kad seolah tumbuh dari taman. Tampil HANYA
+       >=1024px (gutter cukup lebar); sway sangat halus, mati dengan reduced-motion.
+       Tiada teks di gutter -> tiada isu kontras. -->
+  <div class="lp-gutter-botani" aria-hidden="true">
+    <span class="lp-botani lp-gb lp-gb--kiri lp-sprigA"></span>
+    <span class="lp-botani lp-gb lp-gb--kanan lp-sprigB"></span>
+  </div>
+
   <!-- ============ COVER (sampul, tekan untuk buka) ============
        Skrin penuh; latar ungu gelap band kad rasmi + tekstur kertas halus + vignette.
        Wax seal monogram K&A (SVG tulen, tiada imej dicuri). Tekan mana mana = buka. -->
@@ -154,6 +164,8 @@
 
     <!-- 2. SALAM + JEMPUTAN -->
     <section class="lp-sec reveal">
+      <span class="lp-deko lp-botani lp-sprigA lp-b-salam-kiri" aria-hidden="true"></span>
+      <span class="lp-deko lp-botani lp-fl-fill lp-b-salam-kanan" aria-hidden="true"></span>
       <p class="lp-salam">Assalamu'alaikum Warahmatullahi Wabarakatuh</p>
       <p class="lp-pantun">
         Dari Kota Marudu kami mula,<br />
@@ -172,6 +184,7 @@
 
     <!-- 3. NAMA PENUH PENGANTIN -->
     <section class="lp-sec lp-pengantin reveal">
+      <span class="lp-deko lp-botani lp-fl-clem lp-b-pengantin" aria-hidden="true"></span>
       <p class="lp-pengantin-nama">Khadizah Binti Razali</p>
       <p class="lp-amp-besar" aria-hidden="true">&amp;</p>
       <p class="lp-pengantin-nama">Muhammad Anwar Bin Sawal</p>
@@ -179,6 +192,7 @@
 
     <!-- 4. BUTIRAN MAJLIS (sasaran dock "Tarikh") -->
     <section class="lp-sec lp-butiran reveal" id="tarikh">
+      <span class="lp-deko lp-botani lp-sprigB lp-b-butiran" aria-hidden="true"></span>
       <div class="lp-butir">
         <span class="lp-butir-ikon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
@@ -212,6 +226,8 @@
 
     <!-- 5. ATURCARA MAJLIS (timeline menegak, dari kad rasmi) -->
     <section class="lp-sec lp-aturcara reveal">
+      <span class="lp-deko lp-botani lp-sprigA lp-b-atur-kanan" aria-hidden="true"></span>
+      <span class="lp-deko lp-botani lp-fl-fill lp-b-atur-kiri" aria-hidden="true"></span>
       <p class="lp-label">Aturcara Majlis</p>
       <ol class="lp-tl">
         <li class="lp-tl-item">
@@ -244,6 +260,8 @@
 
     <!-- 6. COUNTDOWN -->
     <section class="lp-sec lp-countdown-sec reveal">
+      <span class="lp-deko lp-botani lp-fl-anem lp-b-cd-kanan" aria-hidden="true"></span>
+      <span class="lp-deko lp-botani lp-fl-fill lp-b-cd-kiri" aria-hidden="true"></span>
       <p class="lp-ayat">&ldquo;Dan Kami jadikan kamu berpasang-pasangan&rdquo;<span class="lp-ayat-rujuk">Surah An-Naba 78:8</span></p>
       <p class="lp-label">Menghitung Hari</p>
       <div class="lp-countdown" id="lpCountdown" aria-live="off">
@@ -264,6 +282,7 @@
 
     <!-- 7. BUKU TETAMU -->
     <section class="lp-sec lp-buku reveal" id="bukuTetamu">
+      <span class="lp-deko lp-botani lp-sprigB lp-b-buku" aria-hidden="true"></span>
       <p class="lp-label">Buku Tetamu</p>
       <div class="lp-buku-senarai" id="lpBukuSenarai" hidden></div>
       <div class="lp-buku-butang">
@@ -274,6 +293,7 @@
 
     <!-- 8. HUBUNGI (sasaran dock "Hubungi") -->
     <section class="lp-sec lp-hubungi reveal" id="hubungi">
+      <span class="lp-deko lp-botani lp-fl-lisi lp-b-hubungi" aria-hidden="true"></span>
       <p class="lp-label">Hubungi</p>
       <p class="lp-teks">Pihak Pengantin Perempuan</p>
       <div class="lp-kontak" id="lpKontak"></div>
@@ -281,6 +301,7 @@
 
     <!-- 9. LOKASI (sasaran dock "Lokasi") -->
     <section class="lp-sec lp-lokasi reveal" id="lokasi">
+      <span class="lp-deko lp-botani lp-fl-ranun lp-b-lokasi" aria-hidden="true"></span>
       <p class="lp-label">Lokasi Majlis</p>
       <p class="lp-teks">ADH Hall, Kota Marudu</p>
       <a class="lp-btn-besar" href="https://www.google.com/maps/place/ADH+Hall/@6.4574857,116.7776901,17z/data=!4m6!3m5!1s0x323a494c15034071:0x96df07963654b267!8m2!3d6.4577042!4d116.777615!16s%2Fg%2F11wwz0ds1f" target="_blank" rel="noopener">
@@ -305,6 +326,7 @@
     <section class="lp-sec lp-penutup reveal">
       <span class="lp-deko lp-bunga-footer lp-bunga-footer--kiri lp-bouquet-a" aria-hidden="true"></span>
       <span class="lp-deko lp-bunga-footer lp-bunga-footer--kanan lp-bouquet-b" aria-hidden="true"></span>
+      <span class="lp-deko lp-botani lp-vineC lp-b-penutup-vine" aria-hidden="true"></span>
       <p class="lp-label">Doa Buat Pengantin</p>
       <p class="lp-doa">Semoga Allah mengurniakan keberkatan buat kalian berdua, menyatukan kalian dalam kebaikan, dan mengekalkan kasih sayang hingga ke syurga.</p>
       <p class="lp-teks">Semoga kehadiran Tuan / Puan menyerikan lagi majlis dan diberkati Allah SWT.</p>
