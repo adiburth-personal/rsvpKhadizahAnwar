@@ -43,6 +43,14 @@
        balik). ?tema=lilac kekal berfungsi (idempotent, classList.add tak berganda).
        Defensif: sebarang ralat diabaikan (kandungan tetap terpapar). -->
   <script>try{if(new URLSearchParams(location.search).get("tema")!=="kraft")document.documentElement.classList.add("lp-lilac");}catch(e){}</script>
+  <!-- JARING KESELAMATAN reveal: seksyen .reveal disorok (opacity 0) HANYA bila .lp-js
+       wujud, dan is-lihat ditambah oleh landing.js. Kalau modul landing.js GAGAL muat
+       (rangkaian putus, ralat sintaks, CSP), is-lihat tak pernah datang -> kandungan
+       kekal telus selama-lamanya. Penjaga: landing.js tanda window.__lpSedia = true
+       SEBAIK ia mula. Kalau selepas ~3s penanda itu masih tiada, kita anggap modul mati
+       dan BUANG kelas lp-js supaya SEMUA kandungan terpapar statik (degradasi anggun).
+       Defensif: sebarang ralat diabaikan. -->
+  <script>window.setTimeout(function(){try{if(!window.__lpSedia)document.documentElement.classList.remove("lp-js");}catch(e){}},3000);</script>
 </head>
 <body class="lp">
 
@@ -102,7 +110,7 @@
       </div>
 
       <p class="lp-cover-eyebrow">Walimatulurus</p>
-      <p class="lp-cover-nama">Khadizah &amp; Anwar</p>
+      <p class="lp-cover-nama">Khadizah <span class="lp-amp-nama">&amp;</span> Anwar</p>
       <p class="lp-cover-tarikh">Ahad, 30 Ogos 2026</p>
       <span class="lp-cover-buka">
         <span class="lp-cover-buka-titik" aria-hidden="true"></span>
@@ -127,7 +135,7 @@
 
         <p class="lp-bismillah" dir="rtl" lang="ar">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
         <p class="lp-eyebrow">Walimatulurus</p>
-        <h1 class="lp-nama-script">Khadizah &amp; Anwar</h1>
+        <h1 class="lp-nama-script">Khadizah <span class="lp-amp-nama">&amp;</span> Anwar</h1>
         <div class="lp-divider" aria-hidden="true">
           <svg viewBox="0 0 160 20" width="160" height="20" fill="none">
             <path class="lp-divider-garis lp-divider-garis--kiri" d="M10 10h48" stroke="#bfa065" stroke-width="1" stroke-linecap="round"/>
@@ -237,18 +245,28 @@
         </li>
         <li class="lp-tl-item">
           <span class="lp-tl-titik" aria-hidden="true"></span>
-          <span class="lp-tl-masa">12:30 tengah hari</span>
-          <span class="lp-tl-acara">Jamuan Makan</span>
-        </li>
-        <li class="lp-tl-item">
-          <span class="lp-tl-titik" aria-hidden="true"></span>
-          <span class="lp-tl-masa">1:00 petang</span>
+          <span class="lp-tl-masa">12:00 tengah hari</span>
           <span class="lp-tl-acara">Bersanding</span>
         </li>
         <li class="lp-tl-item">
           <span class="lp-tl-titik" aria-hidden="true"></span>
-          <span class="lp-tl-masa">2:30 petang</span>
-          <span class="lp-tl-acara">Sesi Bergambar</span>
+          <span class="lp-tl-masa">12:30 tengah hari</span>
+          <span class="lp-tl-acara">Sesi Bergambar 1</span>
+        </li>
+        <li class="lp-tl-item">
+          <span class="lp-tl-titik" aria-hidden="true"></span>
+          <span class="lp-tl-masa">1:00 petang</span>
+          <span class="lp-tl-acara">Jamuan Makan</span>
+        </li>
+        <li class="lp-tl-item">
+          <span class="lp-tl-titik" aria-hidden="true"></span>
+          <span class="lp-tl-masa">2:55 petang</span>
+          <span class="lp-tl-acara">Sesi Bergambar 2</span>
+        </li>
+        <li class="lp-tl-item">
+          <span class="lp-tl-titik" aria-hidden="true"></span>
+          <span class="lp-tl-masa">3:30 petang</span>
+          <span class="lp-tl-acara">Potong Kek</span>
         </li>
         <li class="lp-tl-item">
           <span class="lp-tl-titik" aria-hidden="true"></span>
@@ -447,7 +465,7 @@
       <div class="lp-modal-badan lp-modal-badan--hadiah">
         <p class="lp-teks lp-hadiah-intro">Buat yang sudi menghulur tanda kasih, boleh guna QR di bawah. Semoga Allah membalas kemurahan hati anda.</p>
         <figure class="lp-qr-kad">
-          <img class="lp-qr-imej" src="./qrSalamKaut.jpeg" width="280" height="367" loading="lazy" decoding="async" alt="Kod QR DuitNow atas nama Khadizah Razali untuk salam kaut" />
+          <img class="lp-qr-imej" src="./qrSalamKaut.jpeg" width="280" height="256" loading="lazy" decoding="async" alt="Kod QR DuitNow atas nama Khadizah Razali untuk salam kaut" />
         </figure>
         <p class="lp-qr-nama">Khadizah Razali</p>
         <p class="lp-qr-bank">DuitNow QR &middot; BSN</p>

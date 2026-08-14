@@ -196,6 +196,23 @@
     <footer class="footer">Khadizah &amp; Anwar &middot; 30 Ogos 2026</footer>
   </main>
 
+  <!-- JAMBATAN ESC (mod embed SAHAJA): bila borang ini dimuat dalam modal iframe laman
+       jemputan, fokus di dalam medan borang MENYERAP keydown Esc (tak sampai ke dokumen
+       induk), jadi Esc tak menutup modal. Di sini kita dengar Esc dan hantar postMessage
+       ringkas "lp-rsvp-esc" ke induk (same-origin) supaya landing.js boleh tutup modal.
+       Hanya aktif bila kelas rsvp-embed wujud (paparan standalone tak terjejas). Defensif. -->
+  <script>
+    try {
+      if (document.documentElement.classList.contains("rsvp-embed")) {
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" || e.key === "Esc") {
+            try { parent.postMessage("lp-rsvp-esc", location.origin); } catch (err) {}
+          }
+        });
+      }
+    } catch (e) {}
+  </script>
+
   <script type="module" src="./app.js"></script>
 </body>
 </html>

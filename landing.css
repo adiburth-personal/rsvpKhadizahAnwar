@@ -104,6 +104,15 @@ body.lp::before { display: none !important; }
     border: 1px solid rgba(191, 160, 101, 0.35);
   }
 }
+/* Desktop (>=1024px): naikkan padding SISI kandungan kad supaya baris salam/teks panjang
+   tak rapat tepi bingkai kad (space-6 -> space-7). Padding bawah kekal (env safe-area +
+   ruang dock). Hanya sisi yang berubah, lebar kad (max 430px) tak terganggu. */
+@media (min-width: 1024px) {
+  .lp-kad {
+    padding-left: var(--space-7);
+    padding-right: var(--space-7);
+  }
+}
 
 /* ============================== SEKSYEN + REVEAL ============================== */
 .lp-sec {
@@ -224,7 +233,10 @@ body.lp::before { display: none !important; }
 .lp-nama-script {
   font-family: var(--lp-script);
   font-weight: 400;
-  font-size: clamp(3.4rem, 18vw, 4.6rem);
+  /* Koefisien vw diturun 18vw -> 15.5vw supaya pada telefon SEMPIT (360/390) hujung
+     "& Anwar" tak cium garis emas bingkai (dulu 18vw = 64.8px @360 terlalu lebar).
+     Lantai 2.9rem + siling 4.6rem kekalkan saiz dramatik di kebanyakan skrin. */
+  font-size: clamp(2.9rem, 15.5vw, 4.6rem);
   line-height: 1;
   color: var(--color-maroon);
   margin: var(--space-4) 0 var(--space-2);
@@ -301,6 +313,17 @@ body.lp::before { display: none !important; }
   font-size: 1.8rem;
   color: var(--color-gold);
   margin: var(--space-3) 0;
+}
+
+/* Ampersand hiasan dalam nama script (cover "Khadizah & Anwar" + hero): SATU aksen emas
+   seragam, ganti krim (cover) / maroon-shimmer (hero) supaya "&" jadi aksen emas
+   konsisten dengan pemisah .lp-amp / .lp-amp-besar. -webkit-text-fill-color WAJIB
+   ditetap kerana hero .lp-nama-script guna background-clip:text (text-fill telus);
+   tanpa ini "&" jadi telus/hilang. "&" ini bersaiz besar (large text) => kontras >=3:1.
+   Atas kad lilac cerah, warna ini dipergelap (lihat blok tema lilac). */
+.lp-amp-nama {
+  color: var(--color-gold);
+  -webkit-text-fill-color: var(--color-gold);
 }
 
 /* ============================== BUTIRAN MAJLIS ============================== */
@@ -386,6 +409,22 @@ body.lp::before { display: none !important; }
   box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.4);
 }
 .lp-btn-ikon { display: inline-flex; }
+
+/* CTA UTAMA RSVP (seksyen Maklumat Kehadiran): latar maroon PEJAL + teks krim supaya
+   ia MENONJOL sebagai tindakan utama, manakala butang sekunder lain (Buka Lokasi,
+   Berikan Ucapan, Lihat Semua) kekal berongga. Radius/saiz diwarisi dari .lp-btn-besar
+   (tak berubah). Krim atas maroon ~9.7:1 (disahkan) jadi kontras teks jauh melebihi AA.
+   Hover: maroon-soft supaya isyarat sentuh kekal jelas (bukan bertukar ke krim). */
+.lp-rsvp .lp-btn-besar {
+  background: var(--color-maroon);
+  color: var(--color-cream);
+  border-color: var(--color-maroon);
+}
+.lp-rsvp .lp-btn-besar:hover {
+  background: var(--color-maroon-soft);
+  border-color: var(--color-maroon-soft);
+  color: var(--color-cream);
+}
 
 /* ============================== BUKU TETAMU ============================== */
 .lp-buku-senarai {
@@ -492,6 +531,10 @@ body.lp::before { display: none !important; }
   font-weight: 500;
 }
 .lp-kontak-btns { display: flex; gap: var(--space-3); flex: 0 0 auto; }
+/* Butang telefon + WhatsApp: KEDUA-DUA satu gaya (padan) = bulatan ISI maroon dengan
+   glif krim, supaya WhatsApp tak lagi terpencil (dulu berongga/hijau) dan barisan
+   nampak seragam. Glif krim atas maroon ~9.7:1 (jauh >3:1). Hover naik ke maroon-soft
+   supaya isyarat sentuh kekal. */
 .lp-kontak-btn {
   display: inline-flex;
   align-items: center;
@@ -499,13 +542,13 @@ body.lp::before { display: none !important; }
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 1px solid rgba(142, 124, 111, 0.45);
-  background: var(--color-cream);
-  color: var(--color-maroon);
+  border: 1px solid transparent;
+  background: var(--color-maroon);
+  color: var(--color-cream);
   text-decoration: none;
   transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
-.lp-kontak-btn:hover { background: var(--color-maroon); color: var(--color-cream); }
+.lp-kontak-btn:hover { background: var(--color-maroon-soft); color: var(--color-cream); }
 .lp-kontak-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.34); }
 
 /* ============================== PENUTUP ============================== */
@@ -1505,13 +1548,14 @@ button.lp-dock-btn {
 }
 
 /* ============================================================================
-   TEMA LILAC (MOD PREVIEW: aktif HANYA bila URL ada ?tema=lilac)
+   TEMA LILAC (RUPA DEFAULT semua pengunjung; ?tema=kraft = fallback tersembunyi)
    ============================================================================
    Meniru kad Canva rasmi pasangan: gutter mauve ungu (#6b5164), kad tengah lilac
    cerah (#d4c6e8, sampel pixel kad rasmi ~#d3c5e8), panel lilac muda bertingkat,
    teks kekal maroon/ink gelap (SEMUA kombinasi disahkan >=4.5:1 / >=3:1 teks besar
-   dalam scratchpad/contrast.py). TIADA rupa default berubah: skop html.lp-lilac
-   sahaja, dan kelas itu HANYA ditambah bila query wujud (lihat <head> index.html).
+   dalam scratchpad/contrast.py). Kelas html.lp-lilac ditambah SEAWAL <head> untuk
+   SEMUA muat KECUALI bila ?tema=kraft diberi (lihat <head> index.html); jadi lilac
+   ialah rupa lalai dan kraft (token asal :root) kekal sebagai fallback boleh patah balik.
 
    Strategi: override TOKEN warna surface (cream/cream-2/lp-gutter) dalam skop lilac
    supaya kebanyakan elemen (kotak countdown, baris kontak, kad buku, modal, QR,
@@ -1555,9 +1599,18 @@ html.lp-lilac .lp-cover {
     var(--lp-noise);
 }
 
-/* Teks "&" (asalnya emas, kontras rendah atas lilac) -> plum, kekal aksen tapi terbaca. */
+/* Ampersand hiasan atas kad LILAC cerah (#d4c6e8): emas standard #bfa065 kontras rendah
+   (~1.5:1), jadi guna emas GELAP #6b521a , kekal keluarga EMAS (bukan plum/mauve lagi)
+   supaya aksen "&" seragam merentas seksyen, tapi cukup gelap untuk lulus kontras:
+   >=4.5:1 utk pemisah kecil .lp-amp (17.6px), jauh lebih tinggi utk "&" nama besar.
+   "&" pada cover (.lp-cover-nama) KEKAL emas cerah kerana latarnya gelap (tiada override
+   di sini). */
+html.lp-lilac .lp-nama-script .lp-amp-nama {
+  color: #6b521a;
+  -webkit-text-fill-color: #6b521a;
+}
 html.lp-lilac .lp-ibubapa .lp-amp,
-html.lp-lilac .lp-amp-besar { color: var(--color-plum); }
+html.lp-lilac .lp-amp-besar { color: #6b521a; }
 
 /* Dock + butang muzik: kaca lilac muda (asal cream hard-coded), sempadan mauve lembut.
    Label maroon atas kaca ~#ece5f6 = 8.99:1 (disahkan). */

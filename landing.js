@@ -11,7 +11,52 @@
 
 import { firebaseConfig, konfigurasiBelumSiap } from "./firebaseConfig.js";
 
+// PENANDA "MODUL HIDUP": tanda SEBAIK modul mula dinilai. Skrip jaring keselamatan dalam
+// <head> index.html tunggu ~3s; kalau penanda ini masih tiada (modul gagal muat: rangkaian
+// putus, ralat sintaks, CSP), ia buang kelas lp-js supaya seksyen .reveal (yang disorok
+// HANYA bila lp-js) terpapar statik. Jadi kandungan tak pernah tersekat telus.
+try { window.__lpSedia = true; } catch (e) {}
+
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+// ====== Utiliti SKROL LEMBUT (dikongsi dock + deep-link cover) ======
+// Animasi skrol sendiri guna requestAnimationFrame (bukan scrollIntoView smooth) supaya
+// jarak jauh tak "flash gelap" (compositor tak sempat paint). Durasi berskala jarak,
+// dihad 800ms. Dikongsi supaya deep-link hash dan dock guna MEKANISME SAMA.
+const OFFSET_SKROL = 18;   // jarak dari atas viewport supaya tajuk seksyen tak terlalu rapat
+function skrolYSemasa() { return window.scrollY || window.pageYOffset || 0; }
+function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function scrollKe(targetY) {
+  const startY = skrolYSemasa();
+  const dist = targetY - startY;
+  if (Math.abs(dist) < 2) return;
+  const dur = Math.min(800, Math.max(280, Math.abs(dist) * 0.5));
+  const mula = performance.now();
+  function langkah(now) {
+    const p = Math.min((now - mula) / dur, 1);
+    window.scrollTo(0, Math.round(startY + dist * easeInOutCubic(p)));
+    if (p < 1) requestAnimationFrame(langkah);
+  }
+  requestAnimationFrame(langkah);
+}
+// Skrol ke elemen sasaran (selector atau node). Reduced-motion: lompat terus. Defensif.
+function scrollKeSasaran(sel) {
+  try {
+    const el = typeof sel === "string" ? document.querySelector(sel) : sel;
+    if (!el) return false;
+    const targetY = Math.max(0, el.getBoundingClientRect().top + skrolYSemasa() - OFFSET_SKROL);
+    if (REDUCED.matches) { window.scrollTo(0, targetY); return true; }
+    scrollKe(targetY);
+    return true;
+  } catch (e) { return false; }
+}
+
+// Deep-link hash: rakam #hash SEMASA MUAT (sebelum sebarang navigasi dalaman) supaya
+// selepas cover dibuka kita boleh skrol ke seksyen sasaran, bukan paksa ke atas.
+const HASH_AWAL = (function () {
+  try { return (location.hash && location.hash.length > 1) ? location.hash : ""; }
+  catch (e) { return ""; }
+})();
 
 // API modul muzik (diisi oleh muzikInit di bawah). Cover memanggilnya SEGERAK dalam
 // gesture klik supaya autoplay dibenarkan. null selagi muzikInit belum jalan; klik
@@ -113,10 +158,17 @@ function svgIkon(jenis) {
     // sebalik cover masa muat. Hero dah is-lihat (IO), jadi transisi mula serta-merta.
     try { document.documentElement.classList.add("lp-buka"); } catch (e) {}
     try { document.documentElement.style.overflow = ""; document.body.style.overflow = ""; } catch (e) {}
-    // Auto-skrol sedikit supaya jelas kandungan bermula (hormat reduced-motion).
-    try {
-      window.scrollTo({ top: 8, left: 0, behavior: REDUCED.matches ? "auto" : "smooth" });
-    } catch (e) { try { window.scrollTo(0, 8); } catch (e2) {} }
+    // DEEP-LINK: kalau URL dimuat dengan #hash yang padan seksyen (cth index.html#hubungi),
+    // skrol ke seksyen itu selepas cover diangkat, JANGAN paksa ke atas. Tangguh sedikit
+    // supaya layout kad settle dulu. Tanpa hash: kekal auto-skrol kecil ke atas (sedia ada).
+    if (HASH_AWAL && document.querySelector(HASH_AWAL)) {
+      window.setTimeout(function () { scrollKeSasaran(HASH_AWAL); }, REDUCED.matches ? 0 : 60);
+    } else {
+      // Auto-skrol sedikit supaya jelas kandungan bermula (hormat reduced-motion).
+      try {
+        window.scrollTo({ top: 8, left: 0, behavior: REDUCED.matches ? "auto" : "smooth" });
+      } catch (e) { try { window.scrollTo(0, 8); } catch (e2) {} }
+    }
     // Buang cover dari DOM selepas peralihan tamat (jimat, elak halang fokus).
     window.setTimeout(function () { try { cover.remove(); } catch (e) {} }, REDUCED.matches ? 0 : 800);
   }
@@ -285,40 +337,17 @@ function svgIkon(jenis) {
 (function dockInit() {
   const dock = document.getElementById("lpDock");
   if (!dock) return;
-  const OFFSET = 18;   // jarak dari atas viewport supaya tajuk seksyen tak terlalu rapat
 
-  function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-  function skrolY() { return window.scrollY || window.pageYOffset || 0; }
-
-  // Animasi scroll SENDIRI guna requestAnimationFrame. KENAPA: scrollIntoView
-  // behavior:"smooth" Chrome untuk jarak JAUH ambil 3+ saat dan compositor tak
-  // sempat paint -> viewport "flash gelap" sekejap. rAF paint tiap frame, durasi
-  // berskala dgn jarak tapi DIHAD 800ms, jadi tiada kad gelap kosong.
-  function scrollKe(targetY) {
-    const startY = skrolY();
-    const dist = targetY - startY;
-    if (Math.abs(dist) < 2) return;
-    const dur = Math.min(800, Math.max(280, Math.abs(dist) * 0.5));
-    const mula = performance.now();
-    function langkah(now) {
-      const p = Math.min((now - mula) / dur, 1);
-      window.scrollTo(0, Math.round(startY + dist * easeInOutCubic(p)));
-      if (p < 1) requestAnimationFrame(langkah);
-    }
-    requestAnimationFrame(langkah);
-  }
-
+  // Guna utiliti skrol lembut DIKONGSI (scrollKeSasaran di atas): sama mekanisme dengan
+  // deep-link cover, elak "flash gelap" jarak jauh (rAF paint tiap frame, dihad 800ms).
   dock.addEventListener("click", function (e) {
     const a = e.target.closest("a");
     if (!a) return;
     const href = a.getAttribute("href") || "";
     if (href.charAt(0) !== "#") return;          // rsvp.html / ucapan.html: navigasi biasa
-    const sasaran = document.querySelector(href);
-    if (!sasaran) return;
+    if (!document.querySelector(href)) return;
     e.preventDefault();
-    const targetY = Math.max(0, sasaran.getBoundingClientRect().top + skrolY() - OFFSET);
-    if (REDUCED.matches) { window.scrollTo(0, targetY); return; }   // reduced: lompat terus
-    scrollKe(targetY);
+    scrollKeSasaran(href);
   });
 })();
 
@@ -554,6 +583,39 @@ muzikApi = (function muzikInit() {
   frame();
 })();
 
+// ====== Penyelaras SEJARAH modal (butang Back tutup modal, bukan keluar laman) ======
+// Bila mana-mana modal (RSVP/Hadiah) dibuka, kita pushState SATU entri sejarah. Tekan
+// Back (popstate) menutup modal yang terbuka dan MASIH kekal di index.html. Tutup lewat
+// X/overlay/Esc/postMessage pula memanggil history.back() untuk MENGGUGURKAN entri itu,
+// supaya buka-tutup berulang TIDAK menimbun entri (satu entri hidup pada satu masa).
+// Defensif sepenuhnya (semua akses history dibalut try/catch).
+const modalHistory = (function () {
+  let tutupAktif = null;   // fungsi tutup(true) modal yang sedang terbuka (dipanggil bila Back)
+  let adaEntri = false;    // sudah pushState entri milik kita?
+  function bukaSelesai(tutupFn) {
+    tutupAktif = tutupFn;
+    if (!adaEntri) {
+      try { history.pushState({ lpModal: 1 }, ""); adaEntri = true; } catch (e) {}
+    }
+  }
+  function tutupSelesai() {
+    // Ditutup lewat X/overlay/Esc/postMessage (BUKAN dari popstate): gugurkan entri kita.
+    tutupAktif = null;
+    if (adaEntri) { adaEntri = false; try { history.back(); } catch (e) {} }
+  }
+  window.addEventListener("popstate", function () {
+    // Back ditekan: browser sudah gugurkan entri kita. Kalau ada modal terbuka, TUTUP ia
+    // sahaja (jangan history.back lagi -> elak keluar laman / gugur berganda).
+    if (tutupAktif) {
+      adaEntri = false;
+      const f = tutupAktif;
+      tutupAktif = null;
+      try { f(); } catch (e) {}   // f = tutup(true): fromPop, jadi takkan panggil tutupSelesai
+    }
+  });
+  return { bukaSelesai: bukaSelesai, tutupSelesai: tutupSelesai };
+})();
+
 // ====== 9. MODAL RSVP (borang rsvp.html dalam pop up, tak keluar page) ======
 // Butang menuju rsvp.html (CTA RSVP, dock RSVP, "Berikan Ucapan") dipintas: buka
 // borang dalam modal iframe (rsvp.html?embed=1) ATAS landing. PROGRESSIVE ENHANCEMENT:
@@ -592,10 +654,12 @@ muzikApi = (function muzikInit() {
     // Tambah is-buka pada frame seterusnya supaya transition (fade + naik) main,
     // bukan lompat. Reduced-motion: CSS matikan transition -> muncul terus.
     requestAnimationFrame(function () { modal.classList.add("is-buka"); });
+    // Daftar entri sejarah: Back akan tutup modal ini (tutup(true) = tanpa history.back lagi).
+    modalHistory.bukaSelesai(function () { tutup(true); });
     // Fokus dipindah ke modal (butang tutup).
     try { btnTutup.focus(); } catch (e) {}
   }
-  function tutup() {
+  function tutup(fromPop) {
     if (!sedangBuka) return;
     sedangBuka = false;
     modal.classList.remove("is-buka");
@@ -603,6 +667,8 @@ muzikApi = (function muzikInit() {
     // Sorok sepenuhnya selepas transition (elak modal invisible masih tangkap klik).
     if (REDUCED.matches) { modal.hidden = true; }
     else { window.setTimeout(function () { if (!sedangBuka) modal.hidden = true; }, 260); }
+    // Gugurkan entri sejarah HANYA bila tutup bukan dari popstate (Back sudah gugurkan sendiri).
+    if (!fromPop) modalHistory.tutupSelesai();
     // Fokus balik ke butang pencetus.
     try { if (pencetus) pencetus.focus(); } catch (e) {}
     pencetus = null;
@@ -621,14 +687,26 @@ muzikApi = (function muzikInit() {
     buka(a);
   });
 
-  if (btnTutup) btnTutup.addEventListener("click", tutup);
+  if (btnTutup) btnTutup.addEventListener("click", function () { tutup(); });
   // Klik overlay (luar kad) = tutup.
   modal.addEventListener("click", function (e) {
     if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-lp-tutup")) tutup();
   });
-  // Esc = tutup.
+  // Esc = tutup. Ini tangkap Esc bila fokus di CHROME modal (butang tutup/overlay). Bila
+  // fokus di DALAM borang iframe, keydown tak sampai ke dokumen induk -> lihat jambatan
+  // postMessage di bawah.
   document.addEventListener("keydown", function (e) {
     if (sedangBuka && (e.key === "Escape" || e.key === "Esc")) { e.preventDefault(); tutup(); }
+  });
+  // JAMBATAN ESC DARI IFRAME: rsvp.html (mod embed) hantar postMessage "lp-rsvp-esc" bila
+  // Esc ditekan semasa fokus di dalam borang. Kita sahkan origin sama + sumber = iframe kita
+  // sendiri sebelum bertindak (elak mesej luar). Defensif try/catch.
+  window.addEventListener("message", function (e) {
+    try {
+      if (e.origin !== location.origin) return;
+      if (!iframe || e.source !== iframe.contentWindow) return;
+      if (e.data === "lp-rsvp-esc") tutup();
+    } catch (err) {}
   });
 })();
 
@@ -660,21 +738,24 @@ muzikApi = (function muzikInit() {
     // Tambah is-buka frame seterusnya supaya fade + naik main (reduced-motion: CSS
     // matikan transition -> muncul terus).
     requestAnimationFrame(function () { modal.classList.add("is-buka"); });
+    // Daftar entri sejarah: Back tutup modal ini (tutup(true) = tanpa history.back lagi).
+    modalHistory.bukaSelesai(function () { tutup(true); });
     try { if (btnTutup) btnTutup.focus(); } catch (e) {}
   }
-  function tutup() {
+  function tutup(fromPop) {
     if (!sedangBuka) return;
     sedangBuka = false;
     modal.classList.remove("is-buka");
     kunciSkrol(false);
     if (REDUCED.matches) { modal.hidden = true; }
     else { window.setTimeout(function () { if (!sedangBuka) modal.hidden = true; }, 260); }
+    if (!fromPop) modalHistory.tutupSelesai();
     try { if (pencetus) pencetus.focus(); } catch (e) {}
     pencetus = null;
   }
 
   btnBuka.addEventListener("click", buka);
-  if (btnTutup) btnTutup.addEventListener("click", tutup);
+  if (btnTutup) btnTutup.addEventListener("click", function () { tutup(); });
   // Klik overlay (luar kad) = tutup.
   modal.addEventListener("click", function (e) {
     if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-lp-tutup")) tutup();
