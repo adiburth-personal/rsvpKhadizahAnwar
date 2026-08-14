@@ -577,3 +577,56 @@ muzikApi = (function muzikInit() {
     if (sedangBuka && (e.key === "Escape" || e.key === "Esc")) { e.preventDefault(); tutup(); }
   });
 })();
+
+// ====== 10. MODAL SALAM KAUT (butang dock "Hadiah" -> QR DuitNow) ======
+// Guna semula shell .lp-modal* (tiada duplikasi CSS). Logik buka/tutup BERASINGAN
+// daripada modal RSVP supaya modal sedia ada tak tersentuh (kandungan Hadiah statik,
+// bukan iframe). Sama corak: scroll lock, fokus ke butang tutup, Esc/overlay/X tutup,
+// fokus balik ke pencetus. Defensif: elemen tiada -> senyap.
+(function modalHadiahInit() {
+  const modal = document.getElementById("lpModalHadiah");
+  const btnBuka = document.getElementById("lpDockHadiah");
+  const btnTutup = document.getElementById("lpModalHadiahTutup");
+  if (!modal || !btnBuka) return;
+  let sedangBuka = false;
+  let pencetus = null;
+
+  function kunciSkrol(on) {
+    try {
+      document.documentElement.style.overflow = on ? "hidden" : "";
+      document.body.style.overflow = on ? "hidden" : "";
+    } catch (e) {}
+  }
+  function buka() {
+    if (sedangBuka) return;
+    sedangBuka = true;
+    pencetus = btnBuka;
+    modal.hidden = false;
+    kunciSkrol(true);
+    // Tambah is-buka frame seterusnya supaya fade + naik main (reduced-motion: CSS
+    // matikan transition -> muncul terus).
+    requestAnimationFrame(function () { modal.classList.add("is-buka"); });
+    try { if (btnTutup) btnTutup.focus(); } catch (e) {}
+  }
+  function tutup() {
+    if (!sedangBuka) return;
+    sedangBuka = false;
+    modal.classList.remove("is-buka");
+    kunciSkrol(false);
+    if (REDUCED.matches) { modal.hidden = true; }
+    else { window.setTimeout(function () { if (!sedangBuka) modal.hidden = true; }, 260); }
+    try { if (pencetus) pencetus.focus(); } catch (e) {}
+    pencetus = null;
+  }
+
+  btnBuka.addEventListener("click", buka);
+  if (btnTutup) btnTutup.addEventListener("click", tutup);
+  // Klik overlay (luar kad) = tutup.
+  modal.addEventListener("click", function (e) {
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-lp-tutup")) tutup();
+  });
+  // Esc = tutup (guard sedangBuka: hanya modal yang terbuka bertindak balas).
+  document.addEventListener("keydown", function (e) {
+    if (sedangBuka && (e.key === "Escape" || e.key === "Esc")) { e.preventDefault(); tutup(); }
+  });
+})();

@@ -243,6 +243,13 @@
         </span>
         Buka Lokasi di Google Maps
       </a>
+      <!-- QR lokasi: paparan terus (bukan lipat) di bawah butang Maps yang kekal utama.
+           Imej lazy + dimensi eksplisit (1000x1000 => 200x200) supaya layout stabil
+           walaupun imej gagal muat (alt kekal, kotak tak kolaps). -->
+      <div class="lp-lokasi-qr">
+        <img class="lp-lokasi-qr-imej" src="./qrLokasiAdhHall.jpeg" width="200" height="200" loading="lazy" decoding="async" alt="Kod QR untuk membuka lokasi ADH Hall di Google Maps" />
+        <p class="lp-lokasi-qr-caption">Imbas untuk buka lokasi di peta, sesuai untuk dikongsi atau dicetak.</p>
+      </div>
     </section>
 
     <!-- 10. PENUTUP -->
@@ -297,6 +304,15 @@
       </span>
       <span class="lp-dock-teks">Hubungi</span>
     </a>
+    <!-- Butang ke-6: buka modal Salam Kaut (QR hadiah). BUTANG (bukan <a>) supaya
+         dockInit (pintas #anchor) dan modal RSVP (pintas a[href=rsvp.html]) abaikan;
+         modalHadiahInit dalam landing.js yang uruskan. -->
+    <button class="lp-dock-btn lp-dock-btn--hadiah" id="lpDockHadiah" type="button" aria-haspopup="dialog" aria-controls="lpModalHadiah">
+      <span class="lp-dock-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4.5 11.5h15V19a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4.5 19v-7.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3.5 8.3h17v3.2h-17z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 8.3v12.2" stroke="currentColor" stroke-width="1.5"/><path d="M12 8.3C11.2 5.4 6.7 5.4 7.6 8.3M12 8.3C12.8 5.4 17.3 5.4 16.4 8.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="lp-dock-teks">Hadiah</span>
+    </button>
   </nav>
 
   <!-- ============ BUTANG MUZIK ============
@@ -331,6 +347,39 @@
         </button>
       </div>
       <div class="lp-modal-badan" id="lpModalBadan"></div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL SALAM KAUT (hadiah / QR DuitNow) ============
+       Guna semula shell .lp-modal* (tiada duplikasi CSS shell). Dibuka oleh butang
+       dock "Hadiah" lewat modalHadiahInit dalam landing.js. Kandungan statik (QR +
+       panduan 3 langkah untuk tetamu yang tengok di telefon sendiri, kerana mereka
+       tak boleh imbas skrin telefon sendiri). QR lazy: dalam modal hidden, jadi hanya
+       muat bila dibuka. -->
+  <div class="lp-modal lp-modal--hadiah" id="lpModalHadiah" hidden>
+    <div class="lp-modal-overlay" data-lp-tutup aria-hidden="true"></div>
+    <div class="lp-modal-kad lp-modal-kad--hadiah" role="dialog" aria-modal="true" aria-labelledby="lpHadiahTajuk">
+      <div class="lp-modal-header">
+        <span class="lp-modal-tajuk" id="lpHadiahTajuk">Salam Kaut</span>
+        <button class="lp-modal-tutup" id="lpModalHadiahTutup" type="button" aria-label="Tutup Salam Kaut">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="lp-modal-badan lp-modal-badan--hadiah">
+        <p class="lp-teks lp-hadiah-intro">Buat yang sudi menghulur tanda kasih, boleh guna QR di bawah. Semoga Allah membalas kemurahan hati anda.</p>
+        <figure class="lp-qr-kad">
+          <img class="lp-qr-imej" src="./qrSalamKaut.jpeg" width="280" height="367" loading="lazy" decoding="async" alt="Kod QR DuitNow atas nama Khadizah Razali untuk salam kaut" />
+        </figure>
+        <p class="lp-qr-nama">Khadizah Razali</p>
+        <p class="lp-qr-bank">DuitNow QR &middot; BSN</p>
+        <ol class="lp-qr-panduan">
+          <li><span class="lp-qr-langkah-no" aria-hidden="true">1</span><span>Simpan gambar QR ini dahulu, tekan lama atau ambil <em>screenshot</em>.</span></li>
+          <li><span class="lp-qr-langkah-no" aria-hidden="true">2</span><span>Buka app bank atau e-wallet anda, pilih imbas QR.</span></li>
+          <li><span class="lp-qr-langkah-no" aria-hidden="true">3</span><span>Pilih gambar QR tadi dari galeri untuk teruskan.</span></li>
+        </ol>
+      </div>
     </div>
   </div>
 

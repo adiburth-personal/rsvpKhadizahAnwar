@@ -638,8 +638,10 @@ body.lp::before { display: none !important; }
   z-index: 60;
   display: flex;
   gap: 2px;
-  width: min(406px, calc(100vw - 24px));
-  padding: 6px;
+  /* 6 butang: lebarkan sikit + kecilkan margin tepi supaya muat elok di 360/390px
+     tanpa teks terpotong (butang RSVP utama kongsi flex sama, jadi ikut mengecil). */
+  width: min(430px, calc(100vw - 16px));
+  padding: 6px 5px;
   border-radius: 24px;
   /* Kaca: fallback legap dulu (readable tanpa backdrop-filter), diperhalus bila
      backdrop-filter disokong. Bg terang supaya label maroon kekal >=4.5:1. */
@@ -656,6 +658,7 @@ body.lp::before { display: none !important; }
 }
 .lp-dock-btn {
   flex: 1 1 0;
+  min-width: 0;              /* benarkan mengecil di viewport sempit tanpa overflow */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -667,15 +670,27 @@ body.lp::before { display: none !important; }
   text-decoration: none;
   transition: background var(--dur-fast) var(--ease-out);
 }
+/* Butang dock "Hadiah" ialah <button>: buang gaya lalai supaya sepadan .lp-dock-btn. */
+button.lp-dock-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
 .lp-dock-btn:hover { background: rgba(110, 32, 41, 0.08); }
 .lp-dock-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.34); }
 .lp-dock-ikon { display: inline-flex; }
 .lp-dock-teks {
   font-family: var(--lp-label);
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   font-weight: 600;
+  max-width: 100%;
+  white-space: nowrap;      /* label satu baris, jangan pecah/terpotong */
 }
 /* RSVP = fokus: pil maroon pejal, teks krim (10:1). */
 .lp-dock-btn--utama {
@@ -1061,6 +1076,111 @@ body.lp::before { display: none !important; }
 .lp-modal-tutup:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.4); }
 .lp-modal-badan { flex: 1 1 auto; min-height: 0; }
 .lp-modal-badan iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+/* ---------- Modal Salam Kaut (hadiah): kandungan statik, badan boleh skrol ----------
+   Guna semula shell .lp-modal* di atas; hanya kandungan khusus di sini. Kad ikut tinggi
+   kandungan (bukan tinggi tetap iframe), badan skrol kalau melimpah. */
+.lp-modal-kad--hadiah {
+  height: auto;
+  max-height: min(88vh, 780px);
+}
+.lp-modal-badan--hadiah {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-6) var(--space-5) var(--space-7);
+  text-align: center;
+}
+.lp-hadiah-intro { margin-bottom: var(--space-6); }
+/* Kad putih/krim berbingkai + bayang lembut mengurung QR (~280px). */
+.lp-qr-kad {
+  margin: 0 auto var(--space-4);
+  max-width: 280px;
+  padding: var(--space-4);
+  background: var(--color-cream);
+  border: 1px solid rgba(191, 160, 101, 0.45);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 28px rgba(20, 10, 26, 0.16);
+}
+.lp-qr-imej {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm);
+}
+.lp-qr-nama {
+  font-family: var(--lp-label);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-maroon);
+  margin: 0 0 2px;
+}
+.lp-qr-bank {
+  font-size: var(--text-sm);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  margin: 0 0 var(--space-6);
+}
+/* Panduan 3 langkah: penting kerana tetamu tak boleh imbas skrin telefon sendiri. */
+.lp-qr-panduan {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 34ch;
+  text-align: left;
+  display: grid;
+  gap: var(--space-4);
+}
+.lp-qr-panduan li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  font-size: var(--text-base);
+  color: var(--color-ink-soft);
+  line-height: 1.55;
+}
+.lp-qr-panduan em { font-style: italic; }
+.lp-qr-langkah-no {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-maroon);
+  color: var(--color-cream);
+  font-family: var(--lp-label);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ---------- QR lokasi dalam seksyen #lokasi (paparan terus, di bawah butang Maps) ---------- */
+.lp-lokasi-qr {
+  margin: var(--space-7) auto 0;
+  max-width: 240px;
+}
+.lp-lokasi-qr-imej {
+  display: block;
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-cream);
+  border: 1px solid rgba(191, 160, 101, 0.4);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 18px rgba(20, 10, 26, 0.1);
+}
+.lp-lokasi-qr-caption {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  line-height: 1.5;
+  max-width: 30ch;
+  margin: 0 auto;
+}
 
 /* ============================== KURANGKAN GERAK ============================== */
 @media (prefers-reduced-motion: reduce) {
