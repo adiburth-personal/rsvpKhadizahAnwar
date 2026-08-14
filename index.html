@@ -84,7 +84,8 @@
 
   <!-- ============ COVER (sampul, tekan untuk buka) ============
        Skrin penuh; latar ungu gelap band kad rasmi + tekstur kertas halus + vignette.
-       Wax seal monogram K&A (SVG tulen, tiada imej dicuri). Tekan mana mana = buka. -->
+       Monogram K&A teks HTML (serif + ampersand script emas). Tekan mana mana = buka.
+       CSS sorok cover bila kelas lp-js tiada (JS mati), jadi kandungan tak terperangkap. -->
   <div class="lp-cover" id="lpCover" role="button" tabindex="0" aria-label="Tekan untuk membuka jemputan">
     <span class="lp-deko lp-bunga-cover lp-bunga-cover--tr lp-bouquet-b" aria-hidden="true"></span>
     <span class="lp-deko lp-bunga-cover lp-bunga-cover--tr2 bunga--bBright" aria-hidden="true"></span>
@@ -291,14 +292,14 @@
       <p class="lp-countdown-selesai" id="lpCountdownSelesai" hidden>Alhamdulillah, majlis selamat berlangsung</p>
     </section>
 
-    <!-- 6. RSVP (dalam page, menuju borang) -->
+    <!-- 7. RSVP (dalam page, menuju borang) -->
     <section class="lp-sec lp-rsvp reveal">
       <p class="lp-label">Maklumat Kehadiran</p>
       <p class="lp-teks">Sudi sudikanlah memaklumkan kehadiran anda sebelum 30 Ogos 2026 supaya kami dapat menyediakan sambutan yang sempurna buat anda.</p>
       <a class="lp-btn-besar" href="./rsvp.html">RSVP</a>
     </section>
 
-    <!-- 7. BUKU TETAMU -->
+    <!-- 8. BUKU TETAMU -->
     <section class="lp-sec lp-buku reveal" id="bukuTetamu">
       <span class="lp-deko lp-botani lp-sprigB lp-b-buku" aria-hidden="true"></span>
       <p class="lp-label">Buku Tetamu</p>
@@ -309,7 +310,7 @@
       </div>
     </section>
 
-    <!-- 8. HUBUNGI (sasaran dock "Hubungi") -->
+    <!-- 9. HUBUNGI (sasaran dock "Hubungi") -->
     <section class="lp-sec lp-hubungi reveal" id="hubungi">
       <span class="lp-deko lp-botani lp-fl-lisi lp-b-hubungi" aria-hidden="true"></span>
       <p class="lp-label">Hubungi</p>
@@ -317,7 +318,7 @@
       <div class="lp-kontak" id="lpKontak"></div>
     </section>
 
-    <!-- 9. LOKASI (sasaran dock "Lokasi") -->
+    <!-- 10. LOKASI (sasaran dock "Lokasi") -->
     <section class="lp-sec lp-lokasi reveal" id="lokasi">
       <span class="lp-deko lp-botani lp-fl-ranun lp-b-lokasi" aria-hidden="true"></span>
       <p class="lp-label">Lokasi Majlis</p>
@@ -332,15 +333,15 @@
         Buka Lokasi di Google Maps
       </a>
       <!-- QR lokasi: paparan terus (bukan lipat) di bawah butang Maps yang kekal utama.
-           Imej lazy + dimensi eksplisit (1000x1000 => 200x200) supaya layout stabil
-           walaupun imej gagal muat (alt kekal, kotak tak kolaps). -->
+           Imej lazy + dimensi eksplisit (fail 420x420 => papar 200x200) supaya layout
+           stabil walaupun imej gagal muat (alt kekal, kotak tak kolaps). -->
       <div class="lp-lokasi-qr">
         <img class="lp-lokasi-qr-imej" src="./qrLokasiAdhHall.jpeg" width="200" height="200" loading="lazy" decoding="async" alt="Kod QR untuk membuka lokasi ADH Hall di Google Maps" />
         <p class="lp-lokasi-qr-caption">Imbas untuk buka lokasi di peta, sesuai untuk dikongsi atau dicetak.</p>
       </div>
     </section>
 
-    <!-- 10. PENUTUP -->
+    <!-- 11. PENUTUP -->
     <section class="lp-sec lp-penutup reveal">
       <span class="lp-deko lp-bunga-footer lp-bunga-footer--kiri lp-bouquet-a" aria-hidden="true"></span>
       <span class="lp-deko lp-bunga-footer lp-bunga-footer--kanan lp-bouquet-b" aria-hidden="true"></span>

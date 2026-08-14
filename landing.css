@@ -596,6 +596,14 @@ body.lp::before { display: none !important; }
 }
 
 /* ============================== COVER (SAMPUL) ============================== */
+/* JARING KESELAMATAN JS MATI: cover ialah lapisan fixed z-index 100 yang HANYA boleh
+   dibuka oleh landing.js (klik/Enter). Kalau JS gagal (modul tak muat, JS dimatikan,
+   pelayar lama tanpa module), kelas lp-js tiada / dibuang oleh timer 3s <head>, dan
+   TANPA peraturan ini cover terperangkap menutup seluruh jemputan selama-lamanya.
+   Jadi: tiada lp-js -> sorok cover + butang muzik (mati tanpa JS), kandungan statik
+   terus boleh dibaca. */
+html:not(.lp-js) .lp-cover,
+html:not(.lp-js) .lp-muzik { display: none; }
 .lp-cover {
   position: fixed;
   inset: 0;

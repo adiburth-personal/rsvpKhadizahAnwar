@@ -23,6 +23,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* TEMA LILAC (samakan dengan rsvp.html + landing): identiti laman kini lilac
+       default, tetamu tiba di sini dari landing/dock/modal yang semuanya lilac,
+       jadi dinding ucapan TAK boleh kekal kraft/tan (nampak "seam" beza keluarga
+       warna). Strategi sama macam blok rsvp.html: override 4 TOKEN surface dalam
+       :root supaya semua elemen ikut automatik. Teks kekal maroon/ink gelap; latar
+       lilac #dccfee LEBIH cerah dari tan lama #cabba5, jadi kontras teks header
+       NAIK, dan siling opacity bunga ambient (dikira atas kraft) kekal selamat
+       kerana campuran piksel atas latar lebih cerah = lebih terang, bukan gelap.
+       Blok <style> ini selepas <link> styles.css, jadi menang ikut susunan cascade. */
+    :root {
+      --color-kraft: #dccfee;       /* latar body lilac */
+      --color-kraft-deep: #c9b9e0;  /* gradien bayang sudut body */
+      --color-cream: #f3eefa;       /* surface putih-lilac */
+      --color-cream-2: #e7ddf3;     /* panel lilac muda */
+    }
+  </style>
 </head>
 <body>
 
