@@ -148,12 +148,14 @@ body.lp::before { display: none !important; }
 /* Kluster bunga 4 bucu bingkai hero (mirror kiri/kanan). Bucu = zon tanpa teks
    (teks hero berpusat), jadi selamat kontras. */
 .lp-bunga-hero { width: 46px; height: 46px; opacity: 0.5; z-index: 1; }
-.lp-bunga-hero--tl { top: -16px; left: -15px; transform: rotate(-24deg); }
-.lp-bunga-hero--tr { top: -16px; right: -15px; transform: rotate(24deg) scaleX(-1); }
-.lp-bunga-hero--bl { bottom: -16px; left: -15px; transform: rotate(-152deg); }
-.lp-bunga-hero--br { bottom: -16px; right: -15px; transform: rotate(152deg) scaleX(-1); }
-.lp-bunga-hero--tl2 { top: 6px; left: -20px; width: 28px; height: 28px; opacity: 0.4; transform: rotate(10deg); }
-.lp-bunga-hero--tr2 { top: 6px; right: -20px; width: 28px; height: 28px; opacity: 0.4; transform: rotate(-10deg) scaleX(-1); }
+/* Nota: translateY(var(--lp-par)) di HADAPAN rotate supaya anjakan parallax (diset
+   landing.js ikut skrol) kekal menegak; --lp-par default 0px bila JS mati. */
+.lp-bunga-hero--tl { top: -16px; left: -15px; transform: translateY(var(--lp-par, 0px)) rotate(-24deg); }
+.lp-bunga-hero--tr { top: -16px; right: -15px; transform: translateY(var(--lp-par, 0px)) rotate(24deg) scaleX(-1); }
+.lp-bunga-hero--bl { bottom: -16px; left: -15px; transform: translateY(var(--lp-par, 0px)) rotate(-152deg); }
+.lp-bunga-hero--br { bottom: -16px; right: -15px; transform: translateY(var(--lp-par, 0px)) rotate(152deg) scaleX(-1); }
+.lp-bunga-hero--tl2 { top: 6px; left: -20px; width: 28px; height: 28px; opacity: 0.4; transform: translateY(var(--lp-par, 0px)) rotate(10deg); }
+.lp-bunga-hero--tr2 { top: 6px; right: -20px; width: 28px; height: 28px; opacity: 0.4; transform: translateY(var(--lp-par, 0px)) rotate(-10deg) scaleX(-1); }
 
 .lp-bismillah {
   font-family: var(--lp-body);
@@ -462,8 +464,8 @@ body.lp::before { display: none !important; }
 .lp-penutup { position: relative; }
 /* Kluster bunga kecil mengapit monogram penutup (bawah tengah, jauh dari teks). */
 .lp-bunga-footer { width: 40px; height: 40px; opacity: 0.44; bottom: 2px; }
-.lp-bunga-footer--kiri { left: calc(50% - 72px); transform: rotate(-28deg); }
-.lp-bunga-footer--kanan { right: calc(50% - 72px); transform: rotate(28deg) scaleX(-1); }
+.lp-bunga-footer--kiri { left: calc(50% - 72px); transform: translateY(var(--lp-par, 0px)) rotate(-28deg); }
+.lp-bunga-footer--kanan { right: calc(50% - 72px); transform: translateY(var(--lp-par, 0px)) rotate(28deg) scaleX(-1); }
 .lp-doa {
   font-size: var(--text-base);
   font-style: italic;
@@ -712,9 +714,212 @@ body.lp::before { display: none !important; }
   border-color: rgba(191, 160, 101, 0.7);
 }
 
+/* ============================================================================
+   PAKEJ "DRAMATIK PENUH" (animation tambahan laman landing)
+   Semua di sini: transform/opacity/background-position SAHAJA (compositor, bukan
+   layout). TIADA SVG filter/use/symbol. Setiap kesan bergantung .lp-js (bila JS
+   gagal, tiada apa disorok) DAN dimatikan penuh oleh blok reduced-motion di hujung.
+   ============================================================================ */
+
+/* ---------- 1. COVER: wax seal denyut idle + tekan membesar ---------- */
+/* Idle: seal bernafas sangat lembut (skala + kilau emas) supaya sampul terasa hidup
+   tanpa mengganggu keterbacaan (teks cover berpusat, seal di atasnya). */
+.lp-cover .lp-seal { animation: lpSealDenyut 3s var(--ease-in-out) infinite; }
+.lp-seal::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  /* kilau emas lembut di belakang seal; radial supaya lembut ke tepi, tiada tepi tajam */
+  background: radial-gradient(circle, rgba(191, 160, 101, 0.45) 0%, rgba(191, 160, 101, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+  animation: lpSealGlow 3s var(--ease-in-out) infinite;
+}
+/* Tekan: seal membesar sekejap SEBELUM cover terangkat (dipacu kelas dari JS). Matikan
+   denyut supaya transisi skala bersih, guna transition (bukan keyframe) untuk hentak sekali. */
+.lp-seal.is-tekan {
+  animation: none;
+  transform: scale(1.12);
+  transition: transform 250ms var(--ease-out);
+}
+@keyframes lpSealDenyut {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+@keyframes lpSealGlow {
+  0%, 100% { opacity: 0.25; transform: scale(0.92); }
+  50%      { opacity: 0.6;  transform: scale(1.06); }
+}
+
+/* ---------- 2. STAGGER REVEAL: anak seksyen muncul bergilir ---------- */
+/* Kekalkan reveal seksyen sedia ada; DI SAMPING itu, anak langsung tiap seksyen
+   fade+naik dengan delay berperingkat. Kecualikan hiasan (.lp-deko) dan bekas kelopak
+   supaya transform mereka sendiri (rotate/parallax) tak dirampas. HANYA bila .lp-js. */
+.lp-js .lp-sec.reveal > :not(.lp-deko):not(.lp-kelopak) {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out);
+}
+.lp-js .lp-sec.reveal.is-lihat > :not(.lp-deko):not(.lp-kelopak) {
+  opacity: 1;
+  transform: none;
+}
+/* Delay berperingkat (delay hanya bermakna utk anak yang memang transisi di atas). */
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(1) { transition-delay: 0ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(2) { transition-delay: 70ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(3) { transition-delay: 140ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(4) { transition-delay: 210ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(5) { transition-delay: 280ms; }
+.lp-js .lp-sec.reveal.is-lihat > :nth-child(6) { transition-delay: 350ms; }
+
+/* ---------- 3. DIVIDER MELUKIS DIRI ---------- */
+/* Garis emas "dilukis" dari tengah ke luar bila hero dapat is-lihat (stroke-dashoffset
+   transition pada path inline). Bulatan + flourish fade masuk selepas garis siap. */
+.lp-js .reveal .lp-divider-garis {
+  stroke-dasharray: 50;
+  transition: stroke-dashoffset 900ms var(--ease-out);
+}
+.lp-js .reveal .lp-divider-garis--kiri  { stroke-dashoffset: -50; }  /* lukis dari hujung (tengah) ke kiri */
+.lp-js .reveal .lp-divider-garis--kanan { stroke-dashoffset: 50; }   /* lukis dari pangkal (tengah) ke kanan */
+.lp-js .reveal.is-lihat .lp-divider-garis { stroke-dashoffset: 0; }
+.lp-js .reveal .lp-divider circle,
+.lp-js .reveal .lp-divider path:not(.lp-divider-garis) {
+  opacity: 0;
+  transition: opacity 500ms var(--ease-out) 650ms;   /* delay: muncul selepas garis */
+}
+.lp-js .reveal.is-lihat .lp-divider circle,
+.lp-js .reveal.is-lihat .lp-divider path:not(.lp-divider-garis) { opacity: 1; }
+
+/* ---------- 4. COUNTDOWN TICK: nombor pop kecil bila berubah ---------- */
+/* Restart animation dipacu toggle kelas dari JS (animationend buang kelas), jadi tiada
+   force-reflow tiap saat. Transform sahaja. */
+.lp-cd-nombor.is-pop { animation: lpCdPop 250ms var(--ease-out); }
+@keyframes lpCdPop {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- 5. BUKU TETAMU: kad meluncur masuk bergilir (sekali) ---------- */
+/* Kelas + animation-delay diset masa insert lepas fetch (bukan reveal), jadi walau
+   seksyen dah lama nampak, kad tetap main animation masuk sekali. */
+.lp-js .lp-buku-kad.is-masuk { animation: lpKadMasuk 560ms var(--ease-out) both; }
+@keyframes lpKadMasuk {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- 6. SHIMMER BINGKAI HERO ---------- */
+/* Kilauan emas menyapu BINGKAI sahaja setiap ~7s. Ring-mask (content-box XOR border-box)
+   mengehadkan gradien ke jalur border sahaja, jadi TIADA lapisan atas teks (kontras
+   kekal). Transform tak perlu; guna background-position + opacity. TIADA mix-blend. */
+.lp-hero-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  padding: 2px;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 42%, rgba(255, 244, 214, 0.9) 50%, transparent 58%);
+  background-size: 250% 100%;
+  background-position: 200% 0;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  animation: lpBingkaiKilau 7s var(--ease-in-out) infinite;
+}
+@keyframes lpBingkaiKilau {
+  0%, 82% { background-position: 200% 0; opacity: 0; }
+  86%     { opacity: 1; }
+  100%    { background-position: -60% 0; opacity: 1; }
+}
+
+/* ---------- 7. KELOPAK JATUH DALAM KAD (jalur tepi hero sahaja) ---------- */
+/* Bekas inset:0 overflow:hidden = kelopak yg hanyut/sway TAK boleh cetus scroll melintang.
+   Guna semula aset .bunga--* (tanpa kelas .bunga asas). SILING opacity per ton dipatuhi
+   lewat --kop (deep<=0.15, mid<=0.20, bright<=0.26, rose<=0.31). */
+.lp-kelopak {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.lp-kelopak-i {
+  position: absolute;
+  top: 0;
+  width: var(--ksize, 14px);
+  height: var(--ksize, 14px);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  will-change: transform, opacity;
+  animation: lpKelopakJatuh var(--kdur, 11s) linear var(--kdelay, 0s) infinite;
+}
+/* Kelopak diletak di jalur tepi (kiri 3-8%, kanan 90-96%), jauh dari kolum teks tengah. */
+.lp-kelopak--k1 { left: 4%;  --ksize: 15px; --kop: 0.15; --kdur: 12s; --kdelay: -1s;  --ksway: 10px; }
+.lp-kelopak--k2 { left: 92%; --ksize: 13px; --kop: 0.20; --kdur: 14s; --kdelay: -6s;  --ksway: -12px; }
+.lp-kelopak--k3 { left: 7%;  --ksize: 12px; --kop: 0.26; --kdur: 10s; --kdelay: -3s;  --ksway: 9px; }
+.lp-kelopak--k4 { left: 95%; --ksize: 14px; --kop: 0.31; --kdur: 13s; --kdelay: -9s;  --ksway: -10px; }
+.lp-kelopak--k5 { left: 90%; --ksize: 11px; --kop: 0.24; --kdur: 11s; --kdelay: -4s;  --ksway: 8px; }
+/* Jatuh 0 -> ~480px (dilebihkan, dipotong overflow) + sway kiri-kanan + putaran perlahan. */
+@keyframes lpKelopakJatuh {
+  0%   { transform: translate3d(0, -40px, 0) rotate(0deg); opacity: 0; }
+  12%  { opacity: var(--kop); }
+  50%  { transform: translate3d(var(--ksway, 10px), 220px, 0) rotate(180deg); opacity: var(--kop); }
+  88%  { opacity: var(--kop); }
+  100% { transform: translate3d(calc(var(--ksway, 10px) * -1), 480px, 0) rotate(360deg); opacity: 0; }
+}
+
+/* ---------- 8. SHIMMER NAMA SCRIPT (Khadizah & Anwar) ---------- */
+/* Kilauan emas bergerak atas teks h1. Guna background-clip:text HANYA dalam @supports
+   supaya browser lama kekal warna maroon pejal (elak teks lutsinar/hilang). Jalur
+   highlight guna emas GELAP (#8a6d34) supaya kontras teks besar atas kraf kekal >=3:1. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .lp-nama-script {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-maroon) 0%, var(--color-maroon) 42%,
+      #8a6d34 50%,
+      var(--color-maroon) 58%, var(--color-maroon) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 120% 0;
+    -webkit-background-clip: text;
+            background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: lpNamaKilau 6s var(--ease-in-out) infinite;
+  }
+}
+@keyframes lpNamaKilau {
+  0%, 100% { background-position: 120% 0; }
+  50%      { background-position: -20% 0; }
+}
+
+/* ---------- OG mode: seal statik (imej preview mesti tajam, bukan mid-animation) ---------- */
+.lp-og .lp-seal,
+.lp-og .lp-seal::after { animation: none; }
+.lp-og .lp-seal { transform: none; }
+
 /* ============================== KURANGKAN GERAK ============================== */
 @media (prefers-reduced-motion: reduce) {
   .lp-js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  /* Anak stagger: tunjuk penuh, tiada gerak. */
+  .lp-js .lp-sec.reveal > * { opacity: 1 !important; transform: none !important; transition: none !important; }
   .lp-cover-buka-titik { animation: none; opacity: 0.8; }
   .lp-muzik.is-main .lp-muzik-ikon { animation: none; }
+  /* Pakej dramatik: matikan semua animation baru (getAnimations() jadi kosong). */
+  .lp-cover .lp-seal, .lp-seal::after { animation: none; }
+  .lp-seal.is-tekan { transform: none; transition: none; }
+  .lp-divider-garis { stroke-dashoffset: 0 !important; transition: none !important; }
+  .lp-divider circle, .lp-divider path:not(.lp-divider-garis) { opacity: 1 !important; transition: none !important; }
+  .lp-cd-nombor.is-pop { animation: none; }
+  .lp-buku-kad.is-masuk { animation: none; opacity: 1; transform: none; }
+  .lp-hero-frame::after { animation: none; opacity: 0; }
+  .lp-kelopak { display: none; }
+  .lp-nama-script { animation: none; background-position: 120% 0; -webkit-text-fill-color: var(--color-maroon); }
 }

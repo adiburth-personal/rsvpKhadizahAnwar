@@ -60,12 +60,13 @@ function svgIkon(jenis) {
 (function coverInit() {
   const cover = document.getElementById("lpCover");
   if (!cover) return;
+  const seal = cover.querySelector(".lp-seal");
   // Kunci skrol semasa cover naik supaya sampul terasa "penuh".
   try { document.documentElement.style.overflow = "hidden"; document.body.style.overflow = "hidden"; } catch (e) {}
   let dibuka = false;
-  function buka() {
-    if (dibuka) return;
-    dibuka = true;
+  // Angkat cover + skrol + buang dari DOM. Diasingkan supaya boleh ditangguh selepas
+  // hentakan seal (bukan reduced-motion).
+  function angkat() {
     cover.classList.add("is-buka");
     try { document.documentElement.style.overflow = ""; document.body.style.overflow = ""; } catch (e) {}
     // Auto-skrol sedikit supaya jelas kandungan bermula (hormat reduced-motion).
@@ -74,6 +75,16 @@ function svgIkon(jenis) {
     } catch (e) { try { window.scrollTo(0, 8); } catch (e2) {} }
     // Buang cover dari DOM selepas peralihan tamat (jimat, elak halang fokus).
     window.setTimeout(function () { try { cover.remove(); } catch (e) {} }, REDUCED.matches ? 0 : 800);
+  }
+  function buka() {
+    if (dibuka) return;
+    dibuka = true;
+    // Reduced-motion: buka terus tanpa hentakan/tangguh (macam sebelum ini).
+    if (REDUCED.matches || !seal) { angkat(); return; }
+    // Dramatik: seal membesar (~250ms) DULU, cover terangkat selepas ~200ms. Jumlah
+    // keseluruhan (200 + 800 buang) ~1000ms, di bawah siling ~1200ms.
+    try { seal.classList.add("is-tekan"); } catch (e) {}
+    window.setTimeout(angkat, 200);
   }
   cover.addEventListener("click", buka);
   cover.addEventListener("keydown", function (e) {
@@ -108,6 +119,23 @@ function svgIkon(jenis) {
   if (!elHari || !elJam || !elMinit || !elSaat) return;
   let timer = null;
   function pad(n) { return n < 10 ? "0" + n : String(n); }
+  // Pop kecil bila nilai berubah. Restart animation guna toggle kelas: animationend
+  // buang kelas (pop 250ms < selang 1s, jadi kelas mesti dah tanggal sebelum tick
+  // berikut) -> tiada force-reflow tiap saat. Reduced-motion: langkau terus.
+  function pop(el) {
+    if (REDUCED.matches) return;
+    el.classList.add("is-pop");
+  }
+  [elHari, elJam, elMinit, elSaat].forEach(function (el) {
+    el.addEventListener("animationend", function () { el.classList.remove("is-pop"); });
+  });
+  // Set nilai HANYA bila berubah + pop pada yang berubah sahaja (Hari/Jam/Minit tak
+  // pop tiap saat, cuma bila angka masing-masing bertukar).
+  function setNilai(el, teks) {
+    if (el.textContent === teks) return;
+    el.textContent = teks;
+    pop(el);
+  }
   function kemas() {
     const baki = MASA_MAJLIS - Date.now();
     if (baki <= 0) {
@@ -121,10 +149,10 @@ function svgIkon(jenis) {
     const jam = Math.floor((saat % 86400) / 3600);
     const minit = Math.floor((saat % 3600) / 60);
     const s = saat % 60;
-    elHari.textContent = String(hari);
-    elJam.textContent = pad(jam);
-    elMinit.textContent = pad(minit);
-    elSaat.textContent = pad(s);
+    setNilai(elHari, String(hari));
+    setNilai(elJam, pad(jam));
+    setNilai(elMinit, pad(minit));
+    setNilai(elSaat, pad(s));
   }
   kemas();
   timer = window.setInterval(kemas, 1000);
@@ -289,9 +317,14 @@ function svgIkon(jenis) {
     if (!tiga.length) { senarai.hidden = true; return; }
 
     senarai.innerHTML = "";
-    tiga.forEach(function (u) {
+    tiga.forEach(function (u, i) {
       const kad = document.createElement("article");
       kad.className = "lp-buku-kad";
+      // Luncur masuk bergilir sekali (delay ikut index). Reduced-motion: terus nampak.
+      if (!REDUCED.matches) {
+        kad.classList.add("is-masuk");
+        kad.style.animationDelay = (i * 90) + "ms";
+      }
       const teks = document.createElement("p");
       teks.className = "lp-buku-ucap";
       teks.textContent = u.ucapan;           // XSS selamat
@@ -303,4 +336,33 @@ function svgIkon(jenis) {
     });
     senarai.hidden = false;
   }
+})();
+
+// ====== 8. PARALLAX LEMBUT (hiasan .lp-deko dalam kad bergerak sikit ikut skrol) ======
+// Satu listener scroll passive + throttle rAF: baca scrollY SEKALI per frame, tulis
+// var --lp-par (translateY, digabung dgn rotate CSS elemen). TIADA baca layout dalam
+// loop (tiada getBoundingClientRect). Mati penuh bila reduced-motion.
+(function parallaxInit() {
+  if (REDUCED.matches) return;
+  const dekos = Array.prototype.slice.call(document.querySelectorAll(".lp-kad .lp-deko"));
+  if (!dekos.length) return;
+  const MAKS = 14;   // anjakan maksimum (px), sejajar arahan
+  // Faktor kecil BERBEZA ikut elemen (0.03..0.065) supaya ada kedalaman halus.
+  dekos.forEach(function (el, i) { el._par = 0.03 + (i % 5) * 0.009; });
+  let menunggu = false;
+  function frame() {
+    menunggu = false;
+    const y = window.scrollY || window.pageYOffset || 0;
+    for (let i = 0; i < dekos.length; i++) {
+      const el = dekos[i];
+      let off = y * el._par;
+      if (off > MAKS) off = MAKS;
+      else if (off < -MAKS) off = -MAKS;
+      el.style.setProperty("--lp-par", off.toFixed(1) + "px");
+    }
+  }
+  window.addEventListener("scroll", function () {
+    if (!menunggu) { menunggu = true; requestAnimationFrame(frame); }
+  }, { passive: true });
+  frame();
 })();

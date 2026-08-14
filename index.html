@@ -113,8 +113,8 @@
         <h1 class="lp-nama-script">Khadizah &amp; Anwar</h1>
         <div class="lp-divider" aria-hidden="true">
           <svg viewBox="0 0 160 20" width="160" height="20" fill="none">
-            <path d="M10 10h48" stroke="#bfa065" stroke-width="1" stroke-linecap="round"/>
-            <path d="M102 10h48" stroke="#bfa065" stroke-width="1" stroke-linecap="round"/>
+            <path class="lp-divider-garis lp-divider-garis--kiri" d="M10 10h48" stroke="#bfa065" stroke-width="1" stroke-linecap="round"/>
+            <path class="lp-divider-garis lp-divider-garis--kanan" d="M102 10h48" stroke="#bfa065" stroke-width="1" stroke-linecap="round"/>
             <path d="M74 10c3-4 6-5 8-3.5S82 11 78 12" stroke="#674b77" stroke-width="1" stroke-linecap="round"/>
             <path d="M86 10c-3-4-6-5-8-3.5S78 11 82 12" stroke="#674b77" stroke-width="1" stroke-linecap="round"/>
             <circle cx="80" cy="10" r="2.6" fill="#382443"/>
@@ -124,6 +124,15 @@
         </div>
         <p class="lp-tarikh">Ahad, 30 Ogos 2026</p>
         <span class="lp-berlian lp-berlian--bawah" aria-hidden="true"></span>
+      </div>
+      <!-- Kelopak jatuh: HANYA di jalur tepi kiri/kanan (bekas overflow:hidden, jauh
+           dari kolum teks). Guna semula aset .bunga--* tanpa kelas .bunga asas. -->
+      <div class="lp-kelopak" aria-hidden="true">
+        <span class="lp-kelopak-i lp-kelopak--k1 bunga--aDeep"></span>
+        <span class="lp-kelopak-i lp-kelopak--k2 bunga--bMid"></span>
+        <span class="lp-kelopak-i lp-kelopak--k3 bunga--aBright"></span>
+        <span class="lp-kelopak-i lp-kelopak--k4 bunga--bRose"></span>
+        <span class="lp-kelopak-i lp-kelopak--k5 bunga--aBright"></span>
       </div>
     </section>
 
