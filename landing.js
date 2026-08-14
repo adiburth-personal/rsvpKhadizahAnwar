@@ -117,6 +117,15 @@ function svgIkon(jenis) {
   let dibuka = false;      // gesture PERTAMA (tap cover) dah cetus taburan
   let diangkat = false;    // angkat() dah jalan (elak double-fire tap kedua/timer)
   let idAngkat = null;     // id setTimeout angkat 1800ms (boleh dibatal tap kedua)
+  // PEMALAR KONGSI durasi fade cover: dibaca dari CSS --lp-dur-angkat supaya SATU
+  // sumber kebenaran, cover.remove() sentiasa selari dengan durasi transition CSS
+  // (tiada ghost cover kalau durasi diubah di CSS sahaja). Fallback 1100.
+  const DUR_ANGKAT = (function () {
+    try {
+      const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lp-dur-angkat"));
+      return (isNaN(v) || v <= 0) ? 1100 : v;
+    } catch (e) { return 1100; }
+  })();
   let bekas = null;        // satu bekas .lp-taburan, dikongsi dua gelombang
 
   // CHOREOGRAPHY "Dua Gelombang + Tahan Penuh": bunga watercolor (aset .bunga--*/
@@ -168,31 +177,50 @@ function svgIkon(jenis) {
     if (diangkat) return;
     diangkat = true;
     if (idAngkat) { try { window.clearTimeout(idAngkat); } catch (e) {} idAngkat = null; }
+    const adaHash = !!(HASH_AWAL && document.querySelector(HASH_AWAL));
+    // Wave 2: skrol dipulihkan ke atas SERTA-MERTA (instant) SEBELUM kelas fade
+    // ditambah. Dulu: smooth-scroll ke 8px SELEPAS fade bermula = gerakan skrol
+    // kelihatan bertindih dengan crossfade, salah satu punca rasa "mengejut".
+    if (!adaHash) { try { window.scrollTo(0, 0); } catch (e) {} }
     cover.classList.add("is-buka");
     // Buka gate urutan hero dramatik: CSS hero (.lp-buka .lp-hero...) hanya animate
     // SELEPAS ini, jadi nama zoom + tarikh main TEPAT bila cover naik, bukan di
     // sebalik cover masa muat. Hero dah is-lihat (IO), jadi transisi mula serta-merta.
+    // .lp-buka juga melepaskan kad dari keadaan awal (opacity 0 + translateY + scale),
+    // jadi halaman MENGALIR masuk (1200ms) serentak dengan fade cover (1100ms).
     try { document.documentElement.classList.add("lp-buka"); } catch (e) {}
     try { document.documentElement.style.overflow = ""; document.body.style.overflow = ""; } catch (e) {}
     // DEEP-LINK: kalau URL dimuat dengan #hash yang padan seksyen (cth index.html#hubungi),
-    // skrol ke seksyen itu selepas cover diangkat, JANGAN paksa ke atas. Tangguh sedikit
-    // supaya layout kad settle dulu. Tanpa hash: kekal auto-skrol kecil ke atas (sedia ada).
-    if (HASH_AWAL && document.querySelector(HASH_AWAL)) {
-      window.setTimeout(function () { scrollKeSasaran(HASH_AWAL); }, REDUCED.matches ? 0 : 60);
-    } else {
-      // Auto-skrol sedikit supaya jelas kandungan bermula (hormat reduced-motion).
-      try {
-        window.scrollTo({ top: 8, left: 0, behavior: REDUCED.matches ? "auto" : "smooth" });
-      } catch (e) { try { window.scrollTo(0, 8); } catch (e2) {} }
+    // skrol ke seksyen itu selepas cover diangkat, JANGAN paksa ke atas. KENAPA kira
+    // sasaran dari offsetTop, bukan scrollKeSasaran/gBCR: kad sedang beranimasi masuk
+    // (translateY+scale), getBoundingClientRect masa ini tercemar transform -> sasaran
+    // sesat sampai ~45px untuk seksyen jauh. offsetTop = geometri layout, kebal transform.
+    if (adaHash) {
+      window.setTimeout(function () {
+        try {
+          const el = document.querySelector(HASH_AWAL);
+          if (!el) return;
+          let y = 0, n = el;
+          while (n) { y += n.offsetTop || 0; n = n.offsetParent; }
+          const sasarY = Math.max(0, y - OFFSET_SKROL);
+          if (REDUCED.matches) { window.scrollTo(0, sasarY); } else { scrollKe(sasarY); }
+        } catch (e) { try { scrollKeSasaran(HASH_AWAL); } catch (e2) {} }
+      }, REDUCED.matches ? 0 : 60);
     }
     // Buang cover dari DOM selepas peralihan tamat (jimat, elak halang fokus).
-    window.setTimeout(function () { try { cover.remove(); } catch (e) {} }, REDUCED.matches ? 0 : 800);
+    // Guna pemalar kongsi DUR_ANGKAT + penampan 100ms, selari durasi CSS.
+    window.setTimeout(function () { try { cover.remove(); } catch (e) {} }, REDUCED.matches ? 0 : DUR_ANGKAT + 100);
   }
   function buka() {
     // TAP KEDUA semasa taburan (gesture pertama dah jalan, kad belum diangkat): terus
     // masuk, panggil angkat() SERTA-MERTA (bunga + cover fade terus). Guard diangkat dalam
     // angkat() elak double-fire; timer 1800ms dibatal di situ. Tak ganggu gesture pertama.
-    if (dibuka) { if (!diangkat) angkat(); return; }
+    // is-laju: niat tetamu ialah "terus masuk", jadi fade cover dipendekkan (650ms CSS)
+    // supaya laluan skip tak rasa lembap dengan fade penuh 1100ms.
+    if (dibuka) {
+      if (!diangkat) { try { cover.classList.add("is-laju"); } catch (e) {} angkat(); }
+      return;
+    }
     dibuka = true;
     // Muzik: panggil audio.play() SEGERAK dalam gesture klik cover (klik/Enter/Space
     // semua gesture). play() same-origin dibenarkan browser HANYA semasa gesture, jadi
@@ -210,8 +238,9 @@ function svgIkon(jenis) {
     //          saiz 20-56px, terbang ~1500ms; lepas sampai OPACITY DITAHAN ~0.9,
     //          hanyut + putar perlahan (tak pudar sendiri).
     //   ~900-1800ms MOMEN PENUH: ~34 bunga penuhi skrin, monogram dah hilang.
-    //   1800ms kad mula masuk: angkat() -> cover + SEMUA bunga fade bersama (700ms, satu
-    //          transition), hero nama zoom (gate .lp-buka). Kad settle ~2500ms.
+    //   1800ms kad mula masuk: angkat() -> cover + SEMUA bunga fade bersama (1100ms,
+    //          satu transition) SAMBIL kad mengalir naik masuk (1200ms) + dock/muzik
+    //          menyusul (delay 600ms), hero nama zoom (gate .lp-buka). Settle ~3000ms.
     try { cover.classList.add("is-pecah"); } catch (e) {}
     // Gelombang 1 (segera): 10 bunga rapat, terbang laju (dur 2200ms, terbang ~58%).
     taburGelombang({
