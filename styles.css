@@ -1026,10 +1026,26 @@ body::before {
 }
 
 /* ============================== KURANGKAN GERAK ============================== */
+/* ---------- Apungan butang (arahan user: SEMUA butang boleh tekan terapung,
+   selaras sistem butang hidup landing). Properti `translate` BERASINGAN supaya
+   tak berlanggar dengan transform hover/active sedia ada. Amplitud kecil ikut
+   saiz butang: submit 3px, nav/pautan 2px, sayang 1.5px (dalam kad, halus). ---------- */
+@keyframes apungBtn {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 var(--apungJarak, -2px); }
+}
+.butang            { --apungJarak: -3px; animation: apungBtn 3.4s ease-in-out infinite; }
+.nav-btn           { animation: apungBtn 3.9s ease-in-out infinite; }
+#btnSeterus        { animation-delay: -1.9s; }
+button.pautan-halus { animation: apungBtn 3.6s ease-in-out infinite; animation-delay: -1.1s; }
+.sayang-btn        { --apungJarak: -1.5px; animation: apungBtn 4.1s ease-in-out infinite; animation-delay: -2.4s; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   /* Ambient mati bersih: halaman jadi tenang statik, bukan berkelip laju. */
   .ambient { display: none; }
   body::before { animation: none; opacity: 0.5; }
   .swipe-kad[data-depth="1"], .swipe-kad[data-depth="2"] { animation: none; rotate: 0deg; translate: 0 0; }
+  /* Apungan butang: mati terus, bukan sekadar dipercepat. */
+  .butang, .nav-btn, button.pautan-halus, .sayang-btn { animation: none !important; translate: none !important; }
 }

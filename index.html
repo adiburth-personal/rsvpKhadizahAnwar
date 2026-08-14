@@ -30,12 +30,20 @@
   <!-- styles.css: token warna disahkan + aset bunga ambient (WebKit selamat) +
        reduced-motion. landing.css: susun atur khas laman jemputan (dimuat selepas,
        jadi menang atas mana mana pertindihan). -->
-  <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="./landing.css" />
+  <!-- KONVENSYEN VERSI ASET (?v=): CDN GitHub Pages tamat cache HTML dan JS/CSS pada
+       masa BERBEZA; pernah berlaku index.html baru dihidang dengan landing.js lama dan
+       feed ucapan terbiar kosong. Sebab tu SEMUA pasangan HTML+JS/CSS guna query ?v=,
+       dan nilai v WAJIB ditukar pada SETIAP commit yang mengubah pasangan tersebut
+       (semua halaman awam: index, rsvp, ucapan, pengantin). -->
+  <link rel="stylesheet" href="./styles.css?v=20260815d" />
+  <link rel="stylesheet" href="./landing.css?v=20260815d" />
   <!-- KENAPA preload: bouquet dipakai oleh burst cover yang tercetus SERTA-MERTA pada
-       gesture tap; tanpa preload, webp belum cache = taburan jadi kotak kosong. -->
+       gesture tap; tanpa preload, webp belum cache = taburan jadi kotak kosong.
+       Font basmala (Aref Ruqaa subset arab, hos sendiri, lesen SIL OFL) pun dipreload
+       sebab ia glyph pertama yang tetamu nampak di cover. -->
   <link rel="preload" as="image" href="./aset/bunga/bouquetAnemone.webp" />
   <link rel="preload" as="image" href="./aset/bunga/bouquetBesar.webp" />
+  <link rel="preload" as="font" type="font/woff2" href="./aset/font/arefRuqaaArab.woff2" crossorigin />
 
   <!-- Penanda "JS hidup": kalau modul landing.js gagal muat, seksyen reveal TIDAK
        disorok (CSS hanya sorok bila .lp-js ada), jadi kandungan tak pernah kosong. -->
@@ -82,8 +90,8 @@
        >=1024px (gutter cukup lebar); sway sangat halus, mati dengan reduced-motion.
        Tiada teks di gutter -> tiada isu kontras. -->
   <div class="lp-gutter-botani" aria-hidden="true">
-    <span class="lp-botani lp-gb lp-gb--kiri lp-rb-sage"></span>
-    <span class="lp-botani lp-gb lp-gb--kanan lp-rb-sage"></span>
+    <span class="lp-botani lp-gb lp-gb--kiri lp-rb-babys"></span>
+    <span class="lp-botani lp-gb lp-gb--kanan lp-rb-babys"></span>
   </div>
 
   <!-- ============ COVER (sampul, tekan untuk buka) ============
@@ -98,12 +106,16 @@
     <span class="lp-deko lp-bunga-cover lp-og-only lp-bunga-cover--tl lp-bouquet-a" aria-hidden="true"></span>
     <span class="lp-deko lp-bunga-cover lp-og-only lp-bunga-cover--br lp-bouquet-b" aria-hidden="true"></span>
     <div class="lp-cover-inner">
-      <p class="lp-cover-atas">Bismillahirrahmanirrahim</p>
+      <!-- BASMALA kaligrafi ruqaa (permintaan user: Jawi, bukan rumi): satu aksara
+           ligatur U+FDFD dirender font Aref Ruqaa subset arab hos sendiri (SIL OFL,
+           aset/font/arefRuqaaArab.woff2). Teks sebenar, bukan imej: tajam di semua DPR. -->
+      <p class="lp-cover-atas" lang="ar" dir="rtl" aria-label="Bismillahirrahmanirrahim">&#xFDFD;</p>
 
-      <!-- MONOGRAM K & A (identiti kad rasmi): huruf serif tinggi Cormorant SC +
-           ampersand script Great Vibes, garis nipis emas klasik atas/bawah. Teks HTML
-           tulen (lebih tajam dari SVG untuk huruf), TIADA bulatan/dasharray/daun (gaya
-           henna lama dibuang). aria-hidden: hiasan, nama penuh dibaca di bawah. -->
+      <!-- MONOGRAM K & A: huruf serif tinggi Cormorant SC + ampersand script Great
+           Vibes DIBESARKAN sebagai jantina tengah, huruf bertindih sedikit dengannya
+           (rasa lettering gubahan, bukan tiga aksara sebaris). Garis nipis kini
+           ornament: hairline pudar + berlian emas kecil di tengah (motif berlian
+           yang sama dengan hero/panel = identiti berulang). aria-hidden: hiasan. -->
       <div class="lp-mono" aria-hidden="true">
         <span class="lp-mono-garis lp-mono-garis--atas"></span>
         <span class="lp-mono-huruf">
@@ -117,9 +129,14 @@
       <p class="lp-cover-eyebrow">Walimatulurus</p>
       <p class="lp-cover-nama">Khadizah <span class="lp-amp-nama">&amp;</span> Anwar</p>
       <p class="lp-cover-tarikh">Ahad, 30 Ogos 2026</p>
+      <!-- CTA buka: bukan lagi pill berborder (rasa butang web generik); kini baris
+           small-caps diapit hairline emas menirus + berlian denyut, selaras ornament. -->
       <span class="lp-cover-buka">
+        <span class="lp-cover-buka-garis lp-cover-buka-garis--kiri" aria-hidden="true"></span>
         <span class="lp-cover-buka-titik" aria-hidden="true"></span>
         Tekan untuk buka
+        <span class="lp-cover-buka-titik lp-cover-buka-titik--b" aria-hidden="true"></span>
+        <span class="lp-cover-buka-garis lp-cover-buka-garis--kanan" aria-hidden="true"></span>
       </span>
     </div>
   </div>
@@ -176,8 +193,8 @@
     </section>
 
     <!-- 2. SALAM + JEMPUTAN -->
-    <section class="lp-sec reveal">
-      <span class="lp-deko lp-botani lp-rb-sage lp-b-salam-kiri" aria-hidden="true"></span>
+    <section class="lp-sec lp-salam-sec reveal">
+      <span class="lp-deko lp-botani lp-rb-babys lp-b-salam-kiri" aria-hidden="true"></span>
       <p class="lp-salam">Assalamu'alaikum Warahmatullahi Wabarakatuh</p>
       <p class="lp-pantun">
         Dari Kota Marudu kami mula,<br />
@@ -333,7 +350,7 @@
 
     <!-- 10. LOKASI (sasaran dock "Lokasi") -->
     <section class="lp-sec lp-sec--panel lp-lokasi reveal" id="lokasi">
-      <span class="lp-deko lp-botani lp-rb-sage lp-b-lokasi" aria-hidden="true"></span>
+      <span class="lp-deko lp-botani lp-rb-clematis lp-b-lokasi" aria-hidden="true"></span>
       <p class="lp-label">Lokasi Majlis</p>
       <p class="lp-teks">ADH Hall, Kota Marudu</p>
       <a class="lp-btn-besar" href="https://www.google.com/maps/place/ADH+Hall/@6.4574857,116.7776901,17z/data=!4m6!3m5!1s0x323a494c15034071:0x96df07963654b267!8m2!3d6.4577042!4d116.777615!16s%2Fg%2F11wwz0ds1f" target="_blank" rel="noopener">
@@ -509,6 +526,6 @@
     </div>
   </div>
 
-  <script type="module" src="./landing.js"></script>
+  <script type="module" src="./landing.js?v=20260815d"></script>
 </body>
 </html>
