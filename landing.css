@@ -903,9 +903,11 @@ button.lp-dock-btn {
 }
 .lp-cover.is-pecah .lp-mono::before { animation: none; opacity: 0; transition: opacity 300ms var(--ease-out); }
 
-/* Bunga bertaburan: bekas + biji dicipta JS SEMASA transisi buka sahaja, dibuang bila
-   cover di-remove. Setiap biji meletup dari tengah (--tx/--ty arah berbeza) + putar +
-   fade. transform/opacity SAHAJA (compositor). */
+/* Bunga bertaburan (CHOREOGRAPHY "Dua Gelombang + Tahan Penuh"): bekas + biji dicipta JS
+   SEMASA transisi buka sahaja, dibuang bila cover di-remove. Setiap biji TERBANG dari tengah
+   (--tx/--ty arah berbeza) + putar, lalu OPACITY DITAHAN ~0.9 (fill forwards, TAK pudar
+   sendiri) sambil hanyut sedikit ke --tx2/--ty2/--rot2. Bunga anak cover, jadi ia fade
+   serentak bila cover fade (is-buka). transform/opacity SAHAJA (compositor). */
 .lp-taburan {
   position: absolute;
   inset: 0;
@@ -925,13 +927,15 @@ button.lp-dock-btn {
   background-size: contain;
   opacity: 0;
   will-change: transform, opacity;
-  animation: lpTabur 920ms var(--lp-ease-soft) var(--tdelay, 0ms) forwards;
+  animation: lpTerbang var(--tdur, 2600ms) var(--lp-ease-soft) var(--tdelay, 0ms) forwards;
 }
-@keyframes lpTabur {
+/* 0-58%: terbang ke posisi (scale 0.35 -> 1, opacity naik ~0.9). 58-100%: TAHAN opacity
+   0.9 + hanyut lembut (tx2/ty2/rot2). TIADA fade ke 0 di sini , cover yang uruskan fade. */
+@keyframes lpTerbang {
   0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.35); opacity: 0; }
-  22%  { opacity: 0.95; }
-  70%  { opacity: 0.85; }
-  100% { transform: translate3d(var(--tx, 0), var(--ty, 0), 0) rotate(var(--rot, 0deg)) scale(1); opacity: 0; }
+  6%   { opacity: 0.9; }
+  58%  { transform: translate3d(var(--tx, 0), var(--ty, 0), 0) rotate(var(--rot, 0deg)) scale(1); opacity: 0.9; }
+  100% { transform: translate3d(var(--tx2, 0), var(--ty2, 0), 0) rotate(var(--rot2, 0deg)) scale(1); opacity: 0.9; }
 }
 
 /* ---------- 2. STAGGER REVEAL: anak seksyen muncul bergilir (ENJIN PER-ELEMEN) ---------- */

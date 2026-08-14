@@ -114,44 +114,60 @@ function svgIkon(jenis) {
   const mono = cover.querySelector(".lp-mono");
   // Kunci skrol semasa cover naik supaya sampul terasa "penuh".
   try { document.documentElement.style.overflow = "hidden"; document.body.style.overflow = "hidden"; } catch (e) {}
-  let dibuka = false;
+  let dibuka = false;      // gesture PERTAMA (tap cover) dah cetus taburan
+  let diangkat = false;    // angkat() dah jalan (elak double-fire tap kedua/timer)
+  let idAngkat = null;     // id setTimeout angkat 1800ms (boleh dibatal tap kedua)
+  let bekas = null;        // satu bekas .lp-taburan, dikongsi dua gelombang
 
-  // Cipta bunga bertaburan: 8 biji kelopak watercolor (aset .bunga--* sedia ada) yang
-  // MELETUP dari tengah cover ke tepi (arah/putaran berbeza setiap satu). Elemen HANYA
-  // wujud sewaktu transisi buka; dibuang automatik bila cover.remove(). transform/opacity
-  // sahaja (CSS keyframe lpTabur). Defensif: sebarang ralat diabai (cover tetap buka).
-  function taburBunga() {
+  // CHOREOGRAPHY "Dua Gelombang + Tahan Penuh": bunga watercolor (aset .bunga--*/
+  // .lp-bouquet-* SEDIA ADA, hanya di-clone) meletup dari tengah cover dalam DUA pusingan
+  // lalu OPACITY DITAHAN ~0.9 (tak pudar sendiri) + hanyut/putar perlahan sampai kad masuk.
+  // Bunga adalah ANAK cover, jadi bila cover fade (is-buka, satu transition) semua bunga
+  // fade serentak dengannya. transform + opacity SAHAJA (CSS keyframe lpTerbang) = 60fps.
+  // Defensif: sebarang ralat diabai (cover tetap buka).
+  function taburGelombang(opsi) {
     try {
-      const bekas = document.createElement("div");
-      bekas.className = "lp-taburan";
-      bekas.setAttribute("aria-hidden", "true");
-      const aset = ["bunga--aBright", "bunga--bBright", "lp-bouquet-a", "bunga--aRose",
-                    "bunga--bRose", "lp-bouquet-b", "bunga--aMid", "bunga--bBright"];
-      const n = aset.length;                       // 8 biji (dalam julat 6-9)
-      for (let i = 0; i < n; i++) {
+      if (diangkat) return;                        // dah masuk kad, jangan spawn lagi
+      if (!bekas) {
+        bekas = document.createElement("div");
+        bekas.className = "lp-taburan";
+        bekas.setAttribute("aria-hidden", "true");
+        cover.appendChild(bekas);
+      }
+      for (let i = 0; i < opsi.n; i++) {
         // Sebar sekata sekeliling bulatan + kacau sikit supaya organik.
-        const sudut = (i / n) * Math.PI * 2 + (Math.random() * 0.6 - 0.3);
-        const jarak = 130 + Math.random() * 130;   // px keluar dari tengah
+        const sudut = (i / opsi.n) * Math.PI * 2 + (Math.random() * 0.6 - 0.3);
+        const jarak = opsi.jMin + Math.random() * opsi.jSpan;   // radius keluar dari tengah
         const tx = Math.cos(sudut) * jarak;
-        const ty = Math.sin(sudut) * jarak - 30;   // condong sikit ke atas
-        const rot = Math.random() * 170 - 85;      // putaran -85..85deg
-        const sz = 18 + Math.random() * 16;        // 18-34px
+        const ty = Math.sin(sudut) * jarak - 20;   // condong sikit ke atas
+        const rot = Math.random() * 170 - 85;      // putaran mendarat -85..85deg
+        const sz = opsi.szMin + Math.random() * opsi.szSpan;
+        // Fasa HANYUT selepas sampai (58%->100% keyframe): geser sikit + turun perlahan + putar sikit.
+        const drx = (Math.random() * 2 - 1) * 18;
+        const dry = 14 + Math.random() * 20;       // hanyut turun lembut
+        const drot = (Math.random() * 2 - 1) * 20;
         const el = document.createElement("span");
-        el.className = "lp-taburan-i " + aset[i];
+        el.className = "lp-taburan-i " + opsi.aset[i % opsi.aset.length];
         el.style.setProperty("--tx", tx.toFixed(0) + "px");
         el.style.setProperty("--ty", ty.toFixed(0) + "px");
         el.style.setProperty("--rot", rot.toFixed(0) + "deg");
+        el.style.setProperty("--tx2", (tx + drx).toFixed(0) + "px");
+        el.style.setProperty("--ty2", (ty + dry).toFixed(0) + "px");
+        el.style.setProperty("--rot2", (rot + drot).toFixed(0) + "deg");
         el.style.setProperty("--tsz", sz.toFixed(0) + "px");
-        el.style.setProperty("--tdelay", (i * 22) + "ms");
+        el.style.setProperty("--tdur", opsi.dur + "ms");
+        el.style.setProperty("--tdelay", (opsi.delayBase + i * opsi.stagger) + "ms");
         bekas.appendChild(el);
       }
-      cover.appendChild(bekas);
     } catch (e) {}
   }
 
-  // Angkat cover + skrol + buang dari DOM. Diasingkan supaya boleh ditangguh selepas
-  // zoom monogram + taburan bermula (bukan reduced-motion).
+  // Angkat cover + skrol + buang dari DOM. Diasingkan supaya boleh ditangguh ke 1800ms
+  // (lepas momen penuh) ATAU dicetus SERTA-MERTA oleh tap kedua. Guard diangkat elak double.
   function angkat() {
+    if (diangkat) return;
+    diangkat = true;
+    if (idAngkat) { try { window.clearTimeout(idAngkat); } catch (e) {} idAngkat = null; }
     cover.classList.add("is-buka");
     // Buka gate urutan hero dramatik: CSS hero (.lp-buka .lp-hero...) hanya animate
     // SELEPAS ini, jadi nama zoom + tarikh main TEPAT bila cover naik, bukan di
@@ -173,23 +189,48 @@ function svgIkon(jenis) {
     window.setTimeout(function () { try { cover.remove(); } catch (e) {} }, REDUCED.matches ? 0 : 800);
   }
   function buka() {
-    if (dibuka) return;
+    // TAP KEDUA semasa taburan (gesture pertama dah jalan, kad belum diangkat): terus
+    // masuk, panggil angkat() SERTA-MERTA (bunga + cover fade terus). Guard diangkat dalam
+    // angkat() elak double-fire; timer 1800ms dibatal di situ. Tak ganggu gesture pertama.
+    if (dibuka) { if (!diangkat) angkat(); return; }
     dibuka = true;
     // Muzik: panggil audio.play() SEGERAK dalam gesture klik cover (klik/Enter/Space
     // semua gesture). play() same-origin dibenarkan browser HANYA semasa gesture, jadi
     // mesti di awal buka() sebelum apa-apa setTimeout, kalau tidak rantai user-activation
     // putus. Guard: kalau modul muzik gagal / play() ditolak, senyap sahaja, cover tetap
     // terbuka. Ini juga jalan pada laluan reduced-motion (mulaAuto sebelum cabang REDUCED).
+    // KEKAL: unmute muzik pada 2000ms diurus dalam modul muzik, JANGAN diubah di sini.
     try { if (muzikApi) muzikApi.mulaAuto(); } catch (e) {}
     // Reduced-motion: buka terus tanpa zoom/taburan/tangguh, muzik tetap main.
     if (REDUCED.matches || !mono) { angkat(); return; }
-    // PEMBUKAAN dramatik: monogram ZOOM masuk (scale 1.6 + fade, 620ms) SERENTAK bunga
-    // bertaburan (920ms) letup dari tengah. Cover mula terangkat selepas 420ms supaya
-    // zoom + taburan sempat dilihat, lepas tu fade (700ms). Jumlah cover hilang ~1120ms
-    // (di bawah siling 1.4s), taburan habis ~1140ms lalu dibuang bersama cover.
+    // CHOREOGRAPHY "Dua Gelombang + Tahan Penuh". Timeline dari saat tap:
+    //   0ms    monogram ZOOM (scale 1.6 + fade, 620ms) + GELOMBANG 1: 10 bunga radius
+    //          130-260px, terbang ~1300ms, maklum balas serta-merta.
+    //   180ms  GELOMBANG 2: 24 bunga radius 260-460px (sampai bucu skrin phone),
+    //          saiz 20-56px, terbang ~1500ms; lepas sampai OPACITY DITAHAN ~0.9,
+    //          hanyut + putar perlahan (tak pudar sendiri).
+    //   ~900-1800ms MOMEN PENUH: ~34 bunga penuhi skrin, monogram dah hilang.
+    //   1800ms kad mula masuk: angkat() -> cover + SEMUA bunga fade bersama (700ms, satu
+    //          transition), hero nama zoom (gate .lp-buka). Kad settle ~2500ms.
     try { cover.classList.add("is-pecah"); } catch (e) {}
-    taburBunga();
-    window.setTimeout(angkat, 420);
+    // Gelombang 1 (segera): 10 bunga rapat, terbang laju (dur 2200ms, terbang ~58%).
+    taburGelombang({
+      n: 10, jMin: 130, jSpan: 130, szMin: 18, szSpan: 16,
+      dur: 2200, delayBase: 0, stagger: 20,
+      aset: ["bunga--aBright", "bunga--bBright", "bunga--aRose", "bunga--bRose", "lp-bouquet-a",
+             "bunga--aMid", "bunga--bMid", "lp-bouquet-b", "bunga--bBright", "bunga--aRose"]
+    });
+    // Gelombang 2 (180ms): 24 bunga jauh sampai tepi, terbang ~1500ms, tahan penuh.
+    window.setTimeout(function () {
+      taburGelombang({
+        n: 24, jMin: 260, jSpan: 200, szMin: 20, szSpan: 36,
+        dur: 2600, delayBase: 0, stagger: 14,
+        aset: ["bunga--aBright", "bunga--bBright", "bunga--aMid", "bunga--bMid", "bunga--aRose",
+               "bunga--bRose", "bunga--aDeep", "bunga--bDeep", "lp-bouquet-a", "lp-bouquet-b"]
+      });
+    }, 180);
+    // Momen penuh dahulu, kad masuk pada 1800ms (boleh dipintas tap kedua).
+    idAngkat = window.setTimeout(angkat, 1800);
   }
   cover.addEventListener("click", buka);
   cover.addEventListener("keydown", function (e) {
