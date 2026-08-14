@@ -114,6 +114,11 @@ body.lp::before { display: none !important; }
    IntersectionObserver dalam landing.js. */
 .lp-js .reveal { opacity: 0; transform: translateY(18px); }
 .lp-js .reveal { transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out); }
+/* Arah skrol NAIK: keadaan tersembunyi datang dari ATAS (translateY negatif). Kelas
+   .lp-arah-atas diset pada <html> oleh landing.js. Specificity sama dgn .is-lihat,
+   jadi DILETAK SEBELUM .is-lihat supaya seksyen yang tampak (is-lihat) tetap menang
+   ke transform:none dalam kedua-dua arah. */
+.lp-js.lp-arah-atas .reveal { transform: translateY(-18px); }
 .lp-js .reveal.is-lihat { opacity: 1; transform: none; }
 
 /* ============================== HERO ============================== */
@@ -761,6 +766,11 @@ body.lp::before { display: none !important; }
   transform: translateY(14px);
   transition: opacity 560ms var(--ease-out), transform 560ms var(--ease-out);
 }
+/* Arah naik: anak stagger pun masuk dari ATAS (sejajar seksyen). Diletak SEBELUM
+   rule is-lihat di bawah supaya keadaan tampak tetap menang. */
+.lp-js.lp-arah-atas .lp-sec.reveal > :not(.lp-deko):not(.lp-kelopak) {
+  transform: translateY(-14px);
+}
 .lp-js .lp-sec.reveal.is-lihat > :not(.lp-deko):not(.lp-kelopak) {
   opacity: 1;
   transform: none;
@@ -905,6 +915,82 @@ body.lp::before { display: none !important; }
 .lp-og .lp-seal::after { animation: none; }
 .lp-og .lp-seal { transform: none; }
 
+/* ============================== MODAL RSVP ============================== */
+/* Overlay gelap ungu lut sinar + bekas kad borang (iframe rsvp.html?embed=1). Transisi
+   ringkas fade + naik (transform/opacity SAHAJA, ~250ms). z-index atas dock/muzik. */
+.lp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+}
+.lp-modal[hidden] { display: none; }
+.lp-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(32, 18, 40, 0.62);
+  opacity: 0;
+  transition: opacity 250ms var(--ease-out);
+}
+@supports ((backdrop-filter: blur(3px)) or (-webkit-backdrop-filter: blur(3px))) {
+  .lp-modal-overlay { -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+}
+.lp-modal-kad {
+  position: relative;
+  z-index: 1;
+  width: min(420px, calc(100vw - 28px));
+  height: min(85vh, 760px);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-cream);
+  border: 1px solid rgba(191, 160, 101, 0.5);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(20, 10, 26, 0.55);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
+}
+.lp-modal.is-buka .lp-modal-overlay { opacity: 1; }
+.lp-modal.is-buka .lp-modal-kad { opacity: 1; transform: none; }
+.lp-modal-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-5);
+  border-bottom: 1px solid rgba(142, 124, 111, 0.24);
+}
+.lp-modal-tajuk {
+  font-family: var(--lp-label);
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-maroon-soft);
+  font-weight: 600;
+}
+.lp-modal-tutup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(142, 124, 111, 0.4);
+  background: var(--color-cream-2);
+  color: var(--color-maroon);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.lp-modal-tutup:hover { background: var(--color-maroon); color: var(--color-cream); }
+.lp-modal-tutup:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(135, 62, 64, 0.4); }
+.lp-modal-badan { flex: 1 1 auto; min-height: 0; }
+.lp-modal-badan iframe { display: block; width: 100%; height: 100%; border: 0; }
+
 /* ============================== KURANGKAN GERAK ============================== */
 @media (prefers-reduced-motion: reduce) {
   .lp-js .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
@@ -922,4 +1008,6 @@ body.lp::before { display: none !important; }
   .lp-hero-frame::after { animation: none; opacity: 0; }
   .lp-kelopak { display: none; }
   .lp-nama-script { animation: none; background-position: 120% 0; -webkit-text-fill-color: var(--color-maroon); }
+  /* Modal RSVP: muncul/hilang terus tanpa fade/naik. */
+  .lp-modal-overlay, .lp-modal-kad { transition: none !important; }
 }

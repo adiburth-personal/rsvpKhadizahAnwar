@@ -13,6 +13,11 @@ import { firebaseConfig, konfigurasiBelumSiap } from "./firebaseConfig.js";
 
 const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+// API modul muzik (diisi oleh muzikInit di bawah). Cover memanggilnya SEGERAK dalam
+// gesture klik supaya autoplay dibenarkan. null selagi muzikInit belum jalan; klik
+// cover berlaku selepas modul habis dinilai, jadi ia sentiasa sedia bila diperlukan.
+let muzikApi = null;
+
 // Mod OG (?og=1): susun cover versi landscape 1200x630 untuk jana ogImage.png.
 // Tak ganggu paparan biasa (kelas hanya ditambah bila query ada).
 try { if (new URLSearchParams(location.search).has("og")) document.documentElement.classList.add("lp-og"); } catch (e) {}
@@ -79,6 +84,11 @@ function svgIkon(jenis) {
   function buka() {
     if (dibuka) return;
     dibuka = true;
+    // Muzik: cipta iframe SEGERAK dalam gesture klik cover (klik/Enter/Space semua
+    // gesture). Autoplay=1 dibenarkan browser HANYA semasa gesture, jadi mesti di
+    // awal buka() sebelum apa-apa setTimeout, kalau tidak status gesture hilang.
+    // Guard: kalau modul muzik gagal, senyap sahaja, cover tetap terbuka.
+    try { if (muzikApi) muzikApi.mulaAuto(); } catch (e) {}
     // Reduced-motion: buka terus tanpa hentakan/tangguh (macam sebelum ini).
     if (REDUCED.matches || !seal) { angkat(); return; }
     // Dramatik: seal membesar (~250ms) DULU, cover terangkat selepas ~200ms. Jumlah
@@ -92,18 +102,48 @@ function svgIkon(jenis) {
   });
 })();
 
-// ====== 2. REVEAL seksyen (IntersectionObserver, fallback tunjuk semua) ======
+// ====== 2. REVEAL seksyen (ikut arah skrol, BERULANG) ======
+// Beza dari sebelum: TIDAK unobserve. Seksyen animate masuk setiap kali masuk balik
+// viewport, dan keadaan tersembunyinya ikut ARAH skrol (turun = masuk dari bawah,
+// naik = masuk dari atas, dipacu kelas .lp-arah-atas pada <html>). Fallback/reduced:
+// tunjuk semua statik.
 (function revealInit() {
   const seksyen = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
   if (!seksyen.length) return;
   function tunjukSemua() { seksyen.forEach(function (s) { s.classList.add("is-lihat"); }); }
   if (REDUCED.matches || typeof IntersectionObserver === "undefined") { tunjukSemua(); return; }
+
+  const root = document.documentElement;
+
+  // --- Jejak arah skrol: banding scrollY frame ke frame (throttle rAF). Skrol NAIK
+  //     -> tambah .lp-arah-atas (CSS flip tanda translateY keadaan tersembunyi). ---
+  let lastY = window.scrollY || window.pageYOffset || 0;
+  let menunggu = false;
+  function kemasArah() {
+    menunggu = false;
+    const y = window.scrollY || window.pageYOffset || 0;
+    if (y < lastY - 1) root.classList.add("lp-arah-atas");
+    else if (y > lastY + 1) root.classList.remove("lp-arah-atas");
+    lastY = y;
+  }
+  window.addEventListener("scroll", function () {
+    if (!menunggu) { menunggu = true; requestAnimationFrame(kemasArah); }
+  }, { passive: true });
+
   try {
+    // Threshold [0, 0.12] beri HISTERESIS: seksyen perlu >=12% kelihatan untuk reveal,
+    // tapi is-lihat HANYA dibuang bila betul-betul keluar viewport (ratio ~0). Jadi
+    // seksyen di tengah yang tengah dibaca TAK pernah hilang is-lihat -> tiada flicker
+    // di sempadan. Zon antara (0 < ratio < 0.12) kekalkan keadaan semasa.
     const io = new IntersectionObserver(function (entri) {
       entri.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add("is-lihat"); io.unobserve(en.target); }
+        if (en.isIntersecting && en.intersectionRatio >= 0.12) {
+          en.target.classList.add("is-lihat");
+        } else if (en.intersectionRatio <= 0.001) {
+          en.target.classList.remove("is-lihat");
+        }
       });
-    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+    }, { threshold: [0, 0.12], rootMargin: "0px 0px -6% 0px" });
     seksyen.forEach(function (s) { io.observe(s); });
   } catch (e) { tunjukSemua(); }
 })();
@@ -235,11 +275,14 @@ function svgIkon(jenis) {
   });
 })();
 
-// ====== 6. MUZIK (iframe dicipta selepas tekan, guard penuh) ======
-(function muzikInit() {
+// ====== 6. MUZIK (iframe dicipta selepas tekan/cover, guard penuh) ======
+// Pulangkan { mulaAuto } supaya coverInit boleh mula muzik dari gesture klik cover.
+// Butang muzik kekal toggle jeda/main; statusnya (is-main, aria-pressed) sync walau
+// muzik dimulakan dari cover (kedua-dua laluan lalu tandaMain).
+muzikApi = (function muzikInit() {
   const btn = document.getElementById("lpMuzik");
   const host = document.getElementById("lpMuzikHost");
-  if (!btn || !host) return;
+  if (!btn || !host) return null;
   let iframe = null;
   let main = false;
 
@@ -282,6 +325,13 @@ function svgIkon(jenis) {
     if (main) { cmd("pauseVideo"); tandaMain(false); }
     else { cmd("playVideo"); tandaMain(true); }
   });
+  // Dipanggil dari cover (gesture pengguna). Cipta iframe kalau belum ada (autoplay=1
+  // terus main); kalau dah wujud tapi dijeda, main semula. Butang sync ikut tandaMain.
+  function mulaAuto() {
+    if (!iframe) { cipta(); return; }
+    if (!main) { cmd("playVideo"); tandaMain(true); }
+  }
+  return { mulaAuto: mulaAuto };
 })();
 
 // ====== 7. BUKU TETAMU (3 ucapan terkini, baca sahaja, defensif) ======
@@ -365,4 +415,82 @@ function svgIkon(jenis) {
     if (!menunggu) { menunggu = true; requestAnimationFrame(frame); }
   }, { passive: true });
   frame();
+})();
+
+// ====== 9. MODAL RSVP (borang rsvp.html dalam pop up, tak keluar page) ======
+// Butang menuju rsvp.html (CTA RSVP, dock RSVP, "Berikan Ucapan") dipintas: buka
+// borang dalam modal iframe (rsvp.html?embed=1) ATAS landing. PROGRESSIVE ENHANCEMENT:
+// href asal kekal dalam HTML, jadi kalau modul ni gagal, klik = navigasi biasa.
+(function modalInit() {
+  const modal = document.getElementById("lpModal");
+  const badan = document.getElementById("lpModalBadan");
+  const btnTutup = document.getElementById("lpModalTutup");
+  if (!modal || !badan) return;
+  let iframe = null;
+  let pencetus = null;     // butang yang buka modal (fokus balik bila tutup)
+  let sedangBuka = false;
+
+  function kunciSkrol(on) {
+    // Kunci skrol badan masa modal buka (pulih bila tutup), sama gaya cover.
+    try {
+      document.documentElement.style.overflow = on ? "hidden" : "";
+      document.body.style.overflow = on ? "hidden" : "";
+    } catch (e) {}
+  }
+  function buka(dari) {
+    if (sedangBuka) return;
+    sedangBuka = true;
+    pencetus = dari || null;
+    // iframe LAZY: cipta sekali pada buka pertama, kekal untuk buka semula pantas.
+    if (!iframe) {
+      try {
+        iframe = document.createElement("iframe");
+        iframe.setAttribute("title", "Borang RSVP kehadiran");
+        iframe.setAttribute("src", "./rsvp.html?embed=1");   // guna semula borang + Firebase sedia ada
+        badan.appendChild(iframe);
+      } catch (e) { iframe = null; }
+    }
+    modal.hidden = false;
+    kunciSkrol(true);
+    // Tambah is-buka pada frame seterusnya supaya transition (fade + naik) main,
+    // bukan lompat. Reduced-motion: CSS matikan transition -> muncul terus.
+    requestAnimationFrame(function () { modal.classList.add("is-buka"); });
+    // Fokus dipindah ke modal (butang tutup).
+    try { btnTutup.focus(); } catch (e) {}
+  }
+  function tutup() {
+    if (!sedangBuka) return;
+    sedangBuka = false;
+    modal.classList.remove("is-buka");
+    kunciSkrol(false);
+    // Sorok sepenuhnya selepas transition (elak modal invisible masih tangkap klik).
+    if (REDUCED.matches) { modal.hidden = true; }
+    else { window.setTimeout(function () { if (!sedangBuka) modal.hidden = true; }, 260); }
+    // Fokus balik ke butang pencetus.
+    try { if (pencetus) pencetus.focus(); } catch (e) {}
+    pencetus = null;
+  }
+
+  // Pintas klik pautan rsvp.html sahaja (bukan ucapan.html/index.html). Hormat klik
+  // ubahsuai (ctrl/cmd/shift/alt/butang tengah) supaya "buka tab baru" tetap jalan.
+  document.addEventListener("click", function (e) {
+    if (e.defaultPrevented) return;
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) return;
+    const href = a.getAttribute("href") || "";
+    if (!/(^|\/)rsvp\.html(\?|#|$)/.test(href)) return;
+    e.preventDefault();
+    buka(a);
+  });
+
+  if (btnTutup) btnTutup.addEventListener("click", tutup);
+  // Klik overlay (luar kad) = tutup.
+  modal.addEventListener("click", function (e) {
+    if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-lp-tutup")) tutup();
+  });
+  // Esc = tutup.
+  document.addEventListener("keydown", function (e) {
+    if (sedangBuka && (e.key === "Escape" || e.key === "Esc")) { e.preventDefault(); tutup(); }
+  });
 })();

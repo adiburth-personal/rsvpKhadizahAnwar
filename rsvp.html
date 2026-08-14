@@ -23,6 +23,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
+
+  <!-- Mod embed (?embed=1): bila rsvp.html dimuat dalam modal iframe laman jemputan,
+       tambah kelas pada <html> SEGERAK (elak flash hero sebelum dimampatkan) untuk
+       memampatkan paparan (sorok krest/hero besar + jemputan-teks + nav, kurang
+       padding). TANPA query, halaman kekal SAMA macam sebelum (disebar terus dalam
+       kad Canva), jadi jangan rosakkan. Defensif: gagal parse = biar rupa penuh. -->
+  <script>try{if(new URLSearchParams(location.search).has("embed"))document.documentElement.className+=" rsvp-embed";}catch(e){}</script>
+  <style>
+    html.rsvp-embed .wrap { padding-top: var(--space-4); padding-bottom: var(--space-6); }
+    html.rsvp-embed .header { margin-bottom: var(--space-5); animation: none; }
+    html.rsvp-embed .header .ornamen,
+    html.rsvp-embed .krest { display: none; }
+    html.rsvp-embed .nama-script { font-size: clamp(2.2rem, 12vw, 2.8rem); }
+    html.rsvp-embed .nama-serif { margin-top: var(--space-3); font-size: var(--text-base); }
+    html.rsvp-embed .jemputan-teks { display: none; }
+    html.rsvp-embed .nav-halaman { display: none; }
+  </style>
 </head>
 <body>
   <main class="wrap">

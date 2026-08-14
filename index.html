@@ -313,6 +313,27 @@
   </button>
   <div id="lpMuzikHost" hidden aria-hidden="true"></div>
 
+  <!-- ============ MODAL RSVP ============
+       Butang menuju rsvp.html (CTA RSVP, dock RSVP, "Berikan Ucapan") dipintas oleh
+       landing.js untuk buka borang dalam modal ATAS landing, bukan navigasi keluar.
+       Kandungan = iframe rsvp.html?embed=1 (guna semula borang + Firebase, tiada
+       duplikasi logik), dicipta lazy pada buka pertama. Kalau JS gagal, href asal
+       dalam butang buat navigasi biasa (progressive enhancement). -->
+  <div class="lp-modal" id="lpModal" hidden>
+    <div class="lp-modal-overlay" data-lp-tutup aria-hidden="true"></div>
+    <div class="lp-modal-kad" role="dialog" aria-modal="true" aria-label="Borang RSVP kehadiran">
+      <div class="lp-modal-header">
+        <span class="lp-modal-tajuk">RSVP Kehadiran</span>
+        <button class="lp-modal-tutup" id="lpModalTutup" type="button" aria-label="Tutup borang RSVP">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="lp-modal-badan" id="lpModalBadan"></div>
+    </div>
+  </div>
+
   <script type="module" src="./landing.js"></script>
 </body>
 </html>
