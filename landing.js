@@ -79,10 +79,12 @@ const KONTAK = [
 const MASA_MAJLIS = new Date("2026-08-30T12:00:00+08:00").getTime();
 
 // ====== Sumber muzik: fail audio SENDIRI (same-origin), lihat muzikInit ======
-// ./laguMajlis.mp3 di root repo (dah dipotong dari titik mula betul + fade-in).
+// ./laguMajlis.mp3 di root repo (potongan saat 12-108 sumber asal, fade in 2.5s +
+// fade out 2.5s permintaan user, supaya masuk/keluar lagu lembut dan loop tak menghentak).
 // Same-origin dipilih GANTI YouTube kerana iOS Safari sekat audio iframe cross-origin
 // (lihat komen penuh di muzikInit). Elemen <audio> dicipta lewat JS di sana.
-const LAGU_SRC = "./laguMajlis.mp3";
+// ?v= sebab mp3 pun kena cache lama GitHub Pages bila fail diganti (konvensyen head index.html).
+const LAGU_SRC = "./laguMajlis.mp3?v=20260815g";
 
 // ---------- Ikon SVG kecil (inline, tiada CDN ikon) ----------
 function svgIkon(jenis) {
