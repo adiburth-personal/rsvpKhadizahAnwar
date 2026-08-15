@@ -654,8 +654,8 @@ muzikApi = (function muzikInit() {
     // dan menunggunya melewatkan feed 8+ saat pada ~separuh muatan iPhone. Kad
     // dirender DULU, ♥ ditampal kemudian bila tally tiba (kaunter hiasan sahaja,
     // timeout pendek 3s pun cukup).
-    const janjiSayang = hadMasa(getDocs(collection(db, "sayang")), 3000)
-      .then(function (semuaSayang) {
+    function ambilTally(hadMs) {
+      return hadMasa(getDocs(collection(db, "sayang")), hadMs || 3000).then(function (semuaSayang) {
         const kira = new Map();
         semuaSayang.forEach(function (d) {
           const id = (d.data() || {}).ucapanId;
@@ -663,8 +663,9 @@ muzikApi = (function muzikInit() {
           kira.set(id, (kira.get(id) || 0) + 1);
         });
         return kira;
-      })
-      .catch(function (e) { console.error("Gagal tally sayang:", e); return new Map(); });
+      });
+    }
+    const janjiSayang = ambilTally();
 
     senarai.innerHTML = "";
     papar.forEach(function (u, i) {
@@ -693,8 +694,10 @@ muzikApi = (function muzikInit() {
     autoSkrol(viewport);
 
     // Tampal ♥ secara async: kad dah kelihatan, kaunter menyusul tanpa melewatkan feed.
-    janjiSayang.then(function (sayangKira) {
+    // Idempotent (guard span sedia ada) sebab boleh dipanggil dua kali oleh retry.
+    function tampalSayang(sayangKira) {
       senarai.querySelectorAll(".lp-buku-bawah").forEach(function (bawah) {
+        if (bawah.querySelector(".lp-buku-sayang")) return;
         const kira = sayangKira.get(bawah.dataset.ucapanId) || 0;
         if (kira <= 0) return;               // sorok bila 0: kad tanpa like kekal bersih
         const sayang = document.createElement("span");
@@ -703,6 +706,19 @@ muzikApi = (function muzikInit() {
         sayang.setAttribute("aria-label", kira + " tanda sayang");
         bawah.appendChild(sayang);
       });
+    }
+    janjiSayang.then(tampalSayang).catch(function (e) {
+      // Webchannel WebKit kadang tergantung pada percubaan PERTAMA (~25% muatan iPhone).
+      // SATU percubaan semula lewat 5s menampal ♥ pada kad yang dah render; gagal lagi =
+      // biarkan (kaunter hiasan sahaja, feed sendiri langsung tak terjejas).
+      console.error("Gagal tally sayang:", e);
+      window.setTimeout(function () {
+        // Timeout retry lebih longgar (6s): selepas kegagalan pertama SDK mungkin
+        // dalam backoff dalaman, beri ruang untuk channel pulih.
+        ambilTally(6000).then(tampalSayang).catch(function (e2) {
+          console.error("Retry tally sayang gagal:", e2);
+        });
+      }, 5000);
     });
   }
 
@@ -851,6 +867,62 @@ function latarInert(on) {
   });
 }
 
+// KITAR TAB dalam modal: inert dah menghalang fokus sampai ke kawalan latar, tapi
+// selepas elemen terakhir modal, Tab masih singgah di <body>/chrome pelayar sebelum
+// pusing balik (perangai standard inert). Handler ini melengkapkan inert: Tab pada
+// hujung terus melompat ke hujung bertentangan, fokus tak pernah keluar dari kandungan
+// modal. Defensif penuh: querySelectorAll gagal / tiada elemen -> biarkan default.
+function pasangKitarTab(modal) {
+  // Senarai elemen fokus sebenar dalam modal (tak termasuk sentinel di bawah).
+  function senaraiFokus() {
+    const semua = modal.querySelectorAll(
+      'button, a[href], input, select, textarea, iframe, [tabindex]:not([tabindex="-1"])'
+    );
+    return Array.prototype.filter.call(semua, function (el) {
+      return !el.disabled && !el.hasAttribute("data-lp-sentinel") && el.getClientRects().length > 0;
+    });
+  }
+  // Handler keydown: kes fokus berada dalam dokumen induk.
+  modal.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab") return;
+    try {
+      const boleh = senaraiFokus();
+      if (!boleh.length) return;
+      const pertama = boleh[0];
+      const akhir = boleh[boleh.length - 1];
+      const aktif = document.activeElement;
+      if (e.shiftKey && (aktif === pertama || !modal.contains(aktif))) {
+        e.preventDefault(); akhir.focus();
+      } else if (!e.shiftKey && (aktif === akhir || !modal.contains(aktif))) {
+        e.preventDefault(); pertama.focus();
+      }
+    } catch (err) {}
+  });
+  // SENTINEL fokus di hujung modal: bila fokus berada DALAM iframe (borang RSVP),
+  // keydown tak sampai ke dokumen induk, jadi handler atas tak nampak Tab yang keluar
+  // dari iframe. Sentinel = elemen fokus halimunan di awal/akhir modal; Tab yang
+  // melepasi hujung mendarat padanya dan terus dipusing ke hujung bertentangan.
+  try {
+    function buatSentinel(keAkhir) {
+      const s = document.createElement("div");
+      s.tabIndex = 0;
+      s.setAttribute("data-lp-sentinel", "");
+      s.setAttribute("aria-hidden", "true");
+      s.style.cssText = "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none";
+      s.addEventListener("focus", function () {
+        try {
+          const boleh = senaraiFokus();
+          if (!boleh.length) return;
+          (keAkhir ? boleh[boleh.length - 1] : boleh[0]).focus();
+        } catch (err) {}
+      });
+      return s;
+    }
+    modal.insertBefore(buatSentinel(true), modal.firstChild);  // Shift+Tab melepasi awal -> ke akhir
+    modal.appendChild(buatSentinel(false));                    // Tab melepasi akhir -> ke awal
+  } catch (err) {}
+}
+
 const modalHistory = (function () {
   let tutupAktif = null;   // fungsi tutup(true) modal yang sedang terbuka (dipanggil bila Back)
   let adaEntri = false;    // sudah pushState entri milik kita?
@@ -952,6 +1024,7 @@ const modalHistory = (function () {
   });
 
   if (btnTutup) btnTutup.addEventListener("click", function () { tutup(); });
+  pasangKitarTab(modal);   // Tab memusing kemas dalam modal (pelengkap inert)
   // Klik overlay (luar kad) = tutup.
   modal.addEventListener("click", function (e) {
     if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-lp-tutup")) tutup();
@@ -1030,6 +1103,7 @@ const modalHistory = (function () {
     el.addEventListener("click", function () { buka(el); });
   });
   if (btnTutup) btnTutup.addEventListener("click", function () { tutup(); });
+  pasangKitarTab(modal);   // Tab memusing kemas dalam modal (pelengkap inert)
   // Klik overlay (luar kad) = tutup.
   modal.addEventListener("click", function (e) {
     if (e.target && e.target.hasAttribute && e.target.hasAttribute("data-lp-tutup")) tutup();
