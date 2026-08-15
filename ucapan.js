@@ -218,7 +218,8 @@ function lukisKaunter() {
   if (nUcap === 0) { dindingKaunter.hidden = true; return; }
   let nSayang = 0; sayangKira.forEach(function (v) { nSayang += v; });
   dindingKaunter.hidden = false;
-  dindingKaunter.textContent = nUcap + " ucapan" + (nSayang > 0 ? " · " + nSayang + " like" : "");
+  // "♥" bukan "like": seluruh sistem panggil benda ni ♥/sayang, jangan campur bahasa.
+  dindingKaunter.textContent = nUcap + " ucapan" + (nSayang > 0 ? " · " + nSayang + " ♥" : "");
 }
 
 // Heart-burst: 4-6 hati kecil naik + pudar. CSS transform, node auto-buang,

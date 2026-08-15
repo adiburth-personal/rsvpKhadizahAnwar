@@ -35,8 +35,8 @@
        feed ucapan terbiar kosong. Sebab tu SEMUA pasangan HTML+JS/CSS guna query ?v=,
        dan nilai v WAJIB ditukar pada SETIAP commit yang mengubah pasangan tersebut
        (semua halaman awam: index, rsvp, ucapan, pengantin). -->
-  <link rel="stylesheet" href="./styles.css?v=20260815d" />
-  <link rel="stylesheet" href="./landing.css?v=20260815d" />
+  <link rel="stylesheet" href="./styles.css?v=20260815e" />
+  <link rel="stylesheet" href="./landing.css?v=20260815e" />
   <!-- KENAPA preload: bouquet dipakai oleh burst cover yang tercetus SERTA-MERTA pada
        gesture tap; tanpa preload, webp belum cache = taburan jadi kotak kosong.
        Font basmala (Aref Ruqaa subset arab, hos sendiri, lesen SIL OFL) pun dipreload
@@ -92,6 +92,12 @@
   <div class="lp-gutter-botani" aria-hidden="true">
     <span class="lp-botani lp-gb lp-gb--kiri lp-rb-babys"></span>
     <span class="lp-botani lp-gb lp-gb--kanan lp-rb-babys"></span>
+    <!-- Anchor besar desktop: selepas sage dibuang, gutter mauve >=1024 jadi hamparan
+         kosong (dapatan judge visual); bunga menjenguk dari belakang kad, selang sisi. -->
+    <span class="lp-botani lp-gb lp-gb--kanan3 lp-rb-blush"></span>
+    <span class="lp-botani lp-gb lp-gb--kiri2 lp-bouquet-a"></span>
+    <span class="lp-botani lp-gb lp-gb--kanan2 lp-rb-bouquet3"></span>
+    <span class="lp-botani lp-gb lp-gb--kiri3 lp-rb-rosburg"></span>
   </div>
 
   <!-- ============ COVER (sampul, tekan untuk buka) ============
@@ -526,6 +532,6 @@
     </div>
   </div>
 
-  <script type="module" src="./landing.js?v=20260815d"></script>
+  <script type="module" src="./landing.js?v=20260815e"></script>
 </body>
 </html>

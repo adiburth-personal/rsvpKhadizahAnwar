@@ -182,6 +182,10 @@ function svgIkon(jenis) {
     // ditambah. Dulu: smooth-scroll ke 8px SELEPAS fade bermula = gerakan skrol
     // kelihatan bertindih dengan crossfade, salah satu punca rasa "mengejut".
     if (!adaHash) { try { window.scrollTo(0, 0); } catch (e) {} }
+    // Belt-and-braces deep-link: anchor-scroll asli browser boleh sempat menyimpan
+    // skrol tersembunyi DALAM .lp-kad (overflow) sebelum CSS clip terpakai; sifarkan
+    // supaya kiraan offsetTop di bawah tak tertolak ~1100px.
+    try { const kadEl = document.querySelector(".lp-kad"); if (kadEl) kadEl.scrollTop = 0; } catch (e) {}
     cover.classList.add("is-buka");
     // Buka gate urutan hero dramatik: CSS hero (.lp-buka .lp-hero...) hanya animate
     // SELEPAS ini, jadi nama zoom + tarikh main TEPAT bila cover naik, bukan di
@@ -243,19 +247,22 @@ function svgIkon(jenis) {
     //          menyusul (delay 600ms), hero nama zoom (gate .lp-buka). Settle ~3000ms.
     try { cover.classList.add("is-pecah"); } catch (e) {}
     // Gelombang 1 (segera): 10 bunga rapat, terbang laju (dur 2200ms, terbang ~58%).
+    // KENAPA semua aset watercolor (.lp-rb-*/.lp-bouquet-*), bukan floret vektor
+    // .bunga--*: atas mauve gelap floret flat baca macam sticker kartun sebelah
+    // watercolor (dapatan judge visual) - satu bahasa visual sahaja dalam burst.
     taburGelombang({
       n: 10, jMin: 130, jSpan: 130, szMin: 18, szSpan: 16,
       dur: 2200, delayBase: 0, stagger: 20,
-      aset: ["bunga--aBright", "bunga--bBright", "bunga--aRose", "bunga--bRose", "lp-bouquet-a",
-             "bunga--aMid", "bunga--bMid", "lp-bouquet-b", "bunga--bBright", "bunga--aRose"]
+      aset: ["lp-rb-blush", "lp-rb-poppy", "lp-rb-regalis", "lp-rb-clematis", "lp-bouquet-a",
+             "lp-rb-rosburg", "lp-rb-babys", "lp-bouquet-b", "lp-rb-blush", "lp-rb-poppy"]
     });
     // Gelombang 2 (180ms): 24 bunga jauh sampai tepi, terbang ~1500ms, tahan penuh.
     window.setTimeout(function () {
       taburGelombang({
         n: 24, jMin: 260, jSpan: 200, szMin: 20, szSpan: 36,
         dur: 2600, delayBase: 0, stagger: 14,
-        aset: ["bunga--aBright", "bunga--bBright", "bunga--aMid", "bunga--bMid", "bunga--aRose",
-               "bunga--bRose", "bunga--aDeep", "bunga--bDeep", "lp-bouquet-a", "lp-bouquet-b"]
+        aset: ["lp-rb-blush", "lp-rb-poppy", "lp-rb-regalis", "lp-rb-rosburg", "lp-rb-clematis",
+               "lp-rb-babys", "lp-rb-bouquet3", "lp-rb-regalis", "lp-bouquet-a", "lp-bouquet-b"]
       });
     }, 180);
     // Momen penuh dahulu, kad masuk pada 1800ms (boleh dipintas tap kedua).
@@ -642,17 +649,22 @@ muzikApi = (function muzikInit() {
     if (!papar.length) return;   // tiada ucapan: feed kekal hidden, seksyen masih lengkap
 
     // Tally ♥ dari /sayang: satu dokumen = satu like (corak sama ucapan.js, cuma
-    // one-shot getDocs sebab landing tak perlu realtime). Gagal tally = feed tetap
-    // jalan tanpa kiraan (jangan korbankan feed kerana kaunter hiasan).
-    const sayangKira = new Map();
-    try {
-      const semuaSayang = await hadMasa(getDocs(collection(db, "sayang")), 8000);
-      semuaSayang.forEach(function (d) {
-        const id = (d.data() || {}).ucapanId;
-        if (!id) return;
-        sayangKira.set(id, (sayangKira.get(id) || 0) + 1);
-      });
-    } catch (e) { console.error("Gagal tally sayang:", e); }
+    // one-shot getDocs sebab landing tak perlu realtime). KENAPA TIDAK di-await
+    // sebelum render: getDocs kedua ini kerap tergantung di WebKit (webchannel),
+    // dan menunggunya melewatkan feed 8+ saat pada ~separuh muatan iPhone. Kad
+    // dirender DULU, ♥ ditampal kemudian bila tally tiba (kaunter hiasan sahaja,
+    // timeout pendek 3s pun cukup).
+    const janjiSayang = hadMasa(getDocs(collection(db, "sayang")), 3000)
+      .then(function (semuaSayang) {
+        const kira = new Map();
+        semuaSayang.forEach(function (d) {
+          const id = (d.data() || {}).ucapanId;
+          if (!id) return;
+          kira.set(id, (kira.get(id) || 0) + 1);
+        });
+        return kira;
+      })
+      .catch(function (e) { console.error("Gagal tally sayang:", e); return new Map(); });
 
     senarai.innerHTML = "";
     papar.forEach(function (u, i) {
@@ -673,19 +685,25 @@ muzikApi = (function muzikInit() {
       nama.className = "lp-buku-nama";
       nama.textContent = u.nama;             // XSS selamat
       bawah.appendChild(nama);
-      const kira = sayangKira.get(u.id) || 0;
-      if (kira > 0) {                        // sorok bila 0: kad tanpa like kekal bersih
-        const sayang = document.createElement("span");
-        sayang.className = "lp-buku-sayang";
-        sayang.textContent = "♥ " + kira;
-        sayang.setAttribute("aria-label", kira + " tanda sayang");
-        bawah.appendChild(sayang);
-      }
+      bawah.dataset.ucapanId = u.id;         // sasaran tampalan ♥ selepas tally tiba
       kad.append(teks, bawah);
       senarai.appendChild(kad);
     });
     viewport.hidden = false;
     autoSkrol(viewport);
+
+    // Tampal ♥ secara async: kad dah kelihatan, kaunter menyusul tanpa melewatkan feed.
+    janjiSayang.then(function (sayangKira) {
+      senarai.querySelectorAll(".lp-buku-bawah").forEach(function (bawah) {
+        const kira = sayangKira.get(bawah.dataset.ucapanId) || 0;
+        if (kira <= 0) return;               // sorok bila 0: kad tanpa like kekal bersih
+        const sayang = document.createElement("span");
+        sayang.className = "lp-buku-sayang";
+        sayang.textContent = "♥ " + kira;
+        sayang.setAttribute("aria-label", kira + " tanda sayang");
+        bawah.appendChild(sayang);
+      });
+    });
   }
 
   // ---- Auto-scroll dalam bekas: rAF + scrollTop (bukan CSS translate) supaya user
@@ -819,6 +837,20 @@ muzikApi = (function muzikInit() {
 // X/overlay/Esc/postMessage pula memanggil history.back() untuk MENGGUGURKAN entri itu,
 // supaya buka-tutup berulang TIDAK menimbun entri (satu entri hidup pada satu masa).
 // Defensif sepenuhnya (semua akses history dibalut try/catch).
+// FOCUS TRAP lewat inert: aria-modal sahaja TIDAK menghalang Tab dari lari ke latar
+// (diukur 4-6 tekanan Tab bocor keluar modal). inert pada latar = fokus + klik + AT
+// semuanya terkunci dalam modal; pulih bila tutup. Defensif: elemen tiada -> senyap.
+function latarInert(on) {
+  ["lpKad", "lpDock", "lpMuzik"].forEach(function (id) {
+    try {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (on) el.setAttribute("inert", "");
+      else el.removeAttribute("inert");
+    } catch (e) {}
+  });
+}
+
 const modalHistory = (function () {
   let tutupAktif = null;   // fungsi tutup(true) modal yang sedang terbuka (dipanggil bila Back)
   let adaEntri = false;    // sudah pushState entri milik kita?
@@ -881,6 +913,7 @@ const modalHistory = (function () {
     }
     modal.hidden = false;
     kunciSkrol(true);
+    latarInert(true);   // trap fokus: latar inert, Tab berputar dalam modal sahaja
     // Tambah is-buka pada frame seterusnya supaya transition (fade + naik) main,
     // bukan lompat. Reduced-motion: CSS matikan transition -> muncul terus.
     requestAnimationFrame(function () { modal.classList.add("is-buka"); });
@@ -894,6 +927,7 @@ const modalHistory = (function () {
     sedangBuka = false;
     modal.classList.remove("is-buka");
     kunciSkrol(false);
+    latarInert(false);
     // Sorok sepenuhnya selepas transition (elak modal invisible masih tangkap klik).
     if (REDUCED.matches) { modal.hidden = true; }
     else { window.setTimeout(function () { if (!sedangBuka) modal.hidden = true; }, 260); }
@@ -971,6 +1005,7 @@ const modalHistory = (function () {
     pencetus = dari || pencetusEls[0];
     modal.hidden = false;
     kunciSkrol(true);
+    latarInert(true);   // trap fokus: latar inert, Tab berputar dalam modal sahaja
     // Tambah is-buka frame seterusnya supaya fade + naik main (reduced-motion: CSS
     // matikan transition -> muncul terus).
     requestAnimationFrame(function () { modal.classList.add("is-buka"); });
@@ -983,6 +1018,7 @@ const modalHistory = (function () {
     sedangBuka = false;
     modal.classList.remove("is-buka");
     kunciSkrol(false);
+    latarInert(false);  // WAJIB sebelum focus(): pencetus Salam Kaut duduk DALAM lpKad yang inert
     if (REDUCED.matches) { modal.hidden = true; }
     else { window.setTimeout(function () { if (!sedangBuka) modal.hidden = true; }, 260); }
     if (!fromPop) modalHistory.tutupSelesai();

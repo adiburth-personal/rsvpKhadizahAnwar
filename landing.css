@@ -76,7 +76,12 @@ body.lp::before { display: none !important; }
     radial-gradient(120% 60% at 50% 0%, #ffffff 0%, transparent 42%),
     var(--lp-noise);
   padding: 0 var(--space-6) calc(env(safe-area-inset-bottom, 0px) + 120px);
-  overflow: hidden;   /* pastikan hiasan dalam kad tak terkeluar */
+  /* KENAPA dua nilai: hidden menjadikan kad SCROLL CONTAINER tersembunyi; anchor-scroll
+     asli browser pada deep-link hash menyimpan skrol ~1100px DALAM kad lalu semua
+     kandungan teranjak ke atas. clip memotong hiasan TANPA boleh discroll langsung;
+     hidden kekal sebagai fallback pelayar lama yang tak kenal clip. */
+  overflow: hidden;   /* pastikan hiasan dalam kad tak terkeluar (fallback) */
+  overflow: clip;
 }
 /* CAHAYA EMAS LEMBUT BERGERAK: lapisan sapuan emas sangat lembut atas kad, menyapu
    perlahan (translate ulang-alik ~26s). z-index:-1 = di ATAS latar kraft/lilac tapi
@@ -598,7 +603,11 @@ body.lp::before { display: none !important; }
    supaya momentum tak melimpah jadi skrol halaman (kehendak user: "hanya dekat section
    dia je"). Mask fade atas/bawah buat kad masuk/keluar rasa melarut, bukan terpotong. */
 .lp-buku-viewport {
-  height: 360px;
+  /* KENAPA max-height, bukan height tetap: majlis baru sebar link = ucapan sikit;
+     tinggi tetap 360px meninggalkan lubang kosong ~500px dalam panel (nampak rosak).
+     max-height = bekas mengecut ikut kandungan bila kad sedikit, dan jadi tetingkap
+     360px yang boleh skrol hanya bila kandungan melebihinya. */
+  max-height: 360px;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -894,7 +903,9 @@ html:not(.lp-js) .lp-muzik { display: none; }
    glyph emas nipis WAJIB bebas bunga (aduan user: bismillah tertutup bunga). */
 .lp-bunga-cover--tr  { top: -46px; right: -40px; width: min(30vw, 130px); height: min(40.6vw, 176px); transform: rotate(9deg) scaleX(-1); }
 .lp-bunga-cover--tr2 { top: 66px; right: 30px; width: 46px; height: 46px; opacity: 0.4; transform: rotate(-8deg); }
-.lp-bunga-cover--bl  { bottom: -22px; left: -20px; width: min(42vw, 185px); height: min(54vw, 238px); transform: rotate(-8deg); }
+/* Sedikit lebih kecil + ditolak keluar: hujung daun pernah gesel penjuru kotak
+   "Tekan untuk buka" di WebKit (render hairline berbeza sikit dari chromium). */
+.lp-bunga-cover--bl  { bottom: -30px; left: -26px; width: min(39vw, 172px); height: min(50vw, 221px); transform: rotate(-8deg); }
 .lp-bunga-cover--bl2 { bottom: 74px; left: 34px; width: 50px; height: 50px; opacity: 0.4; transform: rotate(150deg); }
 .lp-bunga-cover--tl { top: -22px; left: -20px; width: min(40vw, 175px); height: min(51.4vw, 225px); transform: rotate(-9deg); }
 .lp-bunga-cover--br { bottom: -22px; right: -20px; width: min(42vw, 185px); height: min(56.8vw, 250px); transform: rotate(8deg) scaleX(-1); }
@@ -1892,7 +1903,11 @@ button.lp-dock-btn {
 .lp-b-butiran      { top: auto; bottom: -24px; right: -26px; width: min(40vw, 172px); aspect-ratio: 400/495; opacity: 0.92; }
 .lp-b-atur-kanan   { top: auto; bottom: 10px; right: -18px; width: min(34vw, 132px); aspect-ratio: 300/448; opacity: 0.92; transform: rotate(6deg); }
 .lp-b-cd-kiri      { bottom: -10px; left: -16px; width: min(34vw, 128px); aspect-ratio: 280/460; opacity: 0.9; transform: rotate(-6deg); }
-.lp-b-buku         { top: auto; bottom: -16px; left: -20px; width: min(33vw, 128px); aspect-ratio: 300/425; opacity: 0.92; }
+.lp-b-buku         { top: auto; bottom: -16px; left: -20px; width: min(30vw, 118px); aspect-ratio: 300/425; opacity: 0.92; }
+/* KENAPA padding-bottom: ros regalis dilabuh di bucu bawah-kiri panel; tanpa zon
+   kosong ini ia menutup teks butang "Lihat Semua Ucapan" di 320px (butang hampir
+   penuh lebar). Zon kosong = ros duduk BAWAH baris butang di semua lebar. */
+.lp-buku { padding-bottom: 132px; }
 .lp-b-hubungi      { top: auto; bottom: 12px; right: -14px; width: min(30vw, 112px); aspect-ratio: 280/460; opacity: 0.88; transform: scaleX(-1) rotate(8deg); }
 .lp-b-lokasi       { top: auto; bottom: 40px; left: -14px; width: min(26vw, 100px); aspect-ratio: 240/327; opacity: 0.88; transform: rotate(-3deg); }
 .lp-b-salamkaut    { top: auto; bottom: -42px; right: -20px; width: min(23vw, 92px); aspect-ratio: 300/409; opacity: 0.92; transform: rotate(-4deg); }
@@ -1923,6 +1938,14 @@ button.lp-dock-btn {
 .lp-gb { position: fixed; opacity: 0.4; transform-origin: top center; }
 .lp-gb--kiri  { top: 92px;  right: calc(50% + 196px); width: 108px; aspect-ratio: 240/431; animation: lpSwayA 9s var(--ease-in-out) infinite; }
 .lp-gb--kanan { top: 150px; left:  calc(50% + 196px); width: 108px; aspect-ratio: 240/431; transform: scaleX(-1); animation: lpSwayB 11s var(--ease-in-out) infinite; }
+/* Anchor besar desktop (dapatan judge: gutter tandus selepas sage dibuang). Menjenguk
+   dari BELAKANG kad (right/left ~50%+17Xpx < separuh lebar kad 215px, z-index 0 vs kad 1)
+   = resipi "peek" yang sama dengan etching panel. Statik (tiada sway): kepingan besar
+   yang bergoyang di tepi mata jadi distraksi, sprig kecil sahaja yang bernafas. */
+.lp-gb--kiri2  { top: 34vh; right: calc(50% + 172px); width: 212px; aspect-ratio: 800/1029; opacity: 0.55; transform: rotate(-7deg); }
+.lp-gb--kanan2 { top: 56vh; left:  calc(50% + 170px); width: 202px; aspect-ratio: 400/495;  opacity: 0.55; transform: rotate(6deg) scaleX(-1); }
+.lp-gb--kiri3  { top: 78vh; right: calc(50% + 178px); width: 158px; aspect-ratio: 300/448;  opacity: 0.5;  transform: rotate(-4deg); }
+.lp-gb--kanan3 { top: 6vh;  left:  calc(50% + 180px); width: 148px; aspect-ratio: 300/409;  opacity: 0.5;  transform: rotate(9deg); }
 @keyframes lpSwayA { 0%,100% { transform: rotate(-1.3deg); } 50% { transform: rotate(1.3deg); } }
 @keyframes lpSwayB { 0%,100% { transform: scaleX(-1) rotate(-1.2deg); } 50% { transform: scaleX(-1) rotate(1.2deg); } }
 

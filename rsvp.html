@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=20260815d" />
+  <link rel="stylesheet" href="./styles.css?v=20260815e" />
 
   <!-- Mod embed (?embed=1): bila rsvp.html dimuat dalam modal iframe laman jemputan,
        tambah kelas pada <html> SEGERAK (elak flash hero sebelum dimampatkan) untuk
@@ -84,9 +84,29 @@
        yang memilih laluan oklch pada token LAIN (maroon/ink/line dll dikira dalam oklch),
        kita biar token surface ini kekal hex , hex lilac ini adalah nilai muktamad yang
        dikehendaki, konsisten dengan blok tema lilac landing.css. */
+
+    /* ============ ANCHOR BOTANI (bahasa design landing di halaman borang) ============
+       Dua sentuhan watercolor sahaja, di margin, JAUH dari borang (teks mesti menang).
+       Disorok dalam mod embed: modal iframe sempit, hiasan jadi bising di situ. */
+    .rsvp-botani {
+      position: fixed; z-index: 0; pointer-events: none;
+      background-repeat: no-repeat; background-position: center; background-size: contain;
+    }
+    .rsvp-botani--atas {
+      top: -18px; right: -22px; width: min(34vw, 150px); aspect-ratio: 300/409;
+      background-image: url("./aset/bunga/botBlush.webp"); opacity: 0.85; transform: rotate(8deg) scaleX(-1);
+    }
+    .rsvp-botani--bawah {
+      bottom: -14px; left: -16px; width: min(24vw, 96px); aspect-ratio: 240/327;
+      background-image: url("./aset/bunga/sprigClematis.webp"); opacity: 0.7; transform: rotate(-4deg);
+    }
+    html.rsvp-embed .rsvp-botani { display: none; }
+    .wrap { position: relative; z-index: 1; }   /* kandungan borang sentiasa atas hiasan */
   </style>
 </head>
 <body>
+  <span class="rsvp-botani rsvp-botani--atas" aria-hidden="true"></span>
+  <span class="rsvp-botani rsvp-botani--bawah" aria-hidden="true"></span>
   <main class="wrap">
 
     <!-- Notis kalau tetapan Firebase belum diisi -->
@@ -213,6 +233,6 @@
     } catch (e) {}
   </script>
 
-  <script type="module" src="./app.js?v=20260815d"></script>
+  <script type="module" src="./app.js?v=20260815e"></script>
 </body>
 </html>
